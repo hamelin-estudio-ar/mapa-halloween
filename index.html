@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <title>🎃 Halloween en Caballito (Google Maps) 🎃</title>
+=======
+    <title>🎃 Ruta Magica 2026 🎃</title>
+>>>>>>> 5d77223 (Conectado frontend al backend de Cloud Run en produccion)
     <style>
         :root {
             --primary: #ff6600;
@@ -152,6 +156,7 @@
         .tag-manana { background: #3a2e00; color: #ffeb3b; }
         .tag-tarde { background: #3c1445; color: #e040fb; }
 
+<<<<<<< HEAD
         @media (max-width: 768px) {
             .main-container {
                 flex-direction: column;
@@ -219,6 +224,715 @@
         let markers = [];
         let infoWindow;
         let geocoder;
+=======
+        :root {
+            --primary: #ff7a1a;
+            --bg-dark: #111019;
+            --card-bg: #211b2c;
+            --text-light: #f5f0fa;
+            --accent: #a56de2;
+            --muted: #b7adbf;
+            --line: rgba(190, 155, 220, 0.2);
+        }
+
+        html, body { min-height: 100%; }
+        body { height: 100dvh; min-height: 560px; background: #111019; }
+        header {
+            padding: 14px 22px 12px;
+            text-align: left;
+            background: linear-gradient(110deg, #21182d, #302038 65%, #542b24);
+            border-bottom: 1px solid var(--line);
+            box-shadow: none;
+        }
+        .header-top, .header-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        header h1 { font-size: 1.15rem; letter-spacing: 0; text-shadow: none; text-transform: none; }
+        .header-kicker { color: #f6a66f; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px; }
+        .user-chip { color: #eee5f3; font-size: .84rem; white-space: nowrap; }
+        .user-actions { display: flex; align-items: center; gap: 10px; }
+        .logout-button { padding: 7px 10px; border: 1px solid #76518c; border-radius: 5px; background: #191521; color: #eee5f3; font: inherit; font-size: .78rem; cursor: pointer; }
+        .logout-button:hover { border-color: var(--primary); color: #ffad70; }
+        .header-bottom { margin-top: 12px; }
+        .filter-container { justify-content: flex-start; flex-wrap: wrap; gap: 7px; margin-top: 0; }
+        .filter-btn { border-color: #72518a; border-radius: 6px; padding: 7px 11px; font-size: .8rem; background: #191521; }
+        .filter-btn.active, .filter-btn:hover { background: #a56de2; border-color: #a56de2; color: #160f1d; }
+        .score { font-size: .85rem; color: #e6d9ed; white-space: nowrap; }
+        .score strong { color: #ff9a45; font-size: 1.05rem; }
+        .main-container { min-height: 0; }
+        #map { flex: 1.4; min-width: 0; }
+        .sidebar { flex: 0 0 390px; max-width: 390px; padding: 14px; border-left: 1px solid var(--line); }
+        .sidebar-heading { display: flex; justify-content: space-between; align-items: baseline; margin: 0 2px 12px; }
+        .sidebar-heading h2 { font-size: 1rem; }
+        .sidebar-heading span { color: var(--muted); font-size: .78rem; }
+        .location-card { position: relative; border: 1px solid var(--line); border-radius: 7px; padding: 12px; background: #211b2c; margin-bottom: 8px; }
+        .location-card:hover { transform: translateY(-1px); border-color: var(--primary); }
+        .location-card.visited { opacity: .7; background: #19151f; }
+        .location-card.visited .card-info h3, .location-card.visited .card-info p { text-decoration: line-through; color: #aaa0b2; }
+        .location-card input[type="checkbox"] { width: 18px; height: 18px; margin: 5px 2px 0 0; accent-color: #ff7a1a; flex-shrink: 0; cursor: pointer; }
+        .location-card input[type="checkbox"]:disabled { cursor: progress; }
+        .badge-num { width: 27px; height: 27px; background: #ff7a1a; }
+        .card-info h3 { font-size: .93rem; }
+        .card-info p { color: #c9c1ce; line-height: 1.4; }
+        .tag-turno { border-radius: 4px; margin-top: 8px; }
+        .tag-manana { background: #3b3219; color: #ffd166; }
+        .tag-tarde { background: #392344; color: #d7a8ff; }
+        .visit-state { display: block; min-height: 1em; margin-top: 5px; color: #ffad70; font-size: .75rem; font-weight: 600; }
+        .map-status { position: absolute; z-index: 2; left: 12px; bottom: 12px; padding: 7px 10px; border-radius: 5px; background: rgba(20, 16, 25, .9); color: #e9dff0; font-size: .78rem; pointer-events: none; }
+        .map-panel { position: relative; display: flex; flex: 1.4; min-width: 0; }
+        .map-panel #map { width: 100%; }
+        .overlay { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 18px; background: rgba(8, 6, 12, .78); backdrop-filter: blur(5px); }
+        .overlay[hidden] { display: none; }
+        .registration-dialog { width: min(100%, 440px); padding: 26px; border: 1px solid #684b7a; border-radius: 10px; background: #1b1722; box-shadow: 0 24px 80px rgba(0,0,0,.55); }
+        .registration-dialog h2 { margin: 0 0 8px; font-size: 1.35rem; }
+        .registration-dialog p { margin: 0 0 20px; color: #c5bacd; line-height: 1.5; font-size: .9rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-field { display: grid; gap: 6px; }
+        .form-field.full { grid-column: 1 / -1; }
+        .form-field label { color: #ded4e5; font-size: .8rem; font-weight: 600; }
+        .form-field input { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #51445d; border-radius: 5px; outline: none; background: #110f16; color: #fff; font: inherit; }
+        .form-field input:focus { border-color: #b07bea; box-shadow: 0 0 0 2px rgba(176,123,234,.18); }
+        .submit-button { width: 100%; margin-top: 18px; padding: 11px 14px; border: 0; border-radius: 5px; background: #ff7a1a; color: #1a1010; font: inherit; font-weight: 800; cursor: pointer; }
+        .submit-button:hover { background: #ff9347; }
+        .toast { position: fixed; z-index: 3000; left: 50%; bottom: 22px; transform: translate(-50%, 16px); width: min(90vw, 460px); padding: 12px 16px; border: 1px solid #76518c; border-radius: 7px; background: #211b2c; color: #fff; box-shadow: 0 10px 35px rgba(0,0,0,.4); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+        .toast.visible { opacity: 1; transform: translate(-50%, 0); }
+        .sidebar-tools { display: flex; align-items: center; gap: 10px; }
+        .route-sort { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: .76rem; }
+        .route-sort select { max-width: 190px; padding: 7px 8px; border: 1px solid #51445d; border-radius: 5px; background: #191521; color: #f5f0fa; font: inherit; }
+        .route-controls { display: flex; flex-direction: column; gap: 4px; margin-left: auto; }
+        .route-move { width: 28px; height: 27px; border: 1px solid #604b70; border-radius: 4px; background: #191521; color: #eee5f3; font-weight: 700; cursor: pointer; }
+        .route-move:hover:not(:disabled) { border-color: var(--primary); color: #ff9a45; }
+        .route-move:disabled { opacity: .35; cursor: not-allowed; }
+        .welcome-dialog { width: min(100%, 460px); padding: 30px; border: 1px solid #80619a; border-radius: 10px; background: linear-gradient(145deg, #21182d, #2d202b); box-shadow: 0 24px 80px rgba(0,0,0,.55); text-align: center; }
+        .welcome-mark { margin-bottom: 12px; font-size: 2rem; }
+        .welcome-dialog h2 { margin: 0 0 10px; font-size: 1.35rem; }
+        .welcome-dialog p { margin: 0; color: #f2eaf5; line-height: 1.5; }
+        .welcome-close { margin-top: 22px; padding: 11px 18px; border: 0; border-radius: 5px; background: #ff7a1a; color: #1a1010; font: inherit; font-weight: 800; cursor: pointer; }
+        .welcome-close:hover { background: #ff9347; }
+
+        @media (max-width: 768px) {
+            body { height: 100dvh; min-height: 0; }
+            header { padding: 12px 14px; }
+            header h1 { font-size: 1rem; }
+            .header-top, .header-bottom { align-items: flex-start; }
+            .header-bottom { flex-direction: column; gap: 9px; }
+            .main-container {
+                flex-direction: column;
+            }
+            .map-panel { flex: 0 0 42%; min-height: 230px; }
+            #map { min-height: 230px; }
+            .sidebar {
+                max-width: none;
+                flex: 1 1 58%;
+                min-height: 0;
+                border-left: 0;
+                border-top: 1px solid var(--line);
+            }
+        }
+        @media (max-width: 440px) {
+            .header-top { align-items: flex-start; flex-direction: column; gap: 7px; }
+            .filter-btn { padding: 6px 8px; font-size: .74rem; }
+            .registration-dialog { padding: 21px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-field.full { grid-column: auto; }
+            .sidebar-tools { align-items: flex-end; flex-direction: column; gap: 6px; }
+            .route-sort { align-items: flex-start; flex-direction: column; gap: 4px; }
+            .route-sort select { max-width: 175px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div>
+                <div class="header-kicker">Recorrido de Halloween · Caballito</div>
+                <h1>🎃 Ruta Magica 2026 🎃</h1>
+            </div>
+            <div class="user-actions">
+                <div class="user-chip" id="user-chip">Participante sin registrar</div>
+                <button class="logout-button" id="logout-button" type="button" hidden>Cerrar sesión</button>
+            </div>
+        </div>
+        <div class="header-bottom">
+            <nav class="filter-container" aria-label="Filtrar locales por turno">
+                <button class="filter-btn active" type="button" data-filter="todos" aria-pressed="true">Todos</button>
+                <button class="filter-btn" type="button" data-filter="manana" aria-pressed="false">☀️ Mañana · 10:30-12:30</button>
+                <button class="filter-btn" type="button" data-filter="tarde" aria-pressed="false">🌙 Tarde · 15:00-18:00</button>
+            </nav>
+            <div class="score" aria-live="polite">Puntos: <strong id="score-count">0</strong> / 27</div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <section class="map-panel" aria-label="Mapa de locales">
+            <div id="map"></div>
+            <div class="map-status" id="map-status" role="status">Conectando con Google Maps...</div>
+        </section>
+        <aside class="sidebar">
+            <div class="sidebar-heading">
+                <h2>Locales</h2>
+                <div class="sidebar-tools">
+                    <label class="route-sort" for="route-sort">
+                        <span>Ordenar</span>
+                        <select id="route-sort" aria-label="Ordenar la ruta">
+                            <option value="original">Orden Original de la Ruta</option>
+                            <option value="nearest">Más cercanos a mí</option>
+                            <option value="manual">Orden personalizado</option>
+                        </select>
+                    </label>
+                    <span id="local-count">27 paradas</span>
+                </div>
+            </div>
+            <div id="lista-locales" aria-live="polite"></div>
+        </aside>
+    </main>
+
+    <div class="overlay" id="registration-overlay" hidden>
+        <section class="registration-dialog" role="dialog" aria-modal="true" aria-labelledby="registration-title">
+            <h2 id="registration-title">Sumate al recorrido</h2>
+            <p>Registrá tus datos para participar del sorteo. Las visitas se validan desde tu ubicación.</p>
+            <form id="registration-form">
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="first-name">Nombre</label>
+                        <input id="first-name" name="nombre" autocomplete="given-name" required maxlength="80">
+                    </div>
+                    <div class="form-field">
+                        <label for="last-name">Apellido</label>
+                        <input id="last-name" name="apellido" autocomplete="family-name" required maxlength="80">
+                    </div>
+                    <div class="form-field full">
+                        <label for="email">Email</label>
+                        <input id="email" name="email" type="email" autocomplete="email" required maxlength="160">
+                    </div>
+                    <div class="form-field full">
+                        <label for="phone">Teléfono (opcional)</label>
+                        <input id="phone" name="telefono" type="tel" autocomplete="tel" maxlength="40">
+                    </div>
+                </div>
+                <button class="submit-button" type="submit">Registrarme</button>
+            </form>
+        </section>
+    </div>
+    <div class="overlay" id="welcome-overlay" hidden>
+        <section class="welcome-dialog" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+            <div class="welcome-mark" aria-hidden="true">🎃</div>
+            <h2 id="welcome-title">¡Gracias por participar de la Ruta Magica 2026!</h2>
+            <p>Tu recorrido está listo. ¡Que tengas una aventura increíble!</p>
+            <button class="welcome-close" id="welcome-close" type="button">Comenzar recorrido</button>
+        </section>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        // CAPA 1: ENTIDADES
+        const DISTANCE_LIMIT_METERS = 70;
+        const STORAGE_KEYS = { user: "halloween-caballito-user", visits: "halloween-caballito-visits", routeOrder: "ruta-magica-2026-order" };
+        const BACKEND_URL = "https://ruta-magica-backend-854585878082.us-central1.run.app";
+
+        function createUser({ nombre, apellido, email, telefono = "" }) {
+            return {
+                nombre: nombre.trim(),
+                apellido: apellido.trim(),
+                email: email.trim().toLowerCase(),
+                telefono: telefono.trim(),
+                timestampRegistro: new Date().toISOString()
+            };
+        }
+
+        const locales = [
+            { id: 1, nombre: "Il Gioco Tienda de Ropa", dir: "Av Rivadavia 4995, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 2, nombre: "BetyGino", dir: "Rosario 190, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 3, nombre: "Tienta Helados", dir: "Rosario 262, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 4, nombre: "Toffee Tienda", dir: "Viel 220, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 5, nombre: "Café del Parque", dir: "Viel 267, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 6, nombre: "Veterinaria Los tres mascoteros", dir: "Guayaquil 284, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 7, nombre: "Bull! Café", dir: "Viel 368, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 8, nombre: "Peluqueria", dir: "Viel 382, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false },
+            { id: 9, nombre: "Giusseppe", dir: "Viel 384, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 10, nombre: "Librería Sofi", dir: "Viel 489, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 11, nombre: "SANITARIOS LA NUEVA ERA", dir: "Viel 493, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 12, nombre: "La Vicca Pizzeria", dir: "Juan Bautista Alberdi 365, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 13, nombre: "Peluquería Picardías", dir: "Formosa 407, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false },
+            { id: 14, nombre: "Otero Café", dir: "Guayaquil 389, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 15, nombre: "Del Turista Caballito", dir: "Beauchef 294, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 16, nombre: "FARO AZUL", dir: "Rosario 486, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 17, nombre: "Pañalera Do Re Mi", dir: "Rosario 531, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 18, nombre: "Aurora Café", dir: "Rosario 588, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 19, nombre: "Tienda Fun Star", dir: "Rosario 596, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 20, nombre: "Vizzentino", dir: "Av Jose María Moreno 168, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 21, nombre: "Peluquería Tijeritas", dir: "José María Moreno 308, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 22, nombre: "Dulce Esquina", dir: "Juan Bautista Alberdi 599, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 23, nombre: "Lavedog", dir: "Juan Bautista Alberdi 774, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 24, nombre: "Didactikids Caballito", dir: "Del Barco Centenera 256, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 25, nombre: "Libreria Apolo XI", dir: "Del Barco Centenera 228, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 26, nombre: "Local Arte Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false },
+            { id: 27, nombre: "Grooving Tattoo Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false }
+        ];
+        const originalRouteOrder = locales.map(local => local.id);
+
+        // CAPA 2: DATOS Y PERSISTENCIA
+        const DataRepository = {
+            loadUser() {
+                try {
+                    const user = JSON.parse(localStorage.getItem(STORAGE_KEYS.user));
+                    return user && user.nombre && user.apellido && user.email ? user : null;
+                } catch (error) {
+                    console.warn("No se pudo leer el usuario guardado.", error);
+                    return null;
+                }
+            },
+            saveUser(user) {
+                localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
+            },
+            removeUser() {
+                localStorage.removeItem(STORAGE_KEYS.user);
+            },
+            loadRouteOrder() {
+                try {
+                    const storedOrder = JSON.parse(localStorage.getItem(STORAGE_KEYS.routeOrder) || "null");
+                    const validIds = new Set(originalRouteOrder);
+                    if (Array.isArray(storedOrder)
+                        && storedOrder.length === originalRouteOrder.length
+                        && new Set(storedOrder).size === originalRouteOrder.length
+                        && storedOrder.every(id => validIds.has(id))) {
+                        return storedOrder;
+                    }
+                } catch (error) {
+                    console.warn("No se pudo leer el orden guardado de la ruta.", error);
+                }
+                return [...originalRouteOrder];
+            },
+            saveRouteOrder(order) {
+                localStorage.setItem(STORAGE_KEYS.routeOrder, JSON.stringify(order));
+            },
+            hasSavedRouteOrder() {
+                try {
+                    return localStorage.getItem(STORAGE_KEYS.routeOrder) !== null;
+                } catch (error) {
+                    return false;
+                }
+            },
+            loadVisitEvents() {
+                try {
+                    const events = JSON.parse(localStorage.getItem(STORAGE_KEYS.visits) || "[]");
+                    return Array.isArray(events) ? events : [];
+                } catch (error) {
+                    console.warn("No se pudo leer el historial de visitas.", error);
+                    return [];
+                }
+            },
+            async recordVisit(event) {
+                const events = this.loadVisitEvents();
+                events.push(event);
+                localStorage.setItem(STORAGE_KEYS.visits, JSON.stringify(events));
+
+                if (!event.visitado) return { sent: false, reason: "visit-removed-locally" };
+                const user = this.loadUser();
+                if (!user || user.email !== event.usuarioEmail) {
+                    return { sent: false, reason: "registered-user-not-found" };
+                }
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/visita`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            email: user.email,
+                            nombre: user.nombre,
+                            apellido: user.apellido,
+                            local_id: event.localId
+                        })
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return { sent: true };
+                } catch (error) {
+                    console.error("La visita quedó guardada localmente, pero no se pudo enviar.", error);
+                    return { sent: false, reason: "request-failed" };
+                }
+            }
+        };
+
+        // CAPA 3: SERVICIOS Y REGLAS DE NEGOCIO
+        function haversineMeters(origin, destination) {
+            const radians = degrees => degrees * Math.PI / 180;
+            const latitudeDelta = radians(destination.lat - origin.lat);
+            const longitudeDelta = radians(destination.lng - origin.lng);
+            const latitudeOrigin = radians(origin.lat);
+            const latitudeDestination = radians(destination.lat);
+            const haversine = Math.sin(latitudeDelta / 2) ** 2
+                + Math.cos(latitudeOrigin) * Math.cos(latitudeDestination)
+                * Math.sin(longitudeDelta / 2) ** 2;
+            return 6371000 * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+        }
+
+        function getCurrentPosition() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error("Este navegador no permite consultar la ubicación."));
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                    position => resolve({ lat: position.coords.latitude, lng: position.coords.longitude }),
+                    error => {
+                        const message = error.code === 1
+                            ? "Necesitamos permiso para acceder a tu ubicación y validar la visita."
+                            : error.code === 3
+                                ? "La ubicación está tardando demasiado. Revisá el GPS e intentá de nuevo."
+                                : "No pudimos obtener tu ubicación. Revisá que el GPS esté activo e intentá de nuevo.";
+                        reject(new Error(message));
+                    },
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                );
+            });
+        }
+
+        const VisitService = {
+            async validateVisit(local) {
+                const currentPosition = await getCurrentPosition();
+                const coordinates = await ensureLocalCoordinates(local);
+                const distance = haversineMeters(currentPosition, coordinates);
+                if (distance >= DISTANCE_LIMIT_METERS) {
+                    throw new Error(`Estás a ${Math.round(distance)} m de ${local.nombre}. Acercate a menos de 70 m para marcar la visita.`);
+                }
+                return distance;
+            }
+        };
+
+        // CAPA 4: PRESENTACIÓN Y CONTROL DE GOOGLE MAPS
+        let map;
+        let infoWindow;
+        let geocoder;
+        let activeFilter = "todos";
+        let routeMode = DataRepository.hasSavedRouteOrder() ? "manual" : "original";
+        let manualRouteOrder = DataRepository.loadRouteOrder();
+        let currentUser = null;
+        const markersById = new Map();
+        const coordinatePromises = new Map();
+        let toastTimer;
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.classList.add("visible");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove("visible"), 4500);
+        }
+
+        function showMapStatus(message) {
+            document.getElementById("map-status").textContent = message;
+        }
+
+        function getTurnLabel(local) {
+            return local.turno === "manana" ? "☀️ Turno Mañana" : "🌙 Turno Tarde";
+        }
+
+        function ensureLocalCoordinates(local) {
+            if (Number.isFinite(local.lat) && Number.isFinite(local.lng)) {
+                return Promise.resolve({ lat: local.lat, lng: local.lng });
+            }
+            if (coordinatePromises.has(local.id)) return coordinatePromises.get(local.id);
+            const request = new Promise((resolve, reject) => {
+                if (!geocoder) {
+                    reject(new Error("El mapa todavía se está inicializando. Esperá un momento e intentá de nuevo."));
+                    return;
+                }
+                geocoder.geocode({
+                    address: local.dir,
+                    componentRestrictions: { locality: "Buenos Aires", country: "AR" }
+                }, (results, status) => {
+                    if (status !== "OK" || !results || !results[0]) {
+                        reject(new Error(`No pudimos ubicar ${local.nombre} en el mapa.`));
+                        return;
+                    }
+                    const position = results[0].geometry.location;
+                    local.lat = position.lat();
+                    local.lng = position.lng();
+                    createMarker(local);
+                    resolve({ lat: local.lat, lng: local.lng });
+                });
+            }).catch(error => {
+                coordinatePromises.delete(local.id);
+                throw error;
+            });
+            coordinatePromises.set(local.id, request);
+            return request;
+        }
+
+        function createMarker(local) {
+            if (markersById.has(local.id)) return markersById.get(local.id);
+            const marker = new google.maps.Marker({
+                position: { lat: local.lat, lng: local.lng },
+                map: activeFilter === "todos" || local.turno === activeFilter ? map : null,
+                label: { text: String(getRouteNumber(local.id)), color: "white", fontWeight: "bold", fontSize: "12px" },
+                title: `#${getRouteNumber(local.id)} · ${local.nombre}`
+            });
+            marker.addListener("click", () => {
+                const content = document.createElement("div");
+                content.style.cssText = "color:#17131b;padding:4px;max-width:240px";
+                const title = document.createElement("h4");
+                title.textContent = `#${getRouteNumber(local.id)} · ${local.nombre}`;
+                title.style.margin = "0 0 5px";
+                const address = document.createElement("p");
+                address.textContent = `📍 ${local.dir}`;
+                address.style.cssText = "margin:0 0 4px;font-size:13px";
+                const turn = document.createElement("strong");
+                turn.textContent = getTurnLabel(local);
+                turn.style.cssText = "color:#b24b0a;font-size:12px";
+                content.append(title, address, turn);
+                infoWindow.setContent(content);
+                infoWindow.open({ map, anchor: marker });
+            });
+            markersById.set(local.id, marker);
+            return marker;
+        }
+
+        function openLocalOnMap(local) {
+            if (!map) {
+                showToast("El mapa todavía se está cargando. Probá de nuevo en unos segundos.");
+                return;
+            }
+            ensureLocalCoordinates(local).then(() => {
+                const marker = markersById.get(local.id);
+                marker.setMap(map);
+                map.setZoom(18);
+                map.panTo(marker.getPosition());
+                google.maps.event.trigger(marker, "click");
+            }).catch(error => showToast(error.message));
+        }
+
+        function updateScore() {
+            const points = locales.reduce((total, local) => total + (local.visitado ? 1 : 0), 0);
+            document.getElementById("score-count").textContent = String(points);
+        }
+
+        function getOrderedLocals() {
+            if (routeMode === "nearest") return [...locales].sort((a, b) => a.distanceFromUser - b.distanceFromUser);
+            const order = routeMode === "manual" ? manualRouteOrder : originalRouteOrder;
+            const localById = new Map(locales.map(local => [local.id, local]));
+            return order.map(id => localById.get(id)).filter(Boolean);
+        }
+
+        function getRouteNumber(localId) {
+            return getOrderedLocals().findIndex(local => local.id === localId) + 1;
+        }
+
+        function updateMarkerLabels() {
+            markersById.forEach((marker, id) => {
+                const local = locales.find(item => item.id === id);
+                marker.setLabel({ text: String(getRouteNumber(id)), color: "white", fontWeight: "bold", fontSize: "12px" });
+                marker.setTitle(`#${getRouteNumber(id)} · ${local.nombre}`);
+            });
+        }
+
+        function applyCardState(card, local) {
+            card.classList.toggle("visited", local.visitado);
+            const checkbox = card.querySelector("input[type=checkbox]");
+            checkbox.checked = local.visitado;
+            card.querySelector(".visit-state").textContent = local.visitado ? "Visita validada · +1 punto" : "";
+        }
+
+        function createLocalCard(local) {
+            const card = document.createElement("article");
+            card.className = "location-card";
+            card.id = `card-${local.id}`;
+            card.tabIndex = 0;
+            card.setAttribute("aria-label", `Ver ${local.nombre} en el mapa`);
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.setAttribute("aria-label", `Marcar visita en ${local.nombre}`);
+            checkbox.addEventListener("click", event => event.stopPropagation());
+            checkbox.addEventListener("change", () => handleVisitToggle(local, card, checkbox));
+
+            const number = document.createElement("div");
+            number.className = "badge-num";
+            number.textContent = String(getRouteNumber(local.id));
+            const details = document.createElement("div");
+            details.className = "card-info";
+            const name = document.createElement("h3");
+            name.textContent = local.nombre;
+            const address = document.createElement("p");
+            address.textContent = `📍 ${local.dir}`;
+            const turn = document.createElement("span");
+            turn.className = `tag-turno ${local.turno === "manana" ? "tag-manana" : "tag-tarde"}`;
+            turn.textContent = getTurnLabel(local);
+            const state = document.createElement("span");
+            state.className = "visit-state";
+            details.append(name, address, turn, state);
+            const controls = document.createElement("div");
+            controls.className = "route-controls";
+            const routeIndex = getRouteNumber(local.id) - 1;
+            const moveUp = document.createElement("button");
+            moveUp.type = "button";
+            moveUp.className = "route-move";
+            moveUp.textContent = "▲";
+            moveUp.title = "Subir local en la ruta";
+            moveUp.setAttribute("aria-label", `Subir ${local.nombre} en la ruta`);
+            moveUp.disabled = routeIndex === 0;
+            moveUp.addEventListener("click", event => {
+                event.stopPropagation();
+                moveLocal(local.id, -1);
+            });
+            const moveDown = document.createElement("button");
+            moveDown.type = "button";
+            moveDown.className = "route-move";
+            moveDown.textContent = "▼";
+            moveDown.title = "Bajar local en la ruta";
+            moveDown.setAttribute("aria-label", `Bajar ${local.nombre} en la ruta`);
+            moveDown.disabled = routeIndex === locales.length - 1;
+            moveDown.addEventListener("click", event => {
+                event.stopPropagation();
+                moveLocal(local.id, 1);
+            });
+            controls.append(moveUp, moveDown);
+            card.append(checkbox, number, details, controls);
+            card.addEventListener("click", event => {
+                if (event.target !== checkbox && !event.target.closest(".route-controls")) openLocalOnMap(local);
+            });
+            card.addEventListener("keydown", event => {
+                if ((event.key === "Enter" || event.key === " ") && event.target === card) {
+                    event.preventDefault();
+                    openLocalOnMap(local);
+                }
+            });
+            applyCardState(card, local);
+            return card;
+        }
+
+        function renderLocalCards() {
+            const container = document.getElementById("lista-locales");
+            const visibleLocals = getOrderedLocals().filter(local => activeFilter === "todos" || local.turno === activeFilter);
+            container.replaceChildren(...visibleLocals.map(createLocalCard));
+            document.getElementById("local-count").textContent = `${visibleLocals.length} ${visibleLocals.length === 1 ? "parada" : "paradas"}`;
+            updateScore();
+        }
+
+        function moveLocal(localId, direction) {
+            const currentOrder = getOrderedLocals().map(local => local.id);
+            const currentIndex = currentOrder.indexOf(localId);
+            const nextIndex = currentIndex + direction;
+            if (currentIndex < 0 || nextIndex < 0 || nextIndex >= currentOrder.length) return;
+            [currentOrder[currentIndex], currentOrder[nextIndex]] = [currentOrder[nextIndex], currentOrder[currentIndex]];
+            manualRouteOrder = currentOrder;
+            routeMode = "manual";
+            document.getElementById("route-sort").value = "manual";
+            try {
+                DataRepository.saveRouteOrder(manualRouteOrder);
+            } catch (error) {
+                showToast("No pudimos guardar el orden en este dispositivo.");
+                console.error(error);
+            }
+            renderLocalCards();
+            updateMarkerLabels();
+        }
+
+        async function sortByDistance() {
+            const selector = document.getElementById("route-sort");
+            selector.disabled = true;
+            showToast("Obteniendo tu ubicación y preparando el orden de la ruta...");
+            try {
+                const position = await getCurrentPosition();
+                for (const local of locales) await ensureLocalCoordinates(local);
+                locales.forEach(local => {
+                    local.distanceFromUser = haversineMeters(position, { lat: local.lat, lng: local.lng });
+                });
+                routeMode = "nearest";
+                renderLocalCards();
+                updateMarkerLabels();
+                showToast("Ruta ordenada desde el local más cercano.");
+            } catch (error) {
+                selector.value = routeMode;
+                showToast(error.message);
+            } finally {
+                selector.disabled = false;
+            }
+        }
+
+        async function handleVisitToggle(local, card, checkbox) {
+            if (!currentUser) {
+                checkbox.checked = false;
+                document.getElementById("registration-overlay").hidden = false;
+                showToast("Registrate para guardar tus visitas.");
+                return;
+            }
+            checkbox.disabled = true;
+            if (!checkbox.checked) {
+                local.visitado = false;
+                await DataRepository.recordVisit({
+                    usuarioEmail: currentUser.email,
+                    localId: local.id,
+                    visitado: false,
+                    timestamp: new Date().toISOString()
+                });
+                applyCardState(card, local);
+                updateScore();
+                checkbox.disabled = false;
+                return;
+            }
+            try {
+                const distanceMeters = await VisitService.validateVisit(local);
+                local.visitado = true;
+                await DataRepository.recordVisit({
+                    usuarioEmail: currentUser.email,
+                    localId: local.id,
+                    visitado: true,
+                    distanciaMetros: Math.round(distanceMeters),
+                    timestamp: new Date().toISOString()
+                });
+                applyCardState(card, local);
+                updateScore();
+                showToast(`¡Visita validada! Sumaste 1 punto en ${local.nombre}.`);
+            } catch (error) {
+                checkbox.checked = false;
+                showToast(error.message);
+            } finally {
+                checkbox.disabled = false;
+            }
+        }
+
+        function setFilter(filter) {
+            activeFilter = filter;
+            document.querySelectorAll(".filter-btn").forEach(button => {
+                const selected = button.dataset.filter === filter;
+                button.classList.toggle("active", selected);
+                button.setAttribute("aria-pressed", String(selected));
+            });
+            renderLocalCards();
+            markersById.forEach((marker, id) => {
+                const local = locales.find(item => item.id === id);
+                marker.setMap(filter === "todos" || local.turno === filter ? map : null);
+            });
+        }
+
+        function restoreVisits() {
+            const latestByLocal = new Map();
+            DataRepository.loadVisitEvents().forEach(event => {
+                if (currentUser
+                    && event.usuarioEmail === currentUser.email
+                    && Number.isInteger(event.localId)
+                    && typeof event.visitado === "boolean") {
+                    latestByLocal.set(event.localId, event.visitado);
+                }
+            });
+            locales.forEach(local => { local.visitado = latestByLocal.get(local.id) || false; });
+        }
+
+        function logout() {
+            try {
+                DataRepository.removeUser();
+            } catch (error) {
+                showToast("No pudimos cerrar la sesión en este dispositivo.");
+                console.error(error);
+                return;
+            }
+            currentUser = null;
+            document.getElementById("registration-form").reset();
+            document.getElementById("user-chip").textContent = "Participante sin registrar";
+            document.getElementById("logout-button").hidden = true;
+            document.getElementById("welcome-overlay").hidden = true;
+            document.getElementById("registration-overlay").hidden = false;
+            restoreVisits();
+            renderLocalCards();
+        }
+>>>>>>> 5d77223 (Conectado frontend al backend de Cloud Run en produccion)
 
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
@@ -226,6 +940,7 @@
                 zoom: 16,
                 mapId: "DEMO_MAP_ID"
             });
+<<<<<<< HEAD
 
             infoWindow = new google.maps.InfoWindow();
             geocoder = new google.maps.Geocoder();
@@ -299,10 +1014,23 @@
                             };
                         }
                     });
+=======
+            infoWindow = new google.maps.InfoWindow();
+            geocoder = new google.maps.Geocoder();
+            showMapStatus("Ubicando los locales...");
+            renderLocalCards();
+            locales.forEach((local, index) => {
+                setTimeout(() => {
+                    ensureLocalCoordinates(local).catch(error => console.warn(error.message));
+                    if (index === locales.length - 1) {
+                        setTimeout(() => showMapStatus("27 locales · Caballito"), 1800);
+                    }
+>>>>>>> 5d77223 (Conectado frontend al backend de Cloud Run en produccion)
                 }, index * 200);
             });
         }
 
+<<<<<<< HEAD
         function toggleVisited(cb, id) {
             const card = document.getElementById(`card-${id}`);
             if (cb.checked) {
@@ -317,6 +1045,68 @@
             e.target.classList.add('active');
             renderMapAndList(tipo);
         }
+=======
+        function handleMapsAuthFailure() {
+            showMapStatus("No se pudo autenticar Google Maps. Revisá la API key.");
+        }
+
+        window.initMap = initMap;
+        window.gm_authFailure = handleMapsAuthFailure;
+
+        document.querySelectorAll(".filter-btn").forEach(button => {
+            button.addEventListener("click", () => setFilter(button.dataset.filter));
+        });
+
+        document.getElementById("route-sort").value = routeMode;
+        document.getElementById("route-sort").addEventListener("change", event => {
+            if (event.target.value === "nearest") {
+                sortByDistance();
+                return;
+            }
+            routeMode = event.target.value;
+            renderLocalCards();
+            updateMarkerLabels();
+        });
+
+        document.getElementById("welcome-close").addEventListener("click", () => {
+            document.getElementById("welcome-overlay").hidden = true;
+        });
+        document.getElementById("logout-button").addEventListener("click", logout);
+
+        document.getElementById("registration-form").addEventListener("submit", event => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            currentUser = createUser({
+                nombre: formData.get("nombre"),
+                apellido: formData.get("apellido"),
+                email: formData.get("email"),
+                telefono: formData.get("telefono")
+            });
+            try {
+                DataRepository.saveUser(currentUser);
+                restoreVisits();
+                renderLocalCards();
+                document.getElementById("registration-overlay").hidden = true;
+                document.getElementById("user-chip").textContent = `${currentUser.nombre} ${currentUser.apellido}`;
+                document.getElementById("logout-button").hidden = false;
+                document.getElementById("welcome-overlay").hidden = false;
+            } catch (error) {
+                showToast("No pudimos guardar el registro en este dispositivo. Revisá el almacenamiento del navegador.");
+                console.error(error);
+            }
+        });
+
+        currentUser = DataRepository.loadUser();
+        restoreVisits();
+        if (currentUser) {
+            document.getElementById("user-chip").textContent = `${currentUser.nombre} ${currentUser.apellido}`;
+            document.getElementById("logout-button").hidden = false;
+            document.getElementById("welcome-overlay").hidden = false;
+        } else {
+            document.getElementById("registration-overlay").hidden = false;
+        }
+        renderLocalCards();
+>>>>>>> 5d77223 (Conectado frontend al backend de Cloud Run en produccion)
     </script>
 
     <!-- RECORDÁ PEGAR TU API KEY DE GOOGLE MAPS ACÁ -->
