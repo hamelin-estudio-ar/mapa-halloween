@@ -184,53 +184,55 @@
     </div>
 
     <script>
+        // Lista ordenada de Norte a Sur. Las direcciones se buscan automáticamente por Google Maps.
         const locales = [
-            { id: 1, nombre: "FARO AZUL", dir: "Rosario 486", turno: "manana", lat: -34.6186, lng: -58.4378 },
-            { id: 2, nombre: "Toffee Tienda", dir: "Viel 220", turno: "manana", lat: -34.6190, lng: -58.4325 },
-            { id: 3, nombre: "Tienta Helados", dir: "Rosario 262", turno: "manana", lat: -34.6181, lng: -58.4332 },
-            { id: 4, nombre: "Café del Parque", dir: "Viel 267", turno: "manana", lat: -34.6198, lng: -58.4323 },
-            { id: 5, nombre: "Bull! Café", dir: "Viel 368", turno: "manana", lat: -34.6212, lng: -58.4320 },
-            { id: 6, nombre: "Otero Café", dir: "Guayaquil 389", turno: "manana", lat: -34.6200, lng: -58.4340 },
-            { id: 7, nombre: "Pañalera Do Re Mi", dir: "Rosario 531", turno: "manana", lat: -34.6188, lng: -58.4388 },
-            { id: 8, nombre: "BetyGino", dir: "Rosario 190", turno: "manana", lat: -34.6179, lng: -58.4320 },
-            { id: 9, nombre: "Veterinaria Los tres mascoteros", dir: "Guayaquil 284", turno: "manana", lat: -34.6192, lng: -58.4328 },
-            { id: 10, nombre: "Didactikids Caballito", dir: "Del Barco Centenera 256", turno: "manana", lat: -34.6208, lng: -58.4350 },
-            { id: 11, nombre: "La Vicca Pizzeria", dir: "Juan Bautista Alberdi 365", turno: "manana", lat: -34.6235, lng: -58.4345 },
-            { id: 12, nombre: "Libreria Apolo XI", dir: "Del Barco Centenera 228", turno: "manana", lat: -34.6204, lng: -58.4352 },
-            { id: 13, nombre: "Peluquería Tijeritas", dir: "José María Moreno 308", turno: "manana", lat: -34.6220, lng: -58.4338 },
-            { id: 14, nombre: "Del Turista Caballito", dir: "Beauchef 294", turno: "manana", lat: -34.6215, lng: -58.4310 },
-            { id: 15, nombre: "Dulce Esquina", dir: "Juan Bautista Alberdi 599", turno: "manana", lat: -34.6241, lng: -58.4382 },
-            { id: 16, nombre: "Lavedog", dir: "Juan Bautista Alberdi 774", turno: "manana", lat: -34.6248, lng: -58.4410 },
-            { id: 17, nombre: "Tienda Fun Star", dir: "Rosario 596", turno: "manana", lat: -34.6190, lng: -58.4398 },
-            { id: 18, nombre: "Aurora Café", dir: "Rosario 588", turno: "manana", lat: -34.6189, lng: -58.4396 },
-            { id: 19, nombre: "Il Gioco Tienda de Ropa", dir: "Av Rivadavia 4995 Gal. Local 16", turno: "manana", lat: -34.6180, lng: -58.4360 },
-            { id: 20, nombre: "SANITARIOS LA NUEVA ERA", dir: "Viel 493", turno: "manana", lat: -34.6225, lng: -58.4318 },
-            { id: 21, nombre: "Librería Sofi", dir: "Viel 489", turno: "manana", lat: -34.6224, lng: -58.4318 },
-            { id: 22, nombre: "Vizzentino", dir: "Av Jose María Moreno 168", turno: "manana", lat: -34.6200, lng: -58.4330 },
-            { id: 23, nombre: "Giusseppe", dir: "Viel 384", turno: "manana", lat: -34.6214, lng: -58.4320 },
-            { id: 24, nombre: "Grooving Tattoo Studio", dir: "Galería Centenera 150", turno: "tarde", lat: -34.6198, lng: -58.4355 },
-            { id: 25, nombre: "Local Arte Studio", dir: "Galería Centenera 150", turno: "tarde", lat: -34.6198, lng: -58.4355 },
-            { id: 26, nombre: "Peluquería Picardías", dir: "Formosa 407", turno: "tarde", lat: -34.6205, lng: -58.4315 },
-            { id: 27, nombre: "Peluqueria", dir: "Viel 382", turno: "tarde", lat: -34.6213, lng: -58.4320 }
+            { id: 1, nombre: "Il Gioco Tienda de Ropa", dir: "Av Rivadavia 4995, Buenos Aires", turno: "manana" },
+            { id: 2, nombre: "BetyGino", dir: "Rosario 190, Buenos Aires", turno: "manana" },
+            { id: 3, nombre: "Tienta Helados", dir: "Rosario 262, Buenos Aires", turno: "manana" },
+            { id: 4, nombre: "Toffee Tienda", dir: "Viel 220, Buenos Aires", turno: "manana" },
+            { id: 5, nombre: "FARO AZUL", dir: "Rosario 486, Buenos Aires", turno: "manana" },
+            { id: 6, nombre: "Pañalera Do Re Mi", dir: "Rosario 531, Buenos Aires", turno: "manana" },
+            { id: 7, nombre: "Aurora Café", dir: "Rosario 588, Buenos Aires", turno: "manana" },
+            { id: 8, nombre: "Tienda Fun Star", dir: "Rosario 596, Buenos Aires", turno: "manana" },
+            { id: 9, nombre: "Veterinaria Los tres mascoteros", dir: "Guayaquil 284, Buenos Aires", turno: "manana" },
+            { id: 10, nombre: "Café del Parque", dir: "Viel 267, Buenos Aires", turno: "manana" },
+            { id: 11, nombre: "Otero Café", dir: "Guayaquil 389, Buenos Aires", turno: "manana" },
+            { id: 12, nombre: "Vizzentino", dir: "Av Jose María Moreno 168, Buenos Aires", turno: "manana" },
+            { id: 13, nombre: "Grooving Tattoo Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde" },
+            { id: 14, nombre: "Local Arte Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde" },
+            { id: 15, nombre: "Libreria Apolo XI", dir: "Del Barco Centenera 228, Buenos Aires", turno: "manana" },
+            { id: 16, nombre: "Didactikids Caballito", dir: "Del Barco Centenera 256, Buenos Aires", turno: "manana" },
+            { id: 17, nombre: "Peluquería Picardías", dir: "Formosa 407, Buenos Aires", turno: "tarde" },
+            { id: 18, nombre: "Bull! Café", dir: "Viel 368, Buenos Aires", turno: "manana" },
+            { id: 19, nombre: "Peluqueria", dir: "Viel 382, Buenos Aires", turno: "tarde" },
+            { id: 20, nombre: "Giusseppe", dir: "Viel 384, Buenos Aires", turno: "manana" },
+            { id: 21, nombre: "Del Turista Caballito", dir: "Beauchef 294, Buenos Aires", turno: "manana" },
+            { id: 22, nombre: "Peluquería Tijeritas", dir: "José María Moreno 308, Buenos Aires", turno: "manana" },
+            { id: 23, nombre: "Librería Sofi", dir: "Viel 489, Buenos Aires", turno: "manana" },
+            { id: 24, nombre: "SANITARIOS LA NUEVA ERA", dir: "Viel 493, Buenos Aires", turno: "manana" },
+            { id: 25, nombre: "La Vicca Pizzeria", dir: "Juan Bautista Alberdi 365, Buenos Aires", turno: "manana" },
+            { id: 26, nombre: "Dulce Esquina", dir: "Juan Bautista Alberdi 599, Buenos Aires", turno: "manana" },
+            { id: 27, nombre: "Lavedog", dir: "Juan Bautista Alberdi 774, Buenos Aires", turno: "manana" }
         ];
 
         let map;
         let markers = [];
         let infoWindow;
+        let geocoder;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: -34.6200, lng: -58.4350 },
                 zoom: 16,
-                mapId: "DEMO_MAP_ID" // Puedes usar tu Map ID personalizado si tienes uno
+                mapId: "DEMO_MAP_ID"
             });
 
             infoWindow = new google.maps.InfoWindow();
+            geocoder = new google.maps.Geocoder();
             renderMapAndList('todos');
         }
 
         function renderMapAndList(filtro) {
-            // Limpiar marcadores anteriores
             markers.forEach(m => m.setMap(null));
             markers = [];
 
@@ -240,35 +242,7 @@
             locales.forEach(loc => {
                 if (filtro !== 'todos' && loc.turno !== filtro) return;
 
-                // Crear marcador con Google Maps API
-                const marker = new google.maps.Marker({
-                    position: { lat: loc.lat, lng: loc.lng },
-                    map: map,
-                    label: {
-                        text: loc.id.toString(),
-                        color: "white",
-                        fontWeight: "bold",
-                        fontSize: "12px"
-                    },
-                    title: loc.nombre
-                });
-
-                markers.push(marker);
-
-                marker.addListener("click", () => {
-                    infoWindow.setContent(`
-                        <div style="color:#000; padding: 4px;">
-                            <h4 style="margin:0 0 4px 0;">#${loc.id} - ${loc.nombre}</h4>
-                            <p style="margin:0; font-size:13px;">📍 ${loc.dir}</p>
-                            <span style="color:#ff6600; font-size:12px; font-weight:bold;">
-                                ${loc.turno === 'manana' ? '☀️ Turno Mañana' : '🌙 Turno Tarde'}
-                            </span>
-                        </div>
-                    `);
-                    infoWindow.open(map, marker);
-                });
-
-                // Crear tarjeta lateral
+                // Crear tarjeta en la barra lateral de inmediato
                 const card = document.createElement("div");
                 card.className = "location-card";
                 card.id = `card-${loc.id}`;
@@ -283,14 +257,47 @@
                         </span>
                     </div>
                 `;
-
-                card.onclick = () => {
-                    map.setZoom(18);
-                    map.panTo(marker.getPosition());
-                    google.maps.event.trigger(marker, "click");
-                };
-
                 container.appendChild(card);
+
+                // Geocodificar dirección automáticamente con la API de Google Maps
+                geocoder.geocode({ address: loc.dir, componentRestrictions: { locality: "Buenos Aires", country: "AR" } }, (results, status) => {
+                    if (status === "OK" && results[0]) {
+                        const position = results[0].geometry.location;
+
+                        const marker = new google.maps.Marker({
+                            position: position,
+                            map: map,
+                            label: {
+                                text: loc.id.toString(),
+                                color: "white",
+                                fontWeight: "bold",
+                                fontSize: "12px"
+                            },
+                            title: loc.nombre
+                        });
+
+                        markers.push(marker);
+
+                        marker.addListener("click", () => {
+                            infoWindow.setContent(`
+                                <div style="color:#000; padding: 4px;">
+                                    <h4 style="margin:0 0 4px 0;">#${loc.id} - ${loc.nombre}</h4>
+                                    <p style="margin:0; font-size:13px;">📍 ${loc.dir}</p>
+                                    <span style="color:#ff6600; font-size:12px; font-weight:bold;">
+                                        ${loc.turno === 'manana' ? '☀️ Turno Mañana' : '🌙 Turno Tarde'}
+                                    </span>
+                                </div>
+                            `);
+                            infoWindow.open(map, marker);
+                        });
+
+                        card.onclick = () => {
+                            map.setZoom(18);
+                            map.panTo(marker.getPosition());
+                            google.maps.event.trigger(marker, "click");
+                        };
+                    }
+                });
             });
         }
 
@@ -310,7 +317,10 @@
         }
     </script>
 
-    <!-- PONÉ TU API KEY REEMPLAZANDO 'TU_API_KEY_AQUI' -->
+    <!-- PONÉ TU API KEY DE GOOGLE MAPS ACÁ -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8gQLPi0TCyKv1hbfAstatYZ4dwCuxR8A&callback=initMap" async defer></script>
 </body>
 </html>
+
+
+
