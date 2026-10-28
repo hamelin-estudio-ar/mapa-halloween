@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎃 Halloween en Caballito (Google Maps) 🎃</title>
+    <style>
+        :root {
+            --primary: #ff6600;
+            --bg-dark: #1a0f2b;
+            --card-bg: #2d1b4e;
+            --text-light: #f3e8ff;
+            --accent: #9d4edd;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2d1b4e 0%, #ff6600 100%);
+            padding: 12px 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .filter-btn {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--primary);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary);
+            font-weight: bold;
+            color: #000;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #map {
+            flex: 1.5;
+            height: 100%;
+        }
+
+        .sidebar {
+            flex: 1;
+            max-width: 420px;
+            background: var(--bg-dark);
+            overflow-y: auto;
+            padding: 15px;
+            border-left: 2px solid var(--accent);
+        }
+
+        .location-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,102,0,0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+
+        .location-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .location-card.visited {
+            opacity: 0.5;
+            background: #191026;
+            text-decoration: line-through;
+        }
+
+        .badge-num {
+            background: var(--primary);
+            color: #000;
+            font-weight: bold;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .card-info h3 {
+            font-size: 1rem;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+
+        .card-info p {
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .tag-turno {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 6px;
+            font-weight: bold;
+        }
+
+        .tag-manana { background: #3a2e00; color: #ffeb3b; }
+        .tag-tarde { background: #3c1445; color: #e040fb; }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            #map {
+                flex: 1;
+                min-height: 45vh;
+            }
+            .sidebar {
+                max-width: 100%;
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎃 Halloween en Caballito 🎃</h1>
+        <div class="filter-container">
+            <button class="filter-btn active" onclick="filtrar('todos', event)">Todos</button>
+            <button class="filter-btn" onclick="filtrar('manana', event)">☀️ Mañana (10:30-12:30)</button>
+            <button class="filter-btn" onclick="filtrar('tarde', event)">🌙 Tarde (15:00-18:00)</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div id="map"></div>
+        <div class="sidebar" id="lista-locales"></div>
+    </div>
+
+    <script>
+        const locales = [
+            { id: 1, nombre: "FARO AZUL", dir: "Rosario 486", turno: "manana", lat: -34.6186, lng: -58.4378 },
+            { id: 2, nombre: "Toffee Tienda", dir: "Viel 220", turno: "manana", lat: -34.6190, lng: -58.4325 },
+            { id: 3, nombre: "Tienta Helados", dir: "Rosario 262", turno: "manana", lat: -34.6181, lng: -58.4332 },
+            { id: 4, nombre: "Café del Parque", dir: "Viel 267", turno: "manana", lat: -34.6198, lng: -58.4323 },
+            { id: 5, nombre: "Bull! Café", dir: "Viel 368", turno: "manana", lat: -34.6212, lng: -58.4320 },
+            { id: 6, nombre: "Otero Café", dir: "Guayaquil 389", turno: "manana", lat: -34.6200, lng: -58.4340 },
+            { id: 7, nombre: "Pañalera Do Re Mi", dir: "Rosario 531", turno: "manana", lat: -34.6188, lng: -58.4388 },
+            { id: 8, nombre: "BetyGino", dir: "Rosario 190", turno: "manana", lat: -34.6179, lng: -58.4320 },
+            { id: 9, nombre: "Veterinaria Los tres mascoteros", dir: "Guayaquil 284", turno: "manana", lat: -34.6192, lng: -58.4328 },
+            { id: 10, nombre: "Didactikids Caballito", dir: "Del Barco Centenera 256", turno: "manana", lat: -34.6208, lng: -58.4350 },
+            { id: 11, nombre: "La Vicca Pizzeria", dir: "Juan Bautista Alberdi 365", turno: "manana", lat: -34.6235, lng: -58.4345 },
+            { id: 12, nombre: "Libreria Apolo XI", dir: "Del Barco Centenera 228", turno: "manana", lat: -34.6204, lng: -58.4352 },
+            { id: 13, nombre: "Peluquería Tijeritas", dir: "José María Moreno 308", turno: "manana", lat: -34.6220, lng: -58.4338 },
+            { id: 14, nombre: "Del Turista Caballito", dir: "Beauchef 294", turno: "manana", lat: -34.6215, lng: -58.4310 },
+            { id: 15, nombre: "Dulce Esquina", dir: "Juan Bautista Alberdi 599", turno: "manana", lat: -34.6241, lng: -58.4382 },
+            { id: 16, nombre: "Lavedog", dir: "Juan Bautista Alberdi 774", turno: "manana", lat: -34.6248, lng: -58.4410 },
+            { id: 17, nombre: "Tienda Fun Star", dir: "Rosario 596", turno: "manana", lat: -34.6190, lng: -58.4398 },
+            { id: 18, nombre: "Aurora Café", dir: "Rosario 588", turno: "manana", lat: -34.6189, lng: -58.4396 },
+            { id: 19, nombre: "Il Gioco Tienda de Ropa", dir: "Av Rivadavia 4995 Gal. Local 16", turno: "manana", lat: -34.6180, lng: -58.4360 },
+            { id: 20, nombre: "SANITARIOS LA NUEVA ERA", dir: "Viel 493", turno: "manana", lat: -34.6225, lng: -58.4318 },
+            { id: 21, nombre: "Librería Sofi", dir: "Viel 489", turno: "manana", lat: -34.6224, lng: -58.4318 },
+            { id: 22, nombre: "Vizzentino", dir: "Av Jose María Moreno 168", turno: "manana", lat: -34.6200, lng: -58.4330 },
+            { id: 23, nombre: "Giusseppe", dir: "Viel 384", turno: "manana", lat: -34.6214, lng: -58.4320 },
+            { id: 24, nombre: "Grooving Tattoo Studio", dir: "Galería Centenera 150", turno: "tarde", lat: -34.6198, lng: -58.4355 },
+            { id: 25, nombre: "Local Arte Studio", dir: "Galería Centenera 150", turno: "tarde", lat: -34.6198, lng: -58.4355 },
+            { id: 26, nombre: "Peluquería Picardías", dir: "Formosa 407", turno: "tarde", lat: -34.6205, lng: -58.4315 },
+            { id: 27, nombre: "Peluqueria", dir: "Viel 382", turno: "tarde", lat: -34.6213, lng: -58.4320 }
+        ];
+
+        let map;
+        let markers = [];
+        let infoWindow;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: -34.6200, lng: -58.4350 },
+                zoom: 16,
+                mapId: "DEMO_MAP_ID" // Puedes usar tu Map ID personalizado si tienes uno
+            });
+
+            infoWindow = new google.maps.InfoWindow();
+            renderMapAndList('todos');
+        }
+
+        function renderMapAndList(filtro) {
+            // Limpiar marcadores anteriores
+            markers.forEach(m => m.setMap(null));
+            markers = [];
+
+            const container = document.getElementById("lista-locales");
+            container.innerHTML = "";
+
+            locales.forEach(loc => {
+                if (filtro !== 'todos' && loc.turno !== filtro) return;
+
+                // Crear marcador con Google Maps API
+                const marker = new google.maps.Marker({
+                    position: { lat: loc.lat, lng: loc.lng },
+                    map: map,
+                    label: {
+                        text: loc.id.toString(),
+                        color: "white",
+                        fontWeight: "bold",
+                        fontSize: "12px"
+                    },
+                    title: loc.nombre
+                });
+
+                markers.push(marker);
+
+                marker.addListener("click", () => {
+                    infoWindow.setContent(`
+                        <div style="color:#000; padding: 4px;">
+                            <h4 style="margin:0 0 4px 0;">#${loc.id} - ${loc.nombre}</h4>
+                            <p style="margin:0; font-size:13px;">📍 ${loc.dir}</p>
+                            <span style="color:#ff6600; font-size:12px; font-weight:bold;">
+                                ${loc.turno === 'manana' ? '☀️ Turno Mañana' : '🌙 Turno Tarde'}
+                            </span>
+                        </div>
+                    `);
+                    infoWindow.open(map, marker);
+                });
+
+                // Crear tarjeta lateral
+                const card = document.createElement("div");
+                card.className = "location-card";
+                card.id = `card-${loc.id}`;
+                card.innerHTML = `
+                    <input type="checkbox" style="margin-top: 5px;" onclick="event.stopPropagation(); toggleVisited(this, ${loc.id})">
+                    <div class="badge-num">${loc.id}</div>
+                    <div class="card-info">
+                        <h3>${loc.nombre}</h3>
+                        <p>📍 ${loc.dir}</p>
+                        <span class="tag-turno ${loc.turno === 'manana' ? 'tag-manana' : 'tag-tarde'}">
+                            ${loc.turno === 'manana' ? '☀️ Turno Mañana' : '🌙 Turno Tarde'}
+                        </span>
+                    </div>
+                `;
+
+                card.onclick = () => {
+                    map.setZoom(18);
+                    map.panTo(marker.getPosition());
+                    google.maps.event.trigger(marker, "click");
+                };
+
+                container.appendChild(card);
+            });
+        }
+
+        function toggleVisited(cb, id) {
+            const card = document.getElementById(`card-${id}`);
+            if (cb.checked) {
+                card.classList.add('visited');
+            } else {
+                card.classList.remove('visited');
+            }
+        }
+
+        function filtrar(tipo, e) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            renderMapAndList(tipo);
+        }
+    </script>
+
+    <!-- PONÉ TU API KEY REEMPLAZANDO 'TU_API_KEY_AQUI' -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8gQLPi0TCyKv1hbfAstatYZ4dwCuxR8A&callback=initMap" async defer></script>
+</body>
+</html>
