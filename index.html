@@ -179,6 +179,7 @@
         .header-kicker { color: #f6a66f; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px; }
         .user-chip { color: #eee5f3; font-size: .84rem; white-space: nowrap; }
         .user-actions { display: flex; align-items: center; gap: 10px; }
+        .user-menu-toggle { display: none; width: 36px; height: 36px; border: 1px solid #76518c; border-radius: 5px; background: #191521; color: #eee5f3; font-size: 1.2rem; cursor: pointer; }
         .logout-button { padding: 7px 10px; border: 1px solid #76518c; border-radius: 5px; background: #191521; color: #eee5f3; font: inherit; font-size: .78rem; cursor: pointer; }
         .logout-button:hover { border-color: var(--primary); color: #ffad70; }
         .header-bottom { margin-top: 12px; }
@@ -187,9 +188,18 @@
         .filter-btn.active, .filter-btn:hover { background: #a56de2; border-color: #a56de2; color: #160f1d; }
         .score { font-size: .85rem; color: #e6d9ed; white-space: nowrap; }
         .score strong { color: #ff9a45; font-size: 1.05rem; }
-        .main-container { min-height: 0; }
+        .main-container { --sidebar-width: 390px; min-height: 0; }
         #map { flex: 1.4; min-width: 0; }
-        .sidebar { flex: 0 0 390px; max-width: 390px; padding: 14px; border-left: 1px solid var(--line); }
+        .sidebar { flex: 0 0 var(--sidebar-width); width: var(--sidebar-width); max-width: none; padding: 14px; border-left: 1px solid var(--line); overflow-x: hidden; }
+        .sidebar-resizer { position: relative; z-index: 4; flex: 0 0 8px; background: #17141e; cursor: col-resize; touch-action: none; }
+        .sidebar-resizer::after { position: absolute; top: 50%; left: 3px; width: 2px; height: 38px; border-radius: 2px; background: #604b70; content: ""; transform: translateY(-50%); }
+        .sidebar-resizer:hover::after, .sidebar-resizer:focus-visible::after { background: #ff7a1a; }
+        .main-container.sidebar-collapsed .sidebar { flex-basis: 44px; width: 44px; padding: 8px 4px; }
+        .main-container.sidebar-collapsed .sidebar-resizer { display: none; }
+        .main-container.sidebar-collapsed .sidebar-heading { justify-content: center; margin: 0; }
+        .main-container.sidebar-collapsed .sidebar-heading h2, .main-container.sidebar-collapsed .sidebar-tools, .main-container.sidebar-collapsed .visit-filters, .main-container.sidebar-collapsed #lista-locales { display: none; }
+        .sidebar-toggle { width: 30px; height: 30px; flex: 0 0 30px; border: 1px solid #604b70; border-radius: 4px; background: #191521; color: #ffad70; font: inherit; font-size: 1.2rem; cursor: pointer; }
+        .sidebar-toggle:hover { border-color: #ff7a1a; }
         .sidebar-heading { display: flex; justify-content: space-between; align-items: baseline; margin: 0 2px 12px; }
         .sidebar-heading h2 { font-size: 1rem; }
         .sidebar-heading span { color: var(--muted); font-size: .78rem; }
@@ -221,6 +231,12 @@
         .registration-dialog { width: min(100%, 440px); padding: 26px; border: 1px solid #684b7a; border-radius: 10px; background: #1b1722; box-shadow: 0 24px 80px rgba(0,0,0,.55); }
         .registration-dialog h2 { margin: 0 0 8px; font-size: 1.35rem; }
         .registration-dialog p { margin: 0 0 20px; color: #c5bacd; line-height: 1.5; font-size: .9rem; }
+        .map-local-info { max-width: 260px; padding: 3px 4px; color: #211c24; font-family: inherit; }
+        .map-local-info h3 { margin: 0 0 6px; color: #211c24; font-size: .95rem; line-height: 1.25; }
+        .map-local-info p { margin: 0 0 5px; color: #514958; font-size: .78rem; line-height: 1.35; }
+        .map-local-social { display: inline-flex; margin-top: 3px; padding: 6px 9px; border-radius: 4px; color: #fff; font-size: .78rem; font-weight: 700; text-decoration: none; }
+        .map-local-social.instagram { background: #a83174; }
+        .map-local-social.facebook { background: #1769aa; }
         .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 18px 0; padding: 4px; border-radius: 6px; background: #110f16; }
         .auth-tab { padding: 9px 8px; border: 0; border-radius: 4px; background: transparent; color: #c5bacd; font: inherit; font-size: .85rem; cursor: pointer; }
         .auth-tab.active { background: #a56de2; color: #160f1d; font-weight: 700; }
@@ -311,25 +327,48 @@
 
         @media (max-width: 768px) {
             body { height: 100dvh; min-height: 0; }
-            header { padding: 12px 14px; }
+            header { position: relative; padding: 10px 12px; }
             header h1 { font-size: 1rem; }
-            .header-top, .header-bottom { align-items: flex-start; }
+            .header-top { align-items: center; gap: 8px; }
+            .header-bottom { align-items: flex-start; }
             .header-bottom { flex-direction: column; gap: 9px; }
             .main-container {
                 flex-direction: column;
             }
-            .map-panel { flex: 0 0 42%; min-height: 230px; }
-            #map { min-height: 230px; }
+            .map-panel { flex: 0 0 50%; min-height: 300px; }
+            #map { min-height: 300px; }
+            .sidebar-resizer { display: none; }
             .sidebar {
                 max-width: none;
-                flex: 1 1 58%;
+                width: 100%;
+                flex: 1 1 50%;
                 min-height: 0;
+                padding: 8px;
                 border-left: 0;
                 border-top: 1px solid var(--line);
             }
+            .main-container.sidebar-collapsed .sidebar { flex: 0 0 44px; width: 100%; min-height: 44px; max-height: 44px; padding: 6px 10px; }
+            .main-container.sidebar-collapsed .sidebar-heading { justify-content: flex-end; }
+            .main-container.sidebar-collapsed .sidebar-toggle { width: 100%; }
+            .main-container.sidebar-collapsed .map-panel { flex: 1 1 auto; min-height: 300px; }
+            .user-menu-toggle { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 36px; }
+            .user-actions { display: none; position: absolute; z-index: 1100; top: 54px; right: 12px; min-width: 190px; flex-direction: column; align-items: stretch; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: #17141e; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+            .user-actions.open { display: flex; }
+            .user-actions .user-chip { white-space: normal; }
+            .user-actions .logout-button, .user-actions .admin-open-button { width: 100%; }
+            .location-card { gap: 6px; padding: 8px; margin-bottom: 6px; }
+            .location-card input[type="checkbox"] { width: 16px; height: 16px; margin-right: 0; }
+            .badge-num { width: 24px; height: 24px; font-size: .78rem; }
+            .card-info h3 { font-size: .84rem; line-height: 1.2; }
+            .card-info p { font-size: .74rem; line-height: 1.25; }
+            .tag-turno { margin-top: 5px; padding: 2px 6px; font-size: .68rem; }
+            .visit-state { margin-top: 3px; font-size: .68rem; }
+            .route-controls { gap: 3px; }
+            .route-move { width: 24px; height: 22px; font-size: .7rem; }
         }
         @media (max-width: 440px) {
-            .header-top { align-items: flex-start; flex-direction: column; gap: 7px; }
+            .header-top { align-items: center; flex-direction: row; gap: 8px; }
+            .header-top > div:first-child { min-width: 0; }
             .filter-btn { padding: 6px 8px; font-size: .74rem; }
             .registration-dialog { padding: 21px; }
             .form-grid { grid-template-columns: 1fr; }
@@ -360,7 +399,7 @@
                 <div class="header-kicker">Recorrido de Halloween · Caballito</div>
                 <h1>🎃 Ruta Mágica 2026 🎃</h1>
             </div>
-            <div class="user-actions">
+            <div class="user-actions" id="user-actions">
                 <div class="user-chip" id="user-chip">Participante sin registrar</div>
                 <!-- Botón de Instagram directo -->
                 <a href="https://www.instagram.com/rutamagicacaballito/" target="_blank" rel="noopener noreferrer" title="Seguinos en Instagram" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #e1306c; transition: all 0.2s ease; margin-right: 8px; text-decoration: none;">
@@ -371,6 +410,7 @@
                 <button class="admin-open-button" id="admin-open-button" type="button" hidden>Panel Admin</button>
                 <button class="logout-button" id="logout-button" type="button" hidden>Cerrar sesión</button>
             </div>
+            <button class="user-menu-toggle" id="user-menu-toggle" type="button" aria-label="Abrir menú de usuario" aria-controls="user-actions" aria-expanded="false" title="Menú">☰</button>
         </div>
         <div class="header-bottom">
             <nav class="filter-container" aria-label="Filtrar locales por turno">
@@ -402,6 +442,7 @@
             </div>
             <div class="map-status" id="map-status" role="status">Conectando con Google Maps...</div>
         </section>
+        <div class="sidebar-resizer" id="sidebar-resizer" role="separator" tabindex="0" aria-label="Cambiar ancho de la lista de locales" aria-orientation="vertical" aria-valuemin="280" aria-valuemax="560" aria-valuenow="390"></div>
         <aside class="sidebar">
             <div class="sidebar-heading">
                 <h2>Locales</h2>
@@ -416,6 +457,7 @@
                     </label>
                     <span id="local-count">27 paradas</span>
                 </div>
+                <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Plegar lista de locales" aria-expanded="true" title="Plegar lista">‹</button>
             </div>
             <nav class="visit-filters" aria-label="Filtrar locales por estado">
                 <button class="visit-filter active" type="button" data-visit-filter="todos" aria-pressed="true">Todos</button>
@@ -582,7 +624,7 @@
     <script>
         // CAPA 1: ENTIDADES
         const DISTANCE_LIMIT_METERS = 70;
-        const STORAGE_KEYS = { session: "ruta-magica-session", visits: "halloween-caballito-visits", routeOrder: "ruta-magica-2026-order", guestVisits: "ruta-magica-guest-visits", userAvatar: "ruta-magica-user-avatar" };
+        const STORAGE_KEYS = { session: "ruta-magica-session", visits: "halloween-caballito-visits", routeOrder: "ruta-magica-2026-order", guestVisits: "ruta-magica-guest-visits", userAvatar: "ruta-magica-user-avatar", sidebarWidth: "ruta-magica-sidebar-width", sidebarCollapsed: "ruta-magica-sidebar-collapsed" };
         const BACKEND_URL = "https://ruta-magica-backend-854585878082.us-central1.run.app";
         const USER_AVATARS = {
             ghost: "👻",
@@ -613,6 +655,23 @@
 
         let selectedUserAvatar = loadSavedAvatar();
 
+        function loadSavedSidebarWidth() {
+            try {
+                const width = Number(localStorage.getItem(STORAGE_KEYS.sidebarWidth));
+                return Number.isFinite(width) && width >= 280 && width <= 560 ? width : 390;
+            } catch (error) {
+                return 390;
+            }
+        }
+
+        function loadSavedSidebarCollapsed() {
+            try {
+                return localStorage.getItem(STORAGE_KEYS.sidebarCollapsed) === "true";
+            } catch (error) {
+                return false;
+            }
+        }
+
         function createUser({ nombre, apellido, email, telefono = "" }) {
             return {
                 nombre: nombre.trim(),
@@ -631,8 +690,8 @@
             { id: 5, nombre: "Café del Parque", dir: "Viel 267, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
             { id: 6, nombre: "Veterinaria Los tres mascoteros", dir: "Guayaquil 284, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
             { id: 7, nombre: "Bull! Café", dir: "Viel 368, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 8, nombre: "Peluqueria", dir: "Viel 382, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false },
-            { id: 9, nombre: "Giusseppe", dir: "Viel 384, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
+            { id: 8, nombre: "Peluqueria Viel", dir: "Viel 382, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false },
+            { id: 9, nombre: "Giusseppe Picadas", dir: "Viel 384, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
             { id: 10, nombre: "Librería Sofi", dir: "Viel 489, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
             { id: 11, nombre: "SANITARIOS LA NUEVA ERA", dir: "Viel 493, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
             { id: 12, nombre: "La Vicca Pizzeria", dir: "Juan Bautista Alberdi 365, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
@@ -652,6 +711,46 @@
             { id: 26, nombre: "Local Arte Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false },
             { id: 27, nombre: "Grooving Tattoo Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false }
         ];
+        const SOCIAL_PROFILES = {
+            ilgiocotiendaderopa: { platform: "Instagram", url: "https://www.instagram.com/ilgiocochicos/" },
+            betygino: { platform: "Instagram", url: "https://www.instagram.com/betygino/" },
+            tientahelados: { platform: "Instagram", url: "https://www.instagram.com/tientahelados/" },
+            toffeetienda: { platform: "Instagram", url: "https://www.instagram.com/toffeetienda/" },
+            cafedelparque: { platform: "Instagram", url: "https://www.instagram.com/elcafedelparquerivadavia/" },
+            veterinarialostresmascoteros: { platform: "Instagram", url: "https://www.instagram.com/lostresmascoteros/" },
+            bullcafe: { platform: "Instagram", url: "https://www.instagram.com/bullcafeba/" },
+            peluqueriaviel: { platform: "Instagram", url: "https://www.instagram.com/pelu.viel/" },
+            giusseppepicadas: { platform: "Facebook", url: "https://www.facebook.com/giusseppepicadas/" },
+            libreriasofi: { platform: "Instagram", url: "https://www.instagram.com/sofi.viel.libreria/" },
+            sanitarioslanuevaera: { platform: "Instagram", url: "https://www.instagram.com/sanitarioslanuevaera/" },
+            laviccapizzeria: { platform: "Instagram", url: "https://www.instagram.com/lavicca.ba" },
+            peluqueriapicardias: { platform: "Instagram", url: "https://www.instagram.com/pelu_picardias/" },
+            oterocafe: { platform: "Instagram", url: "https://www.instagram.com/oterocafeok/" },
+            delturistacaballito: { platform: "Instagram", url: "https://www.instagram.com/delturista.caballito/" },
+            faroazul: { platform: "Instagram", url: "https://www.instagram.com/faroazullibros/" },
+            panaleradoremi: { platform: "Instagram", url: "https://www.instagram.com/panaleradoremi/" },
+            tiendafunstar: { platform: "Instagram", url: "https://www.instagram.com/tiendastarfun/" },
+            vizzentino: { platform: "Instagram", url: "https://www.instagram.com/vizzentinopicadas/" },
+            peluqueriatijeritas: { platform: "Instagram", url: "https://www.instagram.com/tijeritas.ar" },
+            dulceesquina: { platform: "Instagram", url: "https://www.instagram.com/dulce.esquina_/" },
+            lavedog: { platform: "Instagram", url: "https://www.instagram.com/lavedog/" },
+            didactikidscaballito: { platform: "Instagram", url: "https://www.instagram.com/didactikids.caballito/" },
+            libreriaapoloxi: { platform: "Instagram", url: "https://www.instagram.com/libreria_apoloxi/" },
+            groovingtattoostudio: { platform: "Instagram", url: "https://www.instagram.com/grooving_tattoo_studio/" }
+        };
+        function normalizeLocalName(name) {
+            const normalized = String(name || "Local").trim().toLocaleLowerCase("es-AR");
+            const canonical = normalized === "giusseppe" ? "giusseppe picadas" : normalized === "peluqueria" ? "peluqueria viel" : normalized;
+            return canonical.replace(/(^|[\s-])(\p{L})/gu, (match, separator, letter) => `${separator}${letter.toLocaleUpperCase("es-AR")}`);
+        }
+        function getSocialProfile(name) {
+            const key = String(name || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+            return SOCIAL_PROFILES[key] || null;
+        }
+        locales = locales.map(local => {
+            const nombre = normalizeLocalName(local.nombre);
+            return { ...local, nombre, socialProfile: getSocialProfile(nombre) };
+        });
         let originalRouteOrder = locales.map(local => local.id);
 
         // CAPA 2: DATOS Y PERSISTENCIA
@@ -871,6 +970,9 @@
         let activeSession = DataRepository.loadSession();
         let currentUser = activeSession?.user || null;
         let guestMode = false;
+        let sidebarWidth = loadSavedSidebarWidth();
+        let sidebarCollapsed = loadSavedSidebarCollapsed();
+        let resizingSidebar = false;
         let verifiedRegistrationEmail = "";
         let emailVerificationToken = "";
         let backendVisits = [];
@@ -895,6 +997,49 @@
             document.getElementById("map-status").textContent = message;
         }
 
+        function constrainedSidebarWidth(width) {
+            const availableWidth = document.querySelector(".main-container").getBoundingClientRect().width;
+            const maxWidth = Math.max(280, Math.min(560, availableWidth * 0.58));
+            return Math.round(Math.max(280, Math.min(maxWidth, width)));
+        }
+
+        function refreshMapAfterResize() {
+            if (!map || !window.google?.maps) return;
+            const center = map.getCenter();
+            google.maps.event.trigger(map, "resize");
+            if (center) map.setCenter(center);
+        }
+
+        function applySidebarLayout() {
+            const main = document.querySelector(".main-container");
+            const toggle = document.getElementById("sidebar-toggle");
+            const resizer = document.getElementById("sidebar-resizer");
+            main.style.setProperty("--sidebar-width", `${sidebarWidth}px`);
+            main.classList.toggle("sidebar-collapsed", sidebarCollapsed);
+            toggle.textContent = sidebarCollapsed ? "›" : "‹";
+            toggle.title = sidebarCollapsed ? "Expandir lista" : "Plegar lista";
+            toggle.setAttribute("aria-label", sidebarCollapsed ? "Expandir lista de locales" : "Plegar lista de locales");
+            toggle.setAttribute("aria-expanded", String(!sidebarCollapsed));
+            resizer.setAttribute("aria-valuenow", String(sidebarWidth));
+            requestAnimationFrame(refreshMapAfterResize);
+        }
+
+        function saveSidebarPreferences() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.sidebarWidth, String(sidebarWidth));
+                localStorage.setItem(STORAGE_KEYS.sidebarCollapsed, String(sidebarCollapsed));
+            } catch (error) {
+                console.warn("No se pudo guardar el tamaño de la lista.", error);
+            }
+        }
+
+        function resizeSidebarAt(clientX) {
+            const bounds = document.querySelector(".main-container").getBoundingClientRect();
+            sidebarWidth = constrainedSidebarWidth(bounds.right - clientX);
+            sidebarCollapsed = false;
+            applySidebarLayout();
+        }
+
         function getTurnLabel(local) {
             return local.turno === "manana" ? "☀️ Turno Mañana" : "🌙 Turno Tarde";
         }
@@ -902,6 +1047,14 @@
         function updateAdminVisibility() {
             document.getElementById("admin-open-button").hidden = currentUser?.rol !== "admin";
             if (currentUser?.rol !== "admin") document.getElementById("admin-overlay").hidden = true;
+        }
+
+        function setUserMenuOpen(open) {
+            const menu = document.getElementById("user-actions");
+            const toggle = document.getElementById("user-menu-toggle");
+            menu.classList.toggle("open", open);
+            toggle.setAttribute("aria-expanded", String(open));
+            toggle.setAttribute("aria-label", open ? "Cerrar menú de usuario" : "Abrir menú de usuario");
         }
 
         function enterGuestMode() {
@@ -1320,20 +1473,24 @@
             });
             marker.addListener("click", () => {
                 const content = document.createElement("div");
-                content.style.cssText = "color:#17131b;padding:4px;max-width:240px";
-                const title = document.createElement("h4");
+                content.className = "map-local-info";
+                const title = document.createElement("h3");
                 title.textContent = `#${getRouteNumber(local.id)} · ${local.nombre}`;
-                title.style.margin = "0 0 5px";
                 const address = document.createElement("p");
-                address.textContent = `📍 ${local.dir}`;
-                address.style.cssText = "margin:0 0 4px;font-size:13px";
-                const turn = document.createElement("strong");
-                turn.textContent = getTurnLabel(local);
-                turn.style.cssText = "color:#b24b0a;font-size:12px";
+                address.textContent = local.dir;
                 const status = document.createElement("p");
-                status.textContent = local.visitado ? "✓ Visitado" : "Sin visitar";
-                status.style.cssText = `margin:5px 0 0;color:${local.visitado ? "#178045" : "#6e6472"};font-weight:700;font-size:12px`;
-                content.append(title, address, turn, status);
+                status.textContent = `${getTurnLabel(local)} · ${local.visitado ? "Visitado" : "Pendiente"}`;
+                content.append(title, address, status);
+                const socialProfile = local.socialProfile || getSocialProfile(local.nombre);
+                if (socialProfile) {
+                    const socialLink = document.createElement("a");
+                    socialLink.className = `map-local-social ${socialProfile.platform.toLowerCase()}`;
+                    socialLink.href = socialProfile.url;
+                    socialLink.target = "_blank";
+                    socialLink.rel = "noopener noreferrer";
+                    socialLink.textContent = `Ver en ${socialProfile.platform} ↗`;
+                    content.append(socialLink);
+                }
                 infoWindow.setContent(content);
                 infoWindow.open({ map, anchor: marker });
             });
@@ -1642,6 +1799,7 @@
             backendVisitsLoaded = false;
             adminUsers = [];
             adminSummary = null;
+            setUserMenuOpen(false);
             document.getElementById("user-chip").textContent = "Participante sin registrar";
             document.getElementById("admin-overlay").hidden = true;
             document.getElementById("logout-button").hidden = true;
@@ -1657,13 +1815,14 @@
             return {
                 ...local,
                 id: Number(local.id),
-                nombre: String(local.nombre || "Local"),
+                nombre: normalizeLocalName(local.nombre),
                 dir: String(local.dir || local.direccion || ""),
                 turno: local.turno === "tarde" ? "tarde" : "manana",
                 lat: local.lat !== null && Number.isFinite(Number(local.lat)) ? Number(local.lat) : null,
                 lng: local.lng !== null && Number.isFinite(Number(local.lng)) ? Number(local.lng) : null,
                 web: local.web || "",
                 telefono: local.telefono || "",
+                socialProfile: getSocialProfile(normalizeLocalName(local.nombre)),
                 visitado: false
             };
         }
@@ -1841,6 +2000,54 @@
         window.initMap = initMap;
         window.gm_authFailure = handleMapsAuthFailure;
 
+        const sidebarToggle = document.getElementById("sidebar-toggle");
+        const sidebarResizer = document.getElementById("sidebar-resizer");
+        if (window.innerWidth > 768) sidebarWidth = constrainedSidebarWidth(sidebarWidth);
+        applySidebarLayout();
+        sidebarToggle.addEventListener("click", () => {
+            sidebarCollapsed = !sidebarCollapsed;
+            applySidebarLayout();
+            saveSidebarPreferences();
+        });
+        sidebarResizer.addEventListener("pointerdown", event => {
+            if (window.innerWidth <= 768 || sidebarCollapsed) return;
+            event.preventDefault();
+            resizingSidebar = true;
+            sidebarResizer.setPointerCapture(event.pointerId);
+            resizeSidebarAt(event.clientX);
+        });
+        sidebarResizer.addEventListener("pointermove", event => {
+            if (resizingSidebar) resizeSidebarAt(event.clientX);
+        });
+        const finishSidebarResize = () => {
+            if (!resizingSidebar) return;
+            resizingSidebar = false;
+            saveSidebarPreferences();
+        };
+        sidebarResizer.addEventListener("pointerup", finishSidebarResize);
+        sidebarResizer.addEventListener("pointercancel", finishSidebarResize);
+        sidebarResizer.addEventListener("keydown", event => {
+            if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+            event.preventDefault();
+            const step = event.shiftKey ? 48 : 16;
+            if (event.key === "Home") sidebarWidth = 280;
+            else if (event.key === "End") sidebarWidth = 560;
+            else sidebarWidth += event.key === "ArrowLeft" ? step : -step;
+            sidebarWidth = constrainedSidebarWidth(sidebarWidth);
+            sidebarCollapsed = false;
+            applySidebarLayout();
+            saveSidebarPreferences();
+        });
+        sidebarResizer.addEventListener("dblclick", () => {
+            sidebarWidth = constrainedSidebarWidth(390);
+            applySidebarLayout();
+            saveSidebarPreferences();
+        });
+        window.addEventListener("resize", () => {
+            if (window.innerWidth > 768) sidebarWidth = constrainedSidebarWidth(sidebarWidth);
+            applySidebarLayout();
+        });
+
         document.querySelectorAll(".filter-btn").forEach(button => {
             button.addEventListener("click", () => setFilter(button.dataset.filter));
         });
@@ -1892,6 +2099,21 @@
 
         document.getElementById("welcome-close").addEventListener("click", () => {
             document.getElementById("welcome-overlay").hidden = true;
+        });
+        const userMenuToggle = document.getElementById("user-menu-toggle");
+        const userActionsMenu = document.getElementById("user-actions");
+        userMenuToggle.addEventListener("click", event => {
+            event.stopPropagation();
+            setUserMenuOpen(!userActionsMenu.classList.contains("open"));
+        });
+        userActionsMenu.addEventListener("click", event => {
+            if (event.target.closest("a, button")) setUserMenuOpen(false);
+        });
+        document.addEventListener("click", event => {
+            if (!userActionsMenu.contains(event.target) && !userMenuToggle.contains(event.target)) setUserMenuOpen(false);
+        });
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") setUserMenuOpen(false);
         });
         document.getElementById("logout-button").addEventListener("click", logout);
         document.getElementById("admin-open-button").addEventListener("click", openAdminPanel);
