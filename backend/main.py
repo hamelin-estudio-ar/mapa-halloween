@@ -8,7 +8,7 @@ import secrets
 import tempfile
 import threading
 import unicodedata
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 from functools import wraps
 from pathlib import Path
@@ -254,6 +254,8 @@ def send_verification_email(email, code):
 def verification_expired(record, now):
     try:
         expires_at = datetime.fromisoformat(record["expires_at"])
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
     except (KeyError, TypeError, ValueError):
         return True
     return now >= expires_at
@@ -275,7 +277,7 @@ def enviar_codigo_verificacion():
     record = {
         "code_hash": generate_password_hash(code),
         "sent_at": now.isoformat(),
-        "expires_at": (now.timestamp() + EMAIL_CODE_TTL_SECONDS),
+        "expires_at": (now + timedelta(seconds=EMAIL_CODE_TTL_SECONDS)).isoformat(),
         "attempts": 0,
     }
     result = {}
@@ -485,6 +487,7 @@ def registrar_usuario():
     tipo_documento = data.get("tipo_documento", "").strip().lower() if isinstance(data.get("tipo_documento"), str) else ""
     documento = data.get("documento", "").strip().upper() if isinstance(data.get("documento"), str) else ""
     password = data.get("password")
+    verification_token = data.get("email_verification_token")
 
     if not valid_person_name(nombre) or not valid_person_name(apellido):
         return jsonify({"error": "Nombre y apellido deben tener entre 2 y 60 letras"}), 400
@@ -494,6 +497,17 @@ def registrar_usuario():
         return jsonify({"error": "Ingresá un teléfono válido de 8 a 20 caracteres"}), 400
     if data.get("acepta_terminos") is not True:
         return jsonify({"error": "Debés aceptar las bases de participación y el aviso de privacidad"}), 400
+    if not isinstance(verification_token, str) or EMAIL_VERIFICATION_SERIALIZER is None:
+        return jsonify({"error": "Verificá tu email antes de crear la cuenta"}), 400
+    try:
+        verification = EMAIL_VERIFICATION_SERIALIZER.loads(
+            verification_token,
+            max_age=EMAIL_CODE_TTL_SECONDS,
+        )
+    except (BadSignature, SignatureExpired):
+        return jsonify({"error": "La verificación del email venció o no es válida. Solicitá un código nuevo"}), 400
+    if verification.get("email") != email or verification.get("purpose") != "register":
+        return jsonify({"error": "El email verificado no coincide con el email de registro"}), 400
     if tipo_documento not in DOCUMENT_TYPES:
         return jsonify({"error": "Seleccioná un tipo de documento válido"}), 400
     if tipo_documento == "dni" and not re.fullmatch(r"[0-9]{7,8}", documento):
@@ -526,6 +540,8 @@ def registrar_usuario():
         "fecha_aceptacion_terminos": terms_timestamp,
         "consentimiento_promociones": promotions_consent,
         "fecha_consentimiento_promociones": terms_timestamp if promotions_consent else None,
+        "email_verificado": True,
+        "fecha_verificacion_email": utc_now(),
     }
     result = {}
 

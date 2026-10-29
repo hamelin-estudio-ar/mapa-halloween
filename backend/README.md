@@ -8,6 +8,8 @@ Configurar estas variables en Cloud Run:
 - `SECRET_KEY`: secreto estable y privado, administrado mediante Secret Manager. Debe mantenerse igual entre instancias y revisiones para validar sesiones.
 - `ADMIN_EMAIL`: email de la cuenta que debe tener siempre el rol admin. La persona debe registrarse con ese email o volver a iniciar sesión luego de configurar la variable.
 - `ADMIN_INITIAL_PASSWORD`: contraseña inicial del admin, cargada desde Secret Manager. Debe cumplir las reglas de contraseña y nunca guardarse en el repositorio. Al primer login se crea `admin@rutamagica.com.ar` si todavía no existe; si ya existe, se conserva su hash de contraseña y sólo se asegura el rol admin.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`: configuración del proveedor SMTP para enviar códigos de verificación. `SMTP_PASSWORD` se debe guardar en Secret Manager. Sin SMTP configurado, el alta no permite crear cuentas sin verificar.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`: datos del proveedor SMTP para enviar códigos OTP. `SMTP_PASSWORD` debe cargarse desde Secret Manager. Sin SMTP configurado, el alta no permite verificar/crear cuentas.
 - `CORS_ORIGINS`: origen exacto del frontend publicado; acepta varios orígenes separados por coma. Si no se define, CORS queda abierto para facilitar desarrollo.
 
 La cuenta de servicio de Cloud Run necesita permisos de lectura y escritura de objetos en el bucket (por ejemplo, `roles/storage.objectUser`). En local, si `GCS_BUCKET_NAME` no está definido, los JSON se guardan en `backend/data/`.
