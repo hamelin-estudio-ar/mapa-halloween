@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎃 Ruta Magica 2026 🎃</title>
+    <title>🎃 Ruta Mágica 2026 🎃</title>
     <style>
         :root {
             --primary: #ff6600;
@@ -314,6 +314,13 @@
             .admin-stats { gap: 7px; }
             .admin-stat { padding: 10px; }
         }
+        /* Ajuste para que el modal de registro no se corte abajo y tenga scroll */
+        .modal-content, .modal-body, .form-container, .registration-dialog {
+            max-height: 85vh !important;
+            overflow-y: auto !important;
+            padding-bottom: 30px !important;
+        }
+        
     </style>
 </head>
 <body>
@@ -321,10 +328,16 @@
         <div class="header-top">
             <div>
                 <div class="header-kicker">Recorrido de Halloween · Caballito</div>
-                <h1>🎃 Ruta Magica 2026 🎃</h1>
+                <h1>🎃 Ruta Mágica 2026 🎃</h1>
             </div>
             <div class="user-actions">
                 <div class="user-chip" id="user-chip">Participante sin registrar</div>
+                <!-- Botón de Instagram directo -->
+                <a href="https://www.instagram.com/rutamagicacaballito/" target="_blank" rel="noopener noreferrer" title="Seguinos en Instagram" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #e1306c; transition: all 0.2s ease; margin-right: 8px; text-decoration: none;">
+                    <svg style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                </a>
                 <button class="admin-open-button" id="admin-open-button" type="button" hidden>Panel Admin</button>
                 <button class="logout-button" id="logout-button" type="button" hidden>Cerrar sesión</button>
             </div>
@@ -370,7 +383,7 @@
 
     <div class="overlay" id="registration-overlay" hidden>
         <section class="registration-dialog" role="dialog" aria-modal="true" aria-labelledby="registration-title">
-            <h2 id="registration-title">Ruta Magica 2026</h2>
+            <h2 id="registration-title">Ruta Mágica 2026</h2>
             <p>Iniciá sesión o creá una cuenta para guardar tu progreso en el recorrido.</p>
             <div class="auth-tabs" role="tablist" aria-label="Acceso a la ruta">
                 <button class="auth-tab active" id="login-tab" type="button" role="tab" aria-selected="true" aria-controls="login-form" data-auth-tab="login">Iniciar Sesión</button>
@@ -392,11 +405,11 @@
                 <div class="form-grid">
                     <div class="form-field">
                         <label for="register-first-name">Nombre</label>
-                        <input id="register-first-name" name="nombre" autocomplete="given-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}\p{M} '’\-]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
+                        <input id="register-first-name" name="nombre" autocomplete="given-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}' -]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
                     </div>
                     <div class="form-field">
                         <label for="register-last-name">Apellido</label>
-                        <input id="register-last-name" name="apellido" autocomplete="family-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}\p{M} '’\-]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
+                        <input id="register-last-name" name="apellido" autocomplete="family-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}' -]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
                     </div>
                     <div class="form-field full">
                         <label for="register-email">Email</label>
@@ -404,7 +417,7 @@
                     </div>
                     <div class="form-field full">
                         <label for="register-phone">Teléfono</label>
-                        <input id="register-phone" name="telefono" type="tel" inputmode="numeric" autocomplete="tel" required minlength="8" maxlength="15" pattern="[0-9]{8,15}" title="Ingresá entre 8 y 15 dígitos">
+                        <input id="register-phone" name="telefono" type="tel" inputmode="tel" autocomplete="tel" required minlength="8" maxlength="20" pattern="[+]?[0-9() .-]{8,20}" title="Ingresá un teléfono válido de 8 a 20 caracteres">
                     </div>
                     <div class="form-field">
                         <label for="register-document-type">Tipo de documento</label>
@@ -424,7 +437,7 @@
                     </div>
                     <div class="form-field">
                         <label for="register-document-number">Número de documento</label>
-                        <input class="document-control" id="register-document-number" name="documento" type="text" inputmode="numeric" autocomplete="off" required minlength="7" maxlength="8" pattern="[0-9]{7,8}" title="El DNI admite 7 u 8 números">
+                        <input class="document-control" id="register-document-number" name="documento" type="text" inputmode="numeric" autocomplete="off" required maxlength="12" pattern="[0-9]{1,12}" title="El DNI admite únicamente números">
                     </div>
                     <div class="form-field full">
                         <label for="register-password">Contraseña</label>
@@ -454,7 +467,7 @@
     <div class="overlay" id="welcome-overlay" hidden>
         <section class="welcome-dialog" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
             <div class="welcome-mark" aria-hidden="true">🎃</div>
-            <h2 id="welcome-title">¡Gracias por participar de la Ruta Magica 2026!</h2>
+            <h2 id="welcome-title">¡Gracias por participar de la Ruta Mágica 2026!</h2>
             <p>Tu recorrido está listo. ¡Que tengas una aventura increíble!</p>
             <button class="welcome-close" id="welcome-close" type="button">Comenzar recorrido</button>
         </section>
@@ -502,8 +515,8 @@
     <script>
         // CAPA 1: ENTIDADES
         const DISTANCE_LIMIT_METERS = 70;
-        const STORAGE_KEYS = { session: "ruta-magica-session", visits: "halloween-caballito-visits", routeOrder: "ruta-magica-2026-order" };
-        const BACKEND_URL = "https://ruta-magica-backend-854585878082.us-central1.run.app";
+        const STORAGE_KEYS = { session: "ruta-Mágica-session", visits: "halloween-caballito-visits", routeOrder: "ruta-Mágica-2026-order" };
+        const BACKEND_URL = "https://ruta-Mágica-backend-854585878082.us-central1.run.app";
 
         function createUser({ nombre, apellido, email, telefono = "" }) {
             return {
@@ -1326,10 +1339,9 @@
             const documentInput = document.getElementById("register-document-number");
             if (type === "dni") {
                 documentInput.inputMode = "numeric";
-                documentInput.minLength = 7;
-                documentInput.maxLength = 8;
-                documentInput.pattern = "[0-9]{7,8}";
-                documentInput.title = "El DNI admite 7 u 8 números";
+                documentInput.maxLength = 12;
+                documentInput.pattern = "[0-9]{1,12}";
+                documentInput.title = "El DNI admite únicamente números";
                 documentInput.value = documentInput.value.replace(/\D/g, "");
                 return;
             }
@@ -1344,9 +1356,8 @@
 
             function validatePhoneField() {
                 const phoneInput = document.getElementById("register-phone");
-                const digits = phoneInput.value.replace(/\D/g, "").slice(0, 15);
-                if (phoneInput.value !== digits) phoneInput.value = digits;
-                phoneInput.setCustomValidity(digits.length >= 8 && digits.length <= 15
+                const digitCount = phoneInput.value.replace(/\D/g, "").length;
+                phoneInput.setCustomValidity(digitCount >= 8 && digitCount <= 15
                 ? ""
                 : "El teléfono debe contener entre 8 y 15 dígitos.");
             }
