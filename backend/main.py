@@ -1,12 +1,15 @@
 import copy
+import smtplib
 import json
 import math
 import os
 import re
+import secrets
 import tempfile
 import threading
 import unicodedata
 from datetime import datetime, timezone
+from email.message import EmailMessage
 from functools import wraps
 from pathlib import Path
 
@@ -27,13 +30,26 @@ CORS(
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).resolve().parent / "data"))
 GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "").strip()
 GCS_DATA_PREFIX = "ruta_magica"
-PERSISTENCE_FILES = {"usuarios.json", "visitas.json", "locales.json"}
+PERSISTENCE_FILES = {"usuarios.json", "visitas.json", "locales.json", "email_verificaciones.json"}
 SESSION_SECRET = os.getenv("SECRET_KEY", "").strip()
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@rutamagica.com.ar").strip().lower()
 ADMIN_INITIAL_PASSWORD = os.getenv("ADMIN_INITIAL_PASSWORD", "")
+SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "").strip()
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USERNAME).strip()
+EMAIL_CODE_TTL_SECONDS = 10 * 60
+EMAIL_CODE_COOLDOWN_SECONDS = 60
+EMAIL_CODE_MAX_ATTEMPTS = 5
 SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
 TOKEN_SERIALIZER = (
     URLSafeTimedSerializer(SESSION_SECRET, salt="ruta-magica-session-v1")
+    if SESSION_SECRET
+    else None
+)
+EMAIL_VERIFICATION_SERIALIZER = (
+    URLSafeTimedSerializer(SESSION_SECRET, salt="ruta-magica-email-verification-v1")
     if SESSION_SECRET
     else None
 )
@@ -215,6 +231,129 @@ def valid_person_name(value):
 
 def valid_phone(value):
     return isinstance(value, str) and PHONE_PATTERN.fullmatch(value.strip()) is not None
+
+
+def send_verification_email(email, code):
+    if not SMTP_HOST or not SMTP_FROM:
+        raise RuntimeError("El envío de email no está configurado en el servidor")
+    message = EmailMessage()
+    message["Subject"] = "Código de verificación - Ruta Mágica 2026"
+    message["From"] = SMTP_FROM
+    message["To"] = email
+    message.set_content(
+        f"Tu código para verificar el email en Ruta Mágica 2026 es: {code}\n\n"
+        "Vence en 10 minutos. Si no solicitaste este código, podés ignorar este mensaje."
+    )
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
+        server.starttls()
+        if SMTP_USERNAME:
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+        server.send_message(message)
+
+
+def verification_expired(record, now):
+    try:
+        expires_at = datetime.fromisoformat(record["expires_at"])
+    except (KeyError, TypeError, ValueError):
+        return True
+    return now >= expires_at
+
+
+@app.post("/api/auth/email/send-code")
+def enviar_codigo_verificacion():
+    if EMAIL_VERIFICATION_SERIALIZER is None:
+        return jsonify({"error": "El backend no tiene SECRET_KEY configurada"}), 503
+    if not SMTP_HOST or not SMTP_FROM:
+        return jsonify({"error": "La verificación por email todavía no está configurada en el servidor"}), 503
+    data = request.get_json(silent=True) or {}
+    email = normalize_email(data.get("email"))
+    if len(email) > 160 or not EMAIL_PATTERN.fullmatch(email):
+        return jsonify({"error": "Ingresá un email válido con formato nombre@dominio.com"}), 400
+
+    now = datetime.now(timezone.utc)
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    record = {
+        "code_hash": generate_password_hash(code),
+        "sent_at": now.isoformat(),
+        "expires_at": (now.timestamp() + EMAIL_CODE_TTL_SECONDS),
+        "attempts": 0,
+    }
+    result = {}
+
+    def store_code(records):
+        previous = records.get(email)
+        if previous:
+            try:
+                previous_sent_at = datetime.fromisoformat(previous.get("sent_at", ""))
+                elapsed = (now - previous_sent_at).total_seconds()
+            except (TypeError, ValueError):
+                elapsed = EMAIL_CODE_COOLDOWN_SECONDS
+            if elapsed < EMAIL_CODE_COOLDOWN_SECONDS:
+                result["cooldown"] = int(EMAIL_CODE_COOLDOWN_SECONDS - elapsed)
+                return records, None
+        records[email] = record
+        return records, None
+
+    update_json("email_verificaciones.json", {}, store_code)
+    if result.get("cooldown"):
+        return jsonify({"error": f"Esperá {result['cooldown']} segundos antes de pedir otro código"}), 429
+
+    try:
+        send_verification_email(email, code)
+    except (OSError, smtplib.SMTPException, RuntimeError) as error:
+        app.logger.warning("No se pudo enviar un código de verificación: %s", error)
+
+        def remove_failed_code(records):
+            current = records.get(email)
+            if current and current.get("code_hash") == record["code_hash"]:
+                records.pop(email, None)
+            return records, None
+
+        update_json("email_verificaciones.json", {}, remove_failed_code)
+        return jsonify({"error": "No se pudo enviar el email. Revisá la configuración del servidor e intentá de nuevo"}), 503
+
+    return jsonify({"success": True, "message": "Si el email puede recibir mensajes, enviamos un código de verificación"}), 200
+
+
+@app.post("/api/auth/email/verify-code")
+def verificar_codigo_email():
+    if EMAIL_VERIFICATION_SERIALIZER is None:
+        return jsonify({"error": "El backend no tiene SECRET_KEY configurada"}), 503
+    data = request.get_json(silent=True) or {}
+    email = normalize_email(data.get("email"))
+    code = data.get("code")
+    if len(email) > 160 or not EMAIL_PATTERN.fullmatch(email) or not isinstance(code, str) or not re.fullmatch(r"[0-9]{6}", code):
+        return jsonify({"error": "Ingresá un email válido y un código de 6 dígitos"}), 400
+
+    now = datetime.now(timezone.utc)
+    result = {}
+
+    def check_code(records):
+        record = records.get(email)
+        if not record:
+            result["error"] = "Solicitá un código nuevo para verificar tu email"
+            return records, None
+        if verification_expired(record, now):
+            records.pop(email, None)
+            result["error"] = "El código venció. Solicitá uno nuevo"
+            return records, None
+        if record.get("attempts", 0) >= EMAIL_CODE_MAX_ATTEMPTS:
+            records.pop(email, None)
+            result["error"] = "Se superó el máximo de intentos. Solicitá un código nuevo"
+            return records, None
+        if not check_password_hash(record.get("code_hash", ""), code):
+            record["attempts"] = record.get("attempts", 0) + 1
+            result["error"] = "El código ingresado no es válido"
+            return records, None
+        records.pop(email, None)
+        result["verified"] = True
+        return records, None
+
+    update_json("email_verificaciones.json", {}, check_code)
+    if not result.get("verified"):
+        return jsonify({"error": result.get("error", "No se pudo verificar el email")}), 400
+    token = EMAIL_VERIFICATION_SERIALIZER.dumps({"email": email, "purpose": "register"})
+    return jsonify({"success": True, "email_verification_token": token}), 200
 
 
 def public_user(user):
