@@ -484,7 +484,7 @@
                     </div>
                     <div class="form-field full">
                         <label for="register-phone">Teléfono</label>
-                        <input id="register-phone" name="telefono" type="tel" inputmode="tel" autocomplete="tel" required minlength="8" maxlength="20" pattern="[+]?[0-9() .-]{8,20}" title="Ingresá un teléfono válido de 8 a 20 caracteres">
+                        <input id="register-phone" name="telefono" type="tel" inputmode="numeric" autocomplete="tel" required minlength="8" maxlength="15" pattern="[0-9]{8,15}" title="Ingresá entre 8 y 15 dígitos">
                     </div>
                     <div class="form-field">
                         <label for="register-document-type">Tipo de documento</label>
@@ -1702,8 +1702,9 @@
 
             function validatePhoneField() {
                 const phoneInput = document.getElementById("register-phone");
-                const digitCount = phoneInput.value.replace(/\D/g, "").length;
-                phoneInput.setCustomValidity(digitCount >= 8 && digitCount <= 15
+                const digits = phoneInput.value.replace(/\D/g, "").slice(0, 15);
+                if (phoneInput.value !== digits) phoneInput.value = digits;
+                phoneInput.setCustomValidity(digits.length >= 8 && digits.length <= 15
                 ? ""
                 : "El teléfono debe contener entre 8 y 15 dígitos.");
             }
