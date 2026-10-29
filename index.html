@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
-    <title>🎃 Halloween en Caballito (Google Maps) 🎃</title>
-=======
     <title>🎃 Ruta Magica 2026 🎃</title>
->>>>>>> 5d77223 (Conectado frontend al backend de Cloud Run en produccion)
     <style>
         :root {
             --primary: #ff6600;
@@ -156,75 +152,6 @@
         .tag-manana { background: #3a2e00; color: #ffeb3b; }
         .tag-tarde { background: #3c1445; color: #e040fb; }
 
-<<<<<<< HEAD
-        @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column;
-            }
-            #map {
-                flex: 1;
-                min-height: 45vh;
-            }
-            .sidebar {
-                max-width: 100%;
-                flex: 1;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <header>
-        <h1>🎃 Halloween en Caballito 🎃</h1>
-        <div class="filter-container">
-            <button class="filter-btn active" onclick="filtrar('todos', event)">Todos</button>
-            <button class="filter-btn" onclick="filtrar('manana', event)">☀️ Mañana (10:30-12:30)</button>
-            <button class="filter-btn" onclick="filtrar('tarde', event)">🌙 Tarde (15:00-18:00)</button>
-        </div>
-    </header>
-
-    <div class="main-container">
-        <div id="map"></div>
-        <div class="sidebar" id="lista-locales"></div>
-    </div>
-
-    <script>
-        // Nueva lista personalizada del 1 al 27
-        const locales = [
-            { id: 1, nombre: "Il Gioco Tienda de Ropa", dir: "Av Rivadavia 4995, Buenos Aires", turno: "manana" },
-            { id: 2, nombre: "BetyGino", dir: "Rosario 190, Buenos Aires", turno: "manana" },
-            { id: 3, nombre: "Tienta Helados", dir: "Rosario 262, Buenos Aires", turno: "manana" },
-            { id: 4, nombre: "Toffee Tienda", dir: "Viel 220, Buenos Aires", turno: "manana" },
-            { id: 5, nombre: "Café del Parque", dir: "Viel 267, Buenos Aires", turno: "manana" },
-            { id: 6, nombre: "Veterinaria Los tres mascoteros", dir: "Guayaquil 284, Buenos Aires", turno: "manana" },
-            { id: 7, nombre: "Bull! Café", dir: "Viel 368, Buenos Aires", turno: "manana" },
-            { id: 8, nombre: "Peluqueria", dir: "Viel 382, Buenos Aires", turno: "tarde" },
-            { id: 9, nombre: "Giusseppe", dir: "Viel 384, Buenos Aires", turno: "manana" },
-            { id: 10, nombre: "Librería Sofi", dir: "Viel 489, Buenos Aires", turno: "manana" },
-            { id: 11, nombre: "SANITARIOS LA NUEVA ERA", dir: "Viel 493, Buenos Aires", turno: "manana" },
-            { id: 12, nombre: "La Vicca Pizzeria", dir: "Juan Bautista Alberdi 365, Buenos Aires", turno: "manana" },
-            { id: 13, nombre: "Peluquería Picardías", dir: "Formosa 407, Buenos Aires", turno: "tarde" },
-            { id: 14, nombre: "Otero Café", dir: "Guayaquil 389, Buenos Aires", turno: "manana" },
-            { id: 15, nombre: "Del Turista Caballito", dir: "Beauchef 294, Buenos Aires", turno: "manana" },
-            { id: 16, nombre: "FARO AZUL", dir: "Rosario 486, Buenos Aires", turno: "manana" },
-            { id: 17, nombre: "Pañalera Do Re Mi", dir: "Rosario 531, Buenos Aires", turno: "manana" },
-            { id: 18, nombre: "Aurora Café", dir: "Rosario 588, Buenos Aires", turno: "manana" },
-            { id: 19, nombre: "Tienda Fun Star", dir: "Rosario 596, Buenos Aires", turno: "manana" },
-            { id: 20, nombre: "Vizzentino", dir: "Av Jose María Moreno 168, Buenos Aires", turno: "manana" },
-            { id: 21, nombre: "Peluquería Tijeritas", dir: "José María Moreno 308, Buenos Aires", turno: "manana" },
-            { id: 22, nombre: "Dulce Esquina", dir: "Juan Bautista Alberdi 599, Buenos Aires", turno: "manana" },
-            { id: 23, nombre: "Lavedog", dir: "Juan Bautista Alberdi 774, Buenos Aires", turno: "manana" },
-            { id: 24, nombre: "Didactikids Caballito", dir: "Del Barco Centenera 256, Buenos Aires", turno: "manana" },
-            { id: 25, nombre: "Libreria Apolo XI", dir: "Del Barco Centenera 228, Buenos Aires", turno: "manana" },
-            { id: 26, nombre: "Local Arte Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde" },
-            { id: 27, nombre: "Grooving Tattoo Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde" }
-        ];
-
-        let map;
-        let markers = [];
-        let infoWindow;
-        let geocoder;
-=======
         :root {
             --primary: #ff7a1a;
             --bg-dark: #111019;
@@ -284,6 +211,16 @@
         .registration-dialog { width: min(100%, 440px); padding: 26px; border: 1px solid #684b7a; border-radius: 10px; background: #1b1722; box-shadow: 0 24px 80px rgba(0,0,0,.55); }
         .registration-dialog h2 { margin: 0 0 8px; font-size: 1.35rem; }
         .registration-dialog p { margin: 0 0 20px; color: #c5bacd; line-height: 1.5; font-size: .9rem; }
+        .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 18px 0; padding: 4px; border-radius: 6px; background: #110f16; }
+        .auth-tab { padding: 9px 8px; border: 0; border-radius: 4px; background: transparent; color: #c5bacd; font: inherit; font-size: .85rem; cursor: pointer; }
+        .auth-tab.active { background: #a56de2; color: #160f1d; font-weight: 700; }
+        .auth-form[hidden] { display: none; }
+        .auth-form { display: grid; gap: 12px; }
+        .password-hint { color: #b7adbf; font-size: .75rem; line-height: 1.4; }
+        .auth-error { min-height: 1.2em; margin: 0 !important; color: #ff9a84 !important; font-size: .82rem !important; }
+        .visit-filters { display: flex; gap: 6px; margin: 0 0 12px; }
+        .visit-filter { padding: 6px 9px; border: 1px solid #51445d; border-radius: 5px; background: #191521; color: #ddd2e5; font: inherit; font-size: .75rem; cursor: pointer; }
+        .visit-filter.active { border-color: #ff7a1a; background: #633519; color: #ffd1ab; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .form-field { display: grid; gap: 6px; }
         .form-field.full { grid-column: 1 / -1; }
@@ -381,34 +318,61 @@
                     <span id="local-count">27 paradas</span>
                 </div>
             </div>
+            <nav class="visit-filters" aria-label="Filtrar locales por estado">
+                <button class="visit-filter active" type="button" data-visit-filter="todos" aria-pressed="true">Todos</button>
+                <button class="visit-filter" type="button" data-visit-filter="visitados" aria-pressed="false">Visitados</button>
+                <button class="visit-filter" type="button" data-visit-filter="pendientes" aria-pressed="false">Sin visitar</button>
+            </nav>
             <div id="lista-locales" aria-live="polite"></div>
         </aside>
     </main>
 
     <div class="overlay" id="registration-overlay" hidden>
         <section class="registration-dialog" role="dialog" aria-modal="true" aria-labelledby="registration-title">
-            <h2 id="registration-title">Sumate al recorrido</h2>
-            <p>Registrá tus datos para participar del sorteo. Las visitas se validan desde tu ubicación.</p>
-            <form id="registration-form">
+            <h2 id="registration-title">Ruta Magica 2026</h2>
+            <p>Iniciá sesión o creá una cuenta para guardar tu progreso en el recorrido.</p>
+            <div class="auth-tabs" role="tablist" aria-label="Acceso a la ruta">
+                <button class="auth-tab active" id="login-tab" type="button" role="tab" aria-selected="true" aria-controls="login-form" data-auth-tab="login">Iniciar Sesión</button>
+                <button class="auth-tab" id="register-tab" type="button" role="tab" aria-selected="false" aria-controls="register-form" data-auth-tab="register">Registrarse</button>
+            </div>
+            <form id="login-form" class="auth-form">
+                <div class="form-field">
+                    <label for="login-email">Email</label>
+                    <input id="login-email" name="email" type="email" autocomplete="email" required maxlength="160">
+                </div>
+                <div class="form-field">
+                    <label for="login-password">Contraseña</label>
+                    <input id="login-password" name="password" type="password" autocomplete="current-password" required maxlength="128">
+                </div>
+                <p class="auth-error" id="login-error" role="alert"></p>
+                <button class="submit-button" type="submit">Iniciar Sesión</button>
+            </form>
+            <form id="register-form" class="auth-form" hidden>
                 <div class="form-grid">
                     <div class="form-field">
-                        <label for="first-name">Nombre</label>
-                        <input id="first-name" name="nombre" autocomplete="given-name" required maxlength="80">
+                        <label for="register-first-name">Nombre</label>
+                        <input id="register-first-name" name="nombre" autocomplete="given-name" required maxlength="80">
                     </div>
                     <div class="form-field">
-                        <label for="last-name">Apellido</label>
-                        <input id="last-name" name="apellido" autocomplete="family-name" required maxlength="80">
+                        <label for="register-last-name">Apellido</label>
+                        <input id="register-last-name" name="apellido" autocomplete="family-name" required maxlength="80">
                     </div>
                     <div class="form-field full">
-                        <label for="email">Email</label>
-                        <input id="email" name="email" type="email" autocomplete="email" required maxlength="160">
+                        <label for="register-email">Email</label>
+                        <input id="register-email" name="email" type="email" autocomplete="email" required maxlength="160">
                     </div>
                     <div class="form-field full">
-                        <label for="phone">Teléfono (opcional)</label>
-                        <input id="phone" name="telefono" type="tel" autocomplete="tel" maxlength="40">
+                        <label for="register-phone">Teléfono</label>
+                        <input id="register-phone" name="telefono" type="tel" autocomplete="tel" required maxlength="40">
+                    </div>
+                    <div class="form-field full">
+                        <label for="register-password">Contraseña</label>
+                        <input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128" pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}" title="Mínimo 8 caracteres, una mayúscula y un carácter especial">
+                        <span class="password-hint">Mínimo 8 caracteres, 1 mayúscula y 1 carácter especial.</span>
                     </div>
                 </div>
-                <button class="submit-button" type="submit">Registrarme</button>
+                <p class="auth-error" id="register-error" role="alert"></p>
+                <button class="submit-button" type="submit">Crear cuenta</button>
             </form>
         </section>
     </div>
@@ -425,7 +389,7 @@
     <script>
         // CAPA 1: ENTIDADES
         const DISTANCE_LIMIT_METERS = 70;
-        const STORAGE_KEYS = { user: "halloween-caballito-user", visits: "halloween-caballito-visits", routeOrder: "ruta-magica-2026-order" };
+        const STORAGE_KEYS = { session: "ruta-magica-session", visits: "halloween-caballito-visits", routeOrder: "ruta-magica-2026-order" };
         const BACKEND_URL = "https://ruta-magica-backend-854585878082.us-central1.run.app";
 
         function createUser({ nombre, apellido, email, telefono = "" }) {
@@ -438,7 +402,7 @@
             };
         }
 
-        const locales = [
+        let locales = [
             { id: 1, nombre: "Il Gioco Tienda de Ropa", dir: "Av Rivadavia 4995, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
             { id: 2, nombre: "BetyGino", dir: "Rosario 190, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
             { id: 3, nombre: "Tienta Helados", dir: "Rosario 262, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
@@ -467,24 +431,79 @@
             { id: 26, nombre: "Local Arte Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false },
             { id: 27, nombre: "Grooving Tattoo Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false }
         ];
-        const originalRouteOrder = locales.map(local => local.id);
+        let originalRouteOrder = locales.map(local => local.id);
 
         // CAPA 2: DATOS Y PERSISTENCIA
         const DataRepository = {
-            loadUser() {
+            loadSession() {
                 try {
-                    const user = JSON.parse(localStorage.getItem(STORAGE_KEYS.user));
-                    return user && user.nombre && user.apellido && user.email ? user : null;
+                    const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.session));
+                    return session && session.token && session.user && session.user.email ? session : null;
                 } catch (error) {
-                    console.warn("No se pudo leer el usuario guardado.", error);
+                    console.warn("No se pudo leer la sesión guardada.", error);
                     return null;
                 }
             },
-            saveUser(user) {
-                localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(user));
+            saveSession(session) {
+                localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(session));
             },
-            removeUser() {
-                localStorage.removeItem(STORAGE_KEYS.user);
+            removeSession() {
+                localStorage.removeItem(STORAGE_KEYS.session);
+            },
+            async request(path, options = {}, session = null) {
+                const headers = new Headers(options.headers || {});
+                if (options.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+                if (session?.token) headers.set("Authorization", `Bearer ${session.token}`);
+                const response = await fetch(`${BACKEND_URL}${path}`, { ...options, headers });
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const error = new Error(payload.error || `Error del servidor (${response.status})`);
+                    error.status = response.status;
+                    throw error;
+                }
+                return payload;
+            },
+            async authenticate(action, credentials) {
+                return this.request(`/api/auth/${action}`, {
+                    method: "POST",
+                    body: JSON.stringify(credentials)
+                });
+            },
+            async loadLocales() {
+                const payload = await this.request("/api/locales");
+                if (!Array.isArray(payload.locales) || payload.locales.length === 0) {
+                    throw new Error("El backend no devolvió locales válidos");
+                }
+                return payload.locales;
+            },
+            async loadVisits(session) {
+                const email = encodeURIComponent(session.user.email);
+                const payload = await this.request(`/api/visitas?email=${email}`, {}, session);
+                return Array.isArray(payload.visitas) ? payload.visitas : [];
+            },
+            async recordVisit(local, distanceMeters, session) {
+                const payload = await this.request("/api/visita", {
+                    method: "POST",
+                    body: JSON.stringify({ local_id: local.id, distancia: distanceMeters })
+                }, session);
+                this.storeVisitEvent({
+                    usuarioEmail: session.user.email,
+                    localId: local.id,
+                    visitado: true,
+                    distanciaMetros: Math.round(distanceMeters),
+                    timestamp: payload.visitado?.timestamp || new Date().toISOString()
+                });
+                return payload;
+            },
+            async removeVisit(local, session) {
+                const payload = await this.request(`/api/visitas/${local.id}`, { method: "DELETE" }, session);
+                this.storeVisitEvent({
+                    usuarioEmail: session.user.email,
+                    localId: local.id,
+                    visitado: false,
+                    timestamp: new Date().toISOString()
+                });
+                return payload;
             },
             loadRouteOrder() {
                 try {
@@ -520,32 +539,13 @@
                     return [];
                 }
             },
-            async recordVisit(event) {
-                const events = this.loadVisitEvents();
-                events.push(event);
-                localStorage.setItem(STORAGE_KEYS.visits, JSON.stringify(events));
-
-                if (!event.visitado) return { sent: false, reason: "visit-removed-locally" };
-                const user = this.loadUser();
-                if (!user || user.email !== event.usuarioEmail) {
-                    return { sent: false, reason: "registered-user-not-found" };
-                }
+            storeVisitEvent(event) {
                 try {
-                    const response = await fetch(`${BACKEND_URL}/api/visita`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            email: user.email,
-                            nombre: user.nombre,
-                            apellido: user.apellido,
-                            local_id: event.localId
-                        })
-                    });
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    return { sent: true };
+                    const events = this.loadVisitEvents();
+                    events.push(event);
+                    localStorage.setItem(STORAGE_KEYS.visits, JSON.stringify(events));
                 } catch (error) {
-                    console.error("La visita quedó guardada localmente, pero no se pudo enviar.", error);
-                    return { sent: false, reason: "request-failed" };
+                    console.warn("La visita quedó en el servidor, pero no se pudo guardar el respaldo local.", error);
                 }
             }
         };
@@ -601,9 +601,14 @@
         let infoWindow;
         let geocoder;
         let activeFilter = "todos";
+        let visitFilter = "todos";
         let routeMode = DataRepository.hasSavedRouteOrder() ? "manual" : "original";
         let manualRouteOrder = DataRepository.loadRouteOrder();
-        let currentUser = null;
+        let activeSession = DataRepository.loadSession();
+        let currentUser = activeSession?.user || null;
+        let backendVisits = [];
+        let backendVisitsLoaded = false;
+        let appInitialization;
         const markersById = new Map();
         const coordinatePromises = new Map();
         let toastTimer;
@@ -624,8 +629,28 @@
             return local.turno === "manana" ? "☀️ Turno Mañana" : "🌙 Turno Tarde";
         }
 
+        function isLocalVisible(local) {
+            const matchesShift = activeFilter === "todos" || local.turno === activeFilter;
+            const matchesVisit = visitFilter === "todos"
+                || (visitFilter === "visitados" && local.visitado)
+                || (visitFilter === "pendientes" && !local.visitado);
+            return matchesShift && matchesVisit;
+        }
+
+        function getMarkerIcon(local) {
+            return {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 12,
+                fillColor: local.visitado ? "#56c98a" : "#ff7a1a",
+                fillOpacity: 1,
+                strokeColor: "#ffffff",
+                strokeWeight: 2
+            };
+        }
+
         function ensureLocalCoordinates(local) {
             if (Number.isFinite(local.lat) && Number.isFinite(local.lng)) {
+                if (map && infoWindow) createMarker(local);
                 return Promise.resolve({ lat: local.lat, lng: local.lng });
             }
             if (coordinatePromises.has(local.id)) return coordinatePromises.get(local.id);
@@ -660,7 +685,8 @@
             if (markersById.has(local.id)) return markersById.get(local.id);
             const marker = new google.maps.Marker({
                 position: { lat: local.lat, lng: local.lng },
-                map: activeFilter === "todos" || local.turno === activeFilter ? map : null,
+                map: isLocalVisible(local) ? map : null,
+                icon: getMarkerIcon(local),
                 label: { text: String(getRouteNumber(local.id)), color: "white", fontWeight: "bold", fontSize: "12px" },
                 title: `#${getRouteNumber(local.id)} · ${local.nombre}`
             });
@@ -676,7 +702,10 @@
                 const turn = document.createElement("strong");
                 turn.textContent = getTurnLabel(local);
                 turn.style.cssText = "color:#b24b0a;font-size:12px";
-                content.append(title, address, turn);
+                const status = document.createElement("p");
+                status.textContent = local.visitado ? "✓ Visitado" : "Sin visitar";
+                status.style.cssText = `margin:5px 0 0;color:${local.visitado ? "#178045" : "#6e6472"};font-weight:700;font-size:12px`;
+                content.append(title, address, turn, status);
                 infoWindow.setContent(content);
                 infoWindow.open({ map, anchor: marker });
             });
@@ -719,6 +748,8 @@
                 const local = locales.find(item => item.id === id);
                 marker.setLabel({ text: String(getRouteNumber(id)), color: "white", fontWeight: "bold", fontSize: "12px" });
                 marker.setTitle(`#${getRouteNumber(id)} · ${local.nombre}`);
+                marker.setIcon(getMarkerIcon(local));
+                marker.setMap(isLocalVisible(local) ? map : null);
             });
         }
 
@@ -799,7 +830,7 @@
 
         function renderLocalCards() {
             const container = document.getElementById("lista-locales");
-            const visibleLocals = getOrderedLocals().filter(local => activeFilter === "todos" || local.turno === activeFilter);
+            const visibleLocals = getOrderedLocals().filter(isLocalVisible);
             container.replaceChildren(...visibleLocals.map(createLocalCard));
             document.getElementById("local-count").textContent = `${visibleLocals.length} ${visibleLocals.length === 1 ? "parada" : "paradas"}`;
             updateScore();
@@ -847,42 +878,49 @@
         }
 
         async function handleVisitToggle(local, card, checkbox) {
-            if (!currentUser) {
+            if (!activeSession || !currentUser) {
                 checkbox.checked = false;
+                showAuthTab("login");
                 document.getElementById("registration-overlay").hidden = false;
-                showToast("Registrate para guardar tus visitas.");
+                showToast("Iniciá sesión para guardar tu progreso.");
                 return;
             }
             checkbox.disabled = true;
             if (!checkbox.checked) {
-                local.visitado = false;
-                await DataRepository.recordVisit({
-                    usuarioEmail: currentUser.email,
-                    localId: local.id,
-                    visitado: false,
-                    timestamp: new Date().toISOString()
-                });
-                applyCardState(card, local);
-                updateScore();
-                checkbox.disabled = false;
+                try {
+                    await DataRepository.removeVisit(local, activeSession);
+                    local.visitado = false;
+                    backendVisits = backendVisits.filter(visit => Number(visit.local_id) !== local.id);
+                    applyCardState(card, local);
+                    updateScore();
+                    updateMarkerLabels();
+                    renderLocalCards();
+                } catch (error) {
+                    checkbox.checked = true;
+                    showToast(error.message || "No se pudo actualizar la visita en el servidor.");
+                } finally {
+                    checkbox.disabled = false;
+                }
                 return;
             }
             try {
                 const distanceMeters = await VisitService.validateVisit(local);
+                const result = await DataRepository.recordVisit(local, distanceMeters, activeSession);
                 local.visitado = true;
-                await DataRepository.recordVisit({
-                    usuarioEmail: currentUser.email,
-                    localId: local.id,
-                    visitado: true,
-                    distanciaMetros: Math.round(distanceMeters),
-                    timestamp: new Date().toISOString()
-                });
+                if (result.visitado) {
+                    backendVisits = backendVisits.filter(visit => Number(visit.local_id) !== local.id);
+                    backendVisits.push(result.visitado);
+                    backendVisitsLoaded = true;
+                }
                 applyCardState(card, local);
                 updateScore();
+                updateMarkerLabels();
+                renderLocalCards();
                 showToast(`¡Visita validada! Sumaste 1 punto en ${local.nombre}.`);
             } catch (error) {
                 checkbox.checked = false;
                 showToast(error.message);
+                if (error.status === 401) logout();
             } finally {
                 checkbox.disabled = false;
             }
@@ -898,125 +936,190 @@
             renderLocalCards();
             markersById.forEach((marker, id) => {
                 const local = locales.find(item => item.id === id);
-                marker.setMap(filter === "todos" || local.turno === filter ? map : null);
+                marker.setMap(isLocalVisible(local) ? map : null);
+            });
+        }
+
+        function setVisitFilter(filter) {
+            visitFilter = filter;
+            document.querySelectorAll(".visit-filter").forEach(button => {
+                const selected = button.dataset.visitFilter === filter;
+                button.classList.toggle("active", selected);
+                button.setAttribute("aria-pressed", String(selected));
+            });
+            renderLocalCards();
+            markersById.forEach((marker, id) => {
+                const local = locales.find(item => item.id === id);
+                marker.setMap(isLocalVisible(local) ? map : null);
             });
         }
 
         function restoreVisits() {
             const latestByLocal = new Map();
-            DataRepository.loadVisitEvents().forEach(event => {
-                if (currentUser
-                    && event.usuarioEmail === currentUser.email
-                    && Number.isInteger(event.localId)
-                    && typeof event.visitado === "boolean") {
-                    latestByLocal.set(event.localId, event.visitado);
-                }
-            });
+            if (backendVisitsLoaded) {
+                backendVisits.forEach(visit => {
+                    if (Number.isInteger(Number(visit.local_id))) latestByLocal.set(Number(visit.local_id), true);
+                });
+            } else {
+                DataRepository.loadVisitEvents().forEach(event => {
+                    if (currentUser && event.usuarioEmail === currentUser.email && Number.isInteger(event.localId)) {
+                        latestByLocal.set(event.localId, Boolean(event.visitado));
+                    }
+                });
+            }
             locales.forEach(local => { local.visitado = latestByLocal.get(local.id) || false; });
+            updateScore();
+            if (map) updateMarkerLabels();
         }
 
         function logout() {
             try {
-                DataRepository.removeUser();
+                DataRepository.removeSession();
             } catch (error) {
                 showToast("No pudimos cerrar la sesión en este dispositivo.");
                 console.error(error);
                 return;
             }
+            activeSession = null;
             currentUser = null;
-            document.getElementById("registration-form").reset();
+            backendVisits = [];
+            backendVisitsLoaded = false;
             document.getElementById("user-chip").textContent = "Participante sin registrar";
             document.getElementById("logout-button").hidden = true;
             document.getElementById("welcome-overlay").hidden = true;
+            showAuthTab("login");
             document.getElementById("registration-overlay").hidden = false;
             restoreVisits();
             renderLocalCards();
         }
->>>>>>> 5d77223 (Conectado frontend al backend de Cloud Run en produccion)
 
-        function initMap() {
+        function normalizeLocale(local) {
+            return {
+                ...local,
+                id: Number(local.id),
+                nombre: String(local.nombre || "Local"),
+                dir: String(local.dir || local.direccion || ""),
+                turno: local.turno === "tarde" ? "tarde" : "manana",
+                lat: local.lat !== null && Number.isFinite(Number(local.lat)) ? Number(local.lat) : null,
+                lng: local.lng !== null && Number.isFinite(Number(local.lng)) ? Number(local.lng) : null,
+                web: local.web || "",
+                telefono: local.telefono || "",
+                visitado: false
+            };
+        }
+
+        function showAuthTab(tab) {
+            const isLogin = tab === "login";
+            document.getElementById("login-form").hidden = !isLogin;
+            document.getElementById("register-form").hidden = isLogin;
+            document.getElementById("login-tab").classList.toggle("active", isLogin);
+            document.getElementById("register-tab").classList.toggle("active", !isLogin);
+            document.getElementById("login-tab").setAttribute("aria-selected", String(isLogin));
+            document.getElementById("register-tab").setAttribute("aria-selected", String(!isLogin));
+            document.getElementById("login-error").textContent = "";
+            document.getElementById("register-error").textContent = "";
+        }
+
+        async function activateSession(payload) {
+            if (!payload.token || !payload.user?.email) throw new Error("El servidor devolvió una sesión incompleta");
+            const nextSession = { token: payload.token, user: payload.user };
+            DataRepository.saveSession(nextSession);
+            activeSession = nextSession;
+            currentUser = payload.user;
+            try {
+                backendVisits = await DataRepository.loadVisits(activeSession);
+                backendVisitsLoaded = true;
+            } catch (error) {
+                DataRepository.removeSession();
+                activeSession = null;
+                currentUser = null;
+                backendVisits = [];
+                backendVisitsLoaded = false;
+                throw new Error(`No pudimos recuperar tus visitas: ${error.message}`);
+            }
+            document.getElementById("registration-overlay").hidden = true;
+            document.getElementById("user-chip").textContent = `${currentUser.nombre} ${currentUser.apellido}`;
+            document.getElementById("logout-button").hidden = false;
+            restoreVisits();
+            renderLocalCards();
+            document.getElementById("welcome-overlay").hidden = false;
+        }
+
+        async function submitAuthForm(event, action) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const register = action === "register";
+            const errorElement = document.getElementById(`${action}-error`);
+            const submitButton = form.querySelector("button[type=submit]");
+            const formData = new FormData(form);
+            const credentials = Object.fromEntries(formData.entries());
+            if (!register) {
+                credentials.email = String(credentials.email).trim().toLowerCase();
+            }
+            errorElement.textContent = "";
+            submitButton.disabled = true;
+            submitButton.textContent = register ? "Creando cuenta..." : "Ingresando...";
+            try {
+                const payload = await DataRepository.authenticate(action, credentials);
+                await activateSession(payload);
+            } catch (error) {
+                errorElement.textContent = error.message || "No se pudo completar la operación.";
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = register ? "Crear cuenta" : "Iniciar Sesión";
+            }
+        }
+
+        async function initializeAppData() {
+            try {
+                const remoteLocales = (await DataRepository.loadLocales()).map(normalizeLocale);
+                if (!remoteLocales.length || remoteLocales.some(local => !Number.isInteger(local.id))) {
+                    throw new Error("El catálogo recibido no es válido");
+                }
+                locales = remoteLocales;
+                originalRouteOrder = locales.map(local => local.id);
+                const validIds = new Set(originalRouteOrder);
+                const savedOrder = DataRepository.loadRouteOrder().filter(id => validIds.has(id));
+                manualRouteOrder = [...savedOrder, ...originalRouteOrder.filter(id => !savedOrder.includes(id))];
+                routeMode = DataRepository.hasSavedRouteOrder() ? "manual" : "original";
+                document.getElementById("route-sort").value = routeMode;
+            } catch (error) {
+                console.warn("No se pudo cargar el catálogo remoto; se usa la lista local.", error);
+                showToast("No pudimos actualizar los locales desde el servidor. Usamos el catálogo disponible.");
+            }
+
+            if (activeSession) {
+                try {
+                    backendVisits = await DataRepository.loadVisits(activeSession);
+                    backendVisitsLoaded = true;
+                } catch (error) {
+                    if (error.status === 401) {
+                        DataRepository.removeSession();
+                        activeSession = null;
+                        currentUser = null;
+                        document.getElementById("logout-button").hidden = true;
+                        document.getElementById("user-chip").textContent = "Participante sin registrar";
+                        document.getElementById("registration-overlay").hidden = false;
+                        showAuthTab("login");
+                    } else {
+                        console.warn("No se pudo recuperar el progreso remoto.", error);
+                        showToast("No pudimos sincronizar tus visitas. Se muestra el progreso guardado en este dispositivo.");
+                    }
+                }
+            }
+            restoreVisits();
+            renderLocalCards();
+        }
+
+        async function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: -34.6200, lng: -58.4350 },
                 zoom: 16,
                 mapId: "DEMO_MAP_ID"
             });
-<<<<<<< HEAD
-
             infoWindow = new google.maps.InfoWindow();
             geocoder = new google.maps.Geocoder();
-            renderMapAndList('todos');
-        }
-
-        function renderMapAndList(filtro) {
-            markers.forEach(m => m.setMap(null));
-            markers = [];
-
-            const container = document.getElementById("lista-locales");
-            container.innerHTML = "";
-
-            const localesFiltrados = locales.filter(loc => filtro === 'todos' || loc.turno === filtro);
-
-            localesFiltrados.forEach((loc, index) => {
-                // Crear tarjeta en la barra lateral
-                const card = document.createElement("div");
-                card.className = "location-card";
-                card.id = `card-${loc.id}`;
-                card.innerHTML = `
-                    <input type="checkbox" style="margin-top: 5px;" onclick="event.stopPropagation(); toggleVisited(this, ${loc.id})">
-                    <div class="badge-num">${loc.id}</div>
-                    <div class="card-info">
-                        <h3>${loc.nombre}</h3>
-                        <p>📍 ${loc.dir}</p>
-                        <span class="tag-turno ${loc.turno === 'manana' ? 'tag-manana' : 'tag-tarde'}">
-                            ${loc.turno === 'manana' ? '☀️ Turno Mañana' : '🌙 Turno Tarde'}
-                        </span>
-                    </div>
-                `;
-                container.appendChild(card);
-
-                // Geocodificar con retraso (200ms por item) para evitar saturar la API
-                setTimeout(() => {
-                    geocoder.geocode({ address: loc.dir, componentRestrictions: { locality: "Buenos Aires", country: "AR" } }, (results, status) => {
-                        if (status === "OK" && results[0]) {
-                            const position = results[0].geometry.location;
-
-                            const marker = new google.maps.Marker({
-                                position: position,
-                                map: map,
-                                label: {
-                                    text: loc.id.toString(),
-                                    color: "white",
-                                    fontWeight: "bold",
-                                    fontSize: "12px"
-                                },
-                                title: loc.nombre
-                            });
-
-                            markers.push(marker);
-
-                            marker.addListener("click", () => {
-                                infoWindow.setContent(`
-                                    <div style="color:#000; padding: 4px;">
-                                        <h4 style="margin:0 0 4px 0;">#${loc.id} - ${loc.nombre}</h4>
-                                        <p style="margin:0; font-size:13px;">📍 ${loc.dir}</p>
-                                        <span style="color:#ff6600; font-size:12px; font-weight:bold;">
-                                            ${loc.turno === 'manana' ? '☀️ Turno Mañana' : '🌙 Turno Tarde'}
-                                        </span>
-                                    </div>
-                                `);
-                                infoWindow.open(map, marker);
-                            });
-
-                            card.onclick = () => {
-                                map.setZoom(18);
-                                map.panTo(marker.getPosition());
-                                google.maps.event.trigger(marker, "click");
-                            };
-                        }
-                    });
-=======
-            infoWindow = new google.maps.InfoWindow();
-            geocoder = new google.maps.Geocoder();
+            await appInitialization;
             showMapStatus("Ubicando los locales...");
             renderLocalCards();
             locales.forEach((local, index) => {
@@ -1025,27 +1128,9 @@
                     if (index === locales.length - 1) {
                         setTimeout(() => showMapStatus("27 locales · Caballito"), 1800);
                     }
->>>>>>> 5d77223 (Conectado frontend al backend de Cloud Run en produccion)
                 }, index * 200);
             });
         }
-
-<<<<<<< HEAD
-        function toggleVisited(cb, id) {
-            const card = document.getElementById(`card-${id}`);
-            if (cb.checked) {
-                card.classList.add('visited');
-            } else {
-                card.classList.remove('visited');
-            }
-        }
-
-        function filtrar(tipo, e) {
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            e.target.classList.add('active');
-            renderMapAndList(tipo);
-        }
-=======
         function handleMapsAuthFailure() {
             showMapStatus("No se pudo autenticar Google Maps. Revisá la API key.");
         }
@@ -1055,6 +1140,13 @@
 
         document.querySelectorAll(".filter-btn").forEach(button => {
             button.addEventListener("click", () => setFilter(button.dataset.filter));
+        });
+        document.querySelectorAll(".visit-filter").forEach(button => {
+            button.addEventListener("click", () => setVisitFilter(button.dataset.visitFilter));
+        });
+
+        document.querySelectorAll("[data-auth-tab]").forEach(button => {
+            button.addEventListener("click", () => showAuthTab(button.dataset.authTab));
         });
 
         document.getElementById("route-sort").value = routeMode;
@@ -1073,40 +1165,19 @@
         });
         document.getElementById("logout-button").addEventListener("click", logout);
 
-        document.getElementById("registration-form").addEventListener("submit", event => {
-            event.preventDefault();
-            const formData = new FormData(event.currentTarget);
-            currentUser = createUser({
-                nombre: formData.get("nombre"),
-                apellido: formData.get("apellido"),
-                email: formData.get("email"),
-                telefono: formData.get("telefono")
-            });
-            try {
-                DataRepository.saveUser(currentUser);
-                restoreVisits();
-                renderLocalCards();
-                document.getElementById("registration-overlay").hidden = true;
-                document.getElementById("user-chip").textContent = `${currentUser.nombre} ${currentUser.apellido}`;
-                document.getElementById("logout-button").hidden = false;
-                document.getElementById("welcome-overlay").hidden = false;
-            } catch (error) {
-                showToast("No pudimos guardar el registro en este dispositivo. Revisá el almacenamiento del navegador.");
-                console.error(error);
-            }
-        });
+        document.getElementById("login-form").addEventListener("submit", event => submitAuthForm(event, "login"));
+        document.getElementById("register-form").addEventListener("submit", event => submitAuthForm(event, "register"));
 
-        currentUser = DataRepository.loadUser();
-        restoreVisits();
         if (currentUser) {
             document.getElementById("user-chip").textContent = `${currentUser.nombre} ${currentUser.apellido}`;
             document.getElementById("logout-button").hidden = false;
             document.getElementById("welcome-overlay").hidden = false;
         } else {
             document.getElementById("registration-overlay").hidden = false;
+            showAuthTab("login");
         }
         renderLocalCards();
->>>>>>> 5d77223 (Conectado frontend al backend de Cloud Run en produccion)
+        appInitialization = initializeAppData();
     </script>
 
     <!-- RECORDÁ PEGAR TU API KEY DE GOOGLE MAPS ACÁ -->
