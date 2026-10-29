@@ -83,9 +83,12 @@
             max-width: 420px;
             background: var(--bg-dark);
             overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
             padding: 15px;
             border-left: 2px solid var(--accent);
         }
+        .sidebar::-webkit-scrollbar { display: none; }
 
         .location-card {
             background: var(--card-bg);
@@ -188,7 +191,7 @@
         .filter-btn.active, .filter-btn:hover { background: #a56de2; border-color: #a56de2; color: #160f1d; }
         .score { font-size: .85rem; color: #e6d9ed; white-space: nowrap; }
         .score strong { color: #ff9a45; font-size: 1.05rem; }
-        .main-container { --sidebar-width: 390px; min-height: 0; }
+        .main-container { --sidebar-width: 390px; --mobile-map-height: 50%; min-height: 0; }
         #map { flex: 1.4; min-width: 0; }
         .sidebar { flex: 0 0 var(--sidebar-width); width: var(--sidebar-width); max-width: none; padding: 14px; border-left: 1px solid var(--line); overflow-x: hidden; }
         .sidebar-resizer { position: relative; z-index: 4; flex: 0 0 8px; background: #17141e; cursor: col-resize; touch-action: none; }
@@ -197,10 +200,11 @@
         .main-container.sidebar-collapsed .sidebar { flex-basis: 44px; width: 44px; padding: 8px 4px; }
         .main-container.sidebar-collapsed .sidebar-resizer { display: none; }
         .main-container.sidebar-collapsed .sidebar-heading { justify-content: center; margin: 0; }
-        .main-container.sidebar-collapsed .sidebar-heading h2, .main-container.sidebar-collapsed .sidebar-tools, .main-container.sidebar-collapsed .visit-filters, .main-container.sidebar-collapsed #lista-locales { display: none; }
-        .sidebar-toggle { width: 30px; height: 30px; flex: 0 0 30px; border: 1px solid #604b70; border-radius: 4px; background: #191521; color: #ffad70; font: inherit; font-size: 1.2rem; cursor: pointer; }
+        .main-container.sidebar-collapsed .sidebar-heading h2, .main-container.sidebar-collapsed .visit-filters, .main-container.sidebar-collapsed #lista-locales { display: none; }
+        .sidebar-toggle { display: grid; place-items: center; width: 30px; height: 30px; flex: 0 0 30px; border: 1px solid #604b70; border-radius: 4px; background: #191521; color: #ffad70; font: inherit; font-size: 1rem; line-height: 1; cursor: pointer; }
         .sidebar-toggle:hover { border-color: #ff7a1a; }
-        .sidebar-heading { display: flex; justify-content: space-between; align-items: baseline; margin: 0 2px 12px; }
+        .sidebar-sticky-header { position: sticky; top: 0; z-index: 6; margin-bottom: 12px; background: var(--bg-dark); }
+        .sidebar-heading { display: flex; justify-content: space-between; align-items: baseline; margin: 0 2px 6px; padding: 4px 0 6px; }
         .sidebar-heading h2 { font-size: 1rem; }
         .sidebar-heading span { color: var(--muted); font-size: .78rem; }
         .location-card { position: relative; border: 1px solid var(--line); border-radius: 7px; padding: 12px; background: #211b2c; margin-bottom: 8px; }
@@ -262,12 +266,30 @@
         .email-verification-message { min-height: 1.1em; color: #c5bacd; font-size: .75rem; }
         .password-hint { color: #b7adbf; font-size: .75rem; line-height: 1.4; }
         .auth-error { min-height: 1.2em; margin: 0 !important; color: #ff9a84 !important; font-size: .82rem !important; }
-        .visit-filters { display: flex; gap: 6px; margin: 0 0 12px; }
+        .visit-filters { display: flex; align-items: center; gap: 6px; margin: 0; padding: 4px 0 8px; }
         .visit-filter { padding: 6px 9px; border: 1px solid #51445d; border-radius: 5px; background: #191521; color: #ddd2e5; font: inherit; font-size: .75rem; cursor: pointer; }
         .visit-filter.active { border-color: #ff7a1a; background: #633519; color: #ffd1ab; }
         .admin-open-button { padding: 8px 11px; border: 1px solid #ff7a1a; border-radius: 5px; background: #ff7a1a; color: #1a1010; font: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; }
         .admin-open-button:hover { background: #ff9347; }
         .admin-dialog { width: min(96vw, 1120px); max-height: 92vh; overflow: auto; padding: 22px; border: 1px solid #684b7a; border-radius: 9px; background: #17141e; box-shadow: 0 24px 80px rgba(0,0,0,.6); }
+        .raffle-dialog { width: min(94vw, 480px); max-height: 88vh; overflow: auto; padding: 22px; border: 1px solid #684b7a; border-radius: 8px; background: #17141e; color: #f5f0fa; box-shadow: 0 24px 80px rgba(0,0,0,.6); }
+        .raffle-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
+        .raffle-header h2 { margin: 0 0 5px; font-size: 1.15rem; }
+        .raffle-header p { margin: 0; color: #c5bacd; font-size: .82rem; line-height: 1.45; }
+        .raffle-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+        .raffle-count { padding: 10px 12px; border: 1px solid var(--line); border-radius: 5px; background: #211b2c; }
+        .raffle-count span { display: block; color: #c5bacd; font-size: .75rem; }
+        .raffle-count strong { display: block; margin-top: 3px; color: #ffad70; font-size: 1.2rem; }
+        .raffle-winner { display: grid; min-height: 112px; place-content: center; gap: 5px; margin-bottom: 16px; padding: 18px; border: 1px dashed #72518a; border-radius: 6px; background: #211b2c; text-align: center; }
+        .raffle-winner-label { color: #c5bacd; font-size: .76rem; }
+        .raffle-winner-name { color: #ffad70; font-size: 1.3rem; font-weight: 800; overflow-wrap: anywhere; }
+        .raffle-winner-email { color: #d3cad9; font-size: .85rem; overflow-wrap: anywhere; }
+        .raffle-history { max-height: 150px; overflow: auto; margin: 0 0 15px; padding-left: 24px; color: #d3cad9; font-size: .82rem; }
+        .raffle-history li { display: grid; gap: 2px; padding: 4px 0; }
+        .raffle-history-email { color: #a99caf; font-size: .74rem; overflow-wrap: anywhere; }
+        .raffle-empty-history { margin: 0 0 15px; color: #a99caf; font-size: .78rem; }
+        .raffle-message { min-height: 1.2em; margin: 0 0 10px; color: #ffad70; font-size: .8rem; }
+        .raffle-actions { display: flex; justify-content: flex-end; gap: 8px; }
         .admin-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
         .admin-dialog-header h2 { font-size: 1.2rem; margin-bottom: 5px; }
         .admin-dialog-header p { color: #c5bacd; font-size: .84rem; }
@@ -311,9 +333,8 @@
         .submit-button:hover { background: #ff9347; }
         .toast { position: fixed; z-index: 3000; left: 50%; bottom: 22px; transform: translate(-50%, 16px); width: min(90vw, 460px); padding: 12px 16px; border: 1px solid #76518c; border-radius: 7px; background: #211b2c; color: #fff; box-shadow: 0 10px 35px rgba(0,0,0,.4); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
         .toast.visible { opacity: 1; transform: translate(-50%, 0); }
-        .sidebar-tools { display: flex; align-items: center; gap: 10px; }
-        .route-sort { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: .76rem; }
-        .route-sort select { max-width: 190px; padding: 7px 8px; border: 1px solid #51445d; border-radius: 5px; background: #191521; color: #f5f0fa; font: inherit; }
+        .route-sort { display: flex; flex: 0 1 138px; min-width: 112px; margin-left: auto; }
+        .route-sort select { width: 100%; max-width: 138px; min-width: 0; padding: 7px 8px; border: 1px solid #51445d; border-radius: 5px; background: #191521; color: #f5f0fa; font: inherit; }
         .route-controls { display: flex; flex-direction: column; gap: 4px; margin-left: auto; }
         .route-move { width: 28px; height: 27px; border: 1px solid #604b70; border-radius: 4px; background: #191521; color: #eee5f3; font-weight: 700; cursor: pointer; }
         .route-move:hover:not(:disabled) { border-color: var(--primary); color: #ff9a45; }
@@ -327,7 +348,7 @@
 
         @media (max-width: 768px) {
             body { height: 100dvh; min-height: 0; }
-            header { position: relative; padding: 10px 12px; }
+            header { position: sticky; top: 0; z-index: 1100; flex: 0 0 auto; padding: 10px 12px; }
             header h1 { font-size: 1rem; }
             .header-top { align-items: center; gap: 8px; }
             .header-bottom { align-items: flex-start; }
@@ -335,9 +356,11 @@
             .main-container {
                 flex-direction: column;
             }
-            .map-panel { flex: 0 0 50%; min-height: 300px; }
-            #map { min-height: 300px; }
-            .sidebar-resizer { display: none; }
+            .map-panel { flex: 0 0 var(--mobile-map-height); min-height: 200px; }
+            #map { min-height: 200px; }
+            .sidebar-resizer { flex: 0 0 14px; height: 14px; background: transparent; cursor: row-resize; }
+            .sidebar-resizer::after { top: 50%; left: 50%; width: 44px; height: 4px; border-radius: 4px; background: #806b90; transform: translate(-50%, -50%); }
+            .sidebar-resizer:hover::after, .sidebar-resizer:focus-visible::after { background: #ff7a1a; }
             .sidebar {
                 max-width: none;
                 width: 100%;
@@ -347,10 +370,11 @@
                 border-left: 0;
                 border-top: 1px solid var(--line);
             }
+            .sidebar-sticky-header { top: -8px; margin: 0 -8px 10px; padding: 8px 8px 0; }
             .main-container.sidebar-collapsed .sidebar { flex: 0 0 44px; width: 100%; min-height: 44px; max-height: 44px; padding: 6px 10px; }
             .main-container.sidebar-collapsed .sidebar-heading { justify-content: flex-end; }
-            .main-container.sidebar-collapsed .sidebar-toggle { width: 100%; }
-            .main-container.sidebar-collapsed .map-panel { flex: 1 1 auto; min-height: 300px; }
+            .main-container.sidebar-collapsed .sidebar-toggle { width: 28px; }
+            .main-container.sidebar-collapsed .map-panel { flex: 1 1 auto; min-height: 200px; }
             .user-menu-toggle { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 36px; }
             .user-actions { display: none; position: absolute; z-index: 1100; top: 54px; right: 12px; min-width: 190px; flex-direction: column; align-items: stretch; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: #17141e; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
             .user-actions.open { display: flex; }
@@ -373,10 +397,17 @@
             .registration-dialog { padding: 21px; }
             .form-grid { grid-template-columns: 1fr; }
             .form-field.full { grid-column: auto; }
-            .sidebar-tools { align-items: flex-end; flex-direction: column; gap: 6px; }
-            .route-sort { align-items: flex-start; flex-direction: column; gap: 4px; }
-            .route-sort select { max-width: 175px; }
+            .sidebar-heading { display: grid; grid-template-columns: minmax(0, 1fr) 28px; align-items: center; gap: 6px; margin-bottom: 6px; }
+            .sidebar-heading h2 { margin: 0; font-size: .9rem; white-space: nowrap; }
+            .sidebar-heading .sidebar-toggle { width: 28px; height: 28px; flex-basis: 28px; padding: 2px; font-size: .9rem; }
+            .main-container.sidebar-collapsed .sidebar-heading { display: flex; justify-content: flex-end; }
+            .visit-filters { top: 37px; gap: 4px; }
+            .visit-filter { min-width: 0; padding: 6px 7px; font-size: .68rem; white-space: nowrap; }
+            .route-sort { flex: 0 1 138px; min-width: 112px; margin-left: auto; }
+            .route-sort select { width: 100%; max-width: 138px; min-width: 0; padding: 6px 5px; font-size: .68rem; }
             .admin-dialog { padding: 16px; }
+            .raffle-dialog { padding: 18px; }
+            .raffle-actions { flex-wrap: wrap; }
             .admin-toolbar { align-items: stretch; flex-direction: column; }
             .admin-stats { gap: 7px; }
             .admin-stat { padding: 10px; }
@@ -444,26 +475,24 @@
         </section>
         <div class="sidebar-resizer" id="sidebar-resizer" role="separator" tabindex="0" aria-label="Cambiar ancho de la lista de locales" aria-orientation="vertical" aria-valuemin="280" aria-valuemax="560" aria-valuenow="390"></div>
         <aside class="sidebar">
-            <div class="sidebar-heading">
-                <h2>Locales</h2>
-                <div class="sidebar-tools">
-                    <label class="route-sort" for="route-sort">
-                        <span>Ordenar</span>
-                        <select id="route-sort" aria-label="Ordenar la ruta">
-                            <option value="original">Orden Original de la Ruta</option>
-                            <option value="nearest">Más cercanos a mí</option>
+            <div class="sidebar-sticky-header">
+                <div class="sidebar-heading">
+                    <h2>Locales</h2>
+                    <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Plegar lista de locales" aria-expanded="true" title="Plegar lista">‹</button>
+                </div>
+                <nav class="visit-filters" aria-label="Filtrar locales por estado">
+                    <button class="visit-filter active" type="button" data-visit-filter="todos" aria-pressed="true">Todos</button>
+                    <button class="visit-filter" type="button" data-visit-filter="visitados" aria-pressed="false">Visitados</button>
+                    <button class="visit-filter" type="button" data-visit-filter="pendientes" aria-pressed="false">Sin visitar</button>
+                    <div class="route-sort">
+                        <select id="route-sort" aria-label="Orden de la ruta">
+                            <option value="original">Orden original</option>
+                            <option value="nearest">Más cercanos</option>
                             <option value="manual">Orden personalizado</option>
                         </select>
-                    </label>
-                    <span id="local-count">27 paradas</span>
-                </div>
-                <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Plegar lista de locales" aria-expanded="true" title="Plegar lista">‹</button>
+                    </div>
+                </nav>
             </div>
-            <nav class="visit-filters" aria-label="Filtrar locales por estado">
-                <button class="visit-filter active" type="button" data-visit-filter="todos" aria-pressed="true">Todos</button>
-                <button class="visit-filter" type="button" data-visit-filter="visitados" aria-pressed="false">Visitados</button>
-                <button class="visit-filter" type="button" data-visit-filter="pendientes" aria-pressed="false">Sin visitar</button>
-            </nav>
             <div id="lista-locales" aria-live="polite"></div>
         </aside>
     </main>
@@ -599,6 +628,7 @@
                     <label for="admin-search">Buscar usuario</label>
                     <input id="admin-search" type="search" placeholder="Nombre, apellido o email" autocomplete="off">
                 </div>
+                <button class="admin-open-button" id="admin-open-raffle" type="button">Sorteo</button>
                 <button class="admin-action" id="admin-refresh" type="button">Actualizar</button>
             </div>
             <p class="admin-message" id="admin-message" role="status" aria-live="polite"></p>
@@ -619,12 +649,39 @@
             </div>
         </section>
     </div>
+    <div class="overlay" id="raffle-overlay" hidden>
+        <section class="raffle-dialog" role="dialog" aria-modal="true" aria-labelledby="raffle-title">
+            <header class="raffle-header">
+                <div>
+                    <h2 id="raffle-title">Sorteo de participantes</h2>
+                    <p>Solo participan usuarios registrados que no tengan rol de administrador.</p>
+                </div>
+                <button class="admin-close" id="raffle-close" type="button" aria-label="Cerrar sorteo" title="Cerrar">×</button>
+            </header>
+            <div class="raffle-counts" aria-live="polite">
+                <div class="raffle-count"><span>Disponibles</span><strong id="raffle-remaining">0</strong></div>
+                <div class="raffle-count"><span>Ya sorteados</span><strong id="raffle-drawn-count">0</strong></div>
+            </div>
+            <div class="raffle-winner" aria-live="polite" aria-atomic="true">
+                <span class="raffle-winner-label">Último resultado</span>
+                <strong class="raffle-winner-name" id="raffle-winner-name">Todavía no hay ganador</strong>
+                <span class="raffle-winner-email" id="raffle-winner-email" hidden></span>
+            </div>
+            <p class="raffle-message" id="raffle-message" role="status"></p>
+            <ol class="raffle-history" id="raffle-history" aria-label="Ganadores de esta ronda" hidden></ol>
+            <p class="raffle-empty-history" id="raffle-empty-history">Aún no se realizó ningún sorteo.</p>
+            <div class="raffle-actions">
+                <button class="admin-action" id="raffle-reset" type="button" disabled>Reiniciar</button>
+                <button class="admin-open-button" id="raffle-draw" type="button">Sortear</button>
+            </div>
+        </section>
+    </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script>
         // CAPA 1: ENTIDADES
         const DISTANCE_LIMIT_METERS = 70;
-        const STORAGE_KEYS = { session: "ruta-magica-session", visits: "halloween-caballito-visits", routeOrder: "ruta-magica-2026-order", guestVisits: "ruta-magica-guest-visits", userAvatar: "ruta-magica-user-avatar", sidebarWidth: "ruta-magica-sidebar-width", sidebarCollapsed: "ruta-magica-sidebar-collapsed" };
+        const STORAGE_KEYS = { session: "ruta-magica-session", visits: "halloween-caballito-visits", routeOrder: "ruta-magica-2026-order", guestVisits: "ruta-magica-guest-visits", userAvatar: "ruta-magica-user-avatar", sidebarWidth: "ruta-magica-sidebar-width", sidebarCollapsed: "ruta-magica-sidebar-collapsed", mobileMapHeight: "ruta-magica-mobile-map-height" };
         const BACKEND_URL = "https://ruta-magica-backend-854585878082.us-central1.run.app";
         const USER_AVATARS = {
             ghost: "👻",
@@ -669,6 +726,15 @@
                 return localStorage.getItem(STORAGE_KEYS.sidebarCollapsed) === "true";
             } catch (error) {
                 return false;
+            }
+        }
+
+        function loadSavedMobileMapHeight() {
+            try {
+                const height = Number(localStorage.getItem(STORAGE_KEYS.mobileMapHeight));
+                return Number.isFinite(height) && height >= 25 && height <= 80 ? height : 50;
+            } catch (error) {
+                return 50;
             }
         }
 
@@ -971,8 +1037,11 @@
         let currentUser = activeSession?.user || null;
         let guestMode = false;
         let sidebarWidth = loadSavedSidebarWidth();
+        let mobileMapHeight = loadSavedMobileMapHeight();
         let sidebarCollapsed = loadSavedSidebarCollapsed();
         let resizingSidebar = false;
+        let sidebarSnapTimer;
+        let sidebarSnapInProgress = false;
         let verifiedRegistrationEmail = "";
         let emailVerificationToken = "";
         let backendVisits = [];
@@ -980,6 +1049,8 @@
         let appInitialization;
         let adminUsers = [];
         let adminSummary = null;
+        let raffleDrawnEmails = new Set();
+        let raffleWinners = [];
         const expandedAdminUsers = new Set();
         const markersById = new Map();
         const coordinatePromises = new Map();
@@ -1014,30 +1085,71 @@
             const main = document.querySelector(".main-container");
             const toggle = document.getElementById("sidebar-toggle");
             const resizer = document.getElementById("sidebar-resizer");
+            const isMobileLayout = window.innerWidth <= 768;
+            mobileMapHeight = constrainedMobileMapHeight(mobileMapHeight);
             main.style.setProperty("--sidebar-width", `${sidebarWidth}px`);
+            main.style.setProperty("--mobile-map-height", `${mobileMapHeight}%`);
             main.classList.toggle("sidebar-collapsed", sidebarCollapsed);
-            toggle.textContent = sidebarCollapsed ? "›" : "‹";
+            toggle.textContent = isMobileLayout
+                ? (sidebarCollapsed ? "⌃" : "⌄")
+                : (sidebarCollapsed ? "‹" : "›");
             toggle.title = sidebarCollapsed ? "Expandir lista" : "Plegar lista";
             toggle.setAttribute("aria-label", sidebarCollapsed ? "Expandir lista de locales" : "Plegar lista de locales");
             toggle.setAttribute("aria-expanded", String(!sidebarCollapsed));
-            resizer.setAttribute("aria-valuenow", String(sidebarWidth));
+            resizer.setAttribute("aria-orientation", isMobileLayout ? "horizontal" : "vertical");
+            resizer.setAttribute("aria-valuenow", String(isMobileLayout ? Math.round(mobileMapHeight) : sidebarWidth));
+            resizer.setAttribute("aria-valuemin", isMobileLayout ? "25" : "280");
+            resizer.setAttribute("aria-valuemax", isMobileLayout ? "80" : "560");
             requestAnimationFrame(refreshMapAfterResize);
+        }
+
+        function constrainedMobileMapHeight(height) {
+            const mainHeight = document.querySelector(".main-container").getBoundingClientRect().height;
+            if (!mainHeight) return height;
+            const minimumMapHeight = Math.min(200, mainHeight * 0.35);
+            const minimumListHeight = Math.min(170, mainHeight * 0.3);
+            const maximumMapHeight = Math.max(minimumMapHeight, mainHeight - minimumListHeight - 14);
+            return Math.round(Math.max(minimumMapHeight / mainHeight * 100, Math.min(maximumMapHeight / mainHeight * 100, height)));
         }
 
         function saveSidebarPreferences() {
             try {
                 localStorage.setItem(STORAGE_KEYS.sidebarWidth, String(sidebarWidth));
                 localStorage.setItem(STORAGE_KEYS.sidebarCollapsed, String(sidebarCollapsed));
+                localStorage.setItem(STORAGE_KEYS.mobileMapHeight, String(mobileMapHeight));
             } catch (error) {
                 console.warn("No se pudo guardar el tamaño de la lista.", error);
             }
         }
 
-        function resizeSidebarAt(clientX) {
-            const bounds = document.querySelector(".main-container").getBoundingClientRect();
-            sidebarWidth = constrainedSidebarWidth(bounds.right - clientX);
+        function resizeSidebarAt(clientX, clientY) {
+            const main = document.querySelector(".main-container");
+            const bounds = main.getBoundingClientRect();
+            if (window.innerWidth <= 768) {
+                mobileMapHeight = constrainedMobileMapHeight((clientY - bounds.top) / bounds.height * 100);
+            } else {
+                sidebarWidth = constrainedSidebarWidth(bounds.right - clientX);
+            }
             sidebarCollapsed = false;
             applySidebarLayout();
+        }
+
+        function snapSidebarToNearestLocal() {
+            if (window.innerWidth > 768 || sidebarSnapInProgress) return;
+            const sidebar = document.querySelector(".sidebar");
+            const stickyHeader = document.querySelector(".sidebar-sticky-header");
+            const targetTop = stickyHeader.getBoundingClientRect().bottom + 4;
+            const cards = [...document.querySelectorAll(".location-card")];
+            const nearestCard = cards.reduce((nearest, card) => {
+                const distance = Math.abs(card.getBoundingClientRect().top - targetTop);
+                return !nearest || distance < nearest.distance ? { card, distance } : nearest;
+            }, null);
+            if (!nearestCard) return;
+            const offset = nearestCard.card.getBoundingClientRect().top - targetTop;
+            if (Math.abs(offset) < 3) return;
+            sidebarSnapInProgress = true;
+            sidebar.scrollTo({ top: sidebar.scrollTop + offset, behavior: "smooth" });
+            setTimeout(() => { sidebarSnapInProgress = false; }, 350);
         }
 
         function getTurnLabel(local) {
@@ -1161,6 +1273,7 @@
             body.replaceChildren();
             document.getElementById("admin-user-total").textContent = String(adminSummary?.total_usuarios ?? adminUsers.length);
             document.getElementById("admin-checkin-total").textContent = String(adminSummary?.total_checkins ?? 0);
+            if (!document.getElementById("raffle-overlay").hidden) updateRaffleModal();
 
             if (visibleUsers.length === 0) {
                 const row = document.createElement("tr");
@@ -1242,6 +1355,101 @@
             });
         }
 
+        function getEligibleRaffleUsers() {
+            const usersByEmail = new Map();
+            adminUsers.forEach(user => {
+                const email = String(user.email || "").trim().toLocaleLowerCase("es-AR");
+                const role = String(user.rol || "user").trim().toLocaleLowerCase("es-AR");
+                if (!email || role === "admin" || usersByEmail.has(email)) return;
+                usersByEmail.set(email, { ...user, email });
+            });
+            return [...usersByEmail.values()];
+        }
+
+        function updateRaffleModal() {
+            const eligibleUsers = getEligibleRaffleUsers();
+            const eligibleEmails = new Set(eligibleUsers.map(user => user.email));
+            raffleDrawnEmails = new Set([...raffleDrawnEmails].filter(email => eligibleEmails.has(email)));
+            raffleWinners = raffleWinners.filter(winner => raffleDrawnEmails.has(winner.email));
+            const remainingUsers = eligibleUsers.filter(user => !raffleDrawnEmails.has(user.email));
+            const history = document.getElementById("raffle-history");
+            const drawButton = document.getElementById("raffle-draw");
+
+            document.getElementById("raffle-remaining").textContent = String(remainingUsers.length);
+            document.getElementById("raffle-drawn-count").textContent = String(raffleDrawnEmails.size);
+            const latestWinner = raffleWinners[0];
+            document.getElementById("raffle-winner-name").textContent = latestWinner?.name || "Todavía no hay ganador";
+            const winnerEmail = document.getElementById("raffle-winner-email");
+            winnerEmail.textContent = latestWinner?.email || "";
+            winnerEmail.hidden = !latestWinner;
+            document.getElementById("raffle-reset").disabled = raffleDrawnEmails.size === 0;
+            drawButton.disabled = remainingUsers.length === 0;
+            history.replaceChildren(...raffleWinners.map((winner, index) => {
+                const item = document.createElement("li");
+                const name = document.createElement("span");
+                name.textContent = `${raffleWinners.length - index}. ${winner.name}`;
+                const email = document.createElement("small");
+                email.className = "raffle-history-email";
+                email.textContent = winner.email;
+                item.append(name, email);
+                return item;
+            }));
+            history.hidden = raffleWinners.length === 0;
+            document.getElementById("raffle-empty-history").hidden = raffleWinners.length > 0;
+
+            const message = document.getElementById("raffle-message");
+            if (eligibleUsers.length === 0) message.textContent = "No hay usuarios registrados elegibles para el sorteo.";
+            else if (remainingUsers.length === 0) message.textContent = "Ya se sortearon todos los participantes. Reiniciá para empezar otra ronda.";
+            else message.textContent = "";
+        }
+
+        function getSecureRandomIndex(length) {
+            if (!window.crypto?.getRandomValues) throw new Error("Este navegador no permite realizar un sorteo seguro.");
+            const range = 0x100000000;
+            const limit = range - (range % length);
+            const values = new Uint32Array(1);
+            do {
+                window.crypto.getRandomValues(values);
+            } while (values[0] >= limit);
+            return values[0] % length;
+        }
+
+        function drawRaffleWinner() {
+            const availableUsers = getEligibleRaffleUsers().filter(user => !raffleDrawnEmails.has(user.email));
+            if (availableUsers.length === 0) {
+                updateRaffleModal();
+                return;
+            }
+            try {
+                const winner = availableUsers[getSecureRandomIndex(availableUsers.length)];
+                const name = `${winner.nombre || ""} ${winner.apellido || ""}`.trim() || "Participante";
+                raffleDrawnEmails.add(winner.email);
+                raffleWinners.unshift({ email: winner.email, name });
+                updateRaffleModal();
+            } catch (error) {
+                document.getElementById("raffle-message").textContent = error.message;
+            }
+        }
+
+        function resetRaffle() {
+            raffleDrawnEmails.clear();
+            raffleWinners = [];
+            updateRaffleModal();
+        }
+
+        function openRaffleModal() {
+            if (currentUser?.rol !== "admin") return;
+            updateRaffleModal();
+            document.getElementById("raffle-overlay").hidden = false;
+            document.getElementById("raffle-draw").focus();
+        }
+
+        function closeRaffleModal() {
+            document.getElementById("raffle-overlay").hidden = true;
+            const openButton = document.getElementById("admin-open-raffle");
+            if (!openButton.hidden) openButton.focus();
+        }
+
         async function loadAdminPanel() {
             if (!activeSession || currentUser?.rol !== "admin") {
                 document.getElementById("admin-message").textContent = "Se requiere rol de administrador.";
@@ -1314,7 +1522,7 @@
             return {
                 path: google.maps.SymbolPath.CIRCLE,
                 scale: 12,
-                fillColor: local.visitado ? "#56c98a" : "#ff7a1a",
+                fillColor: "#111111",
                 fillOpacity: 1,
                 strokeColor: "#ffffff",
                 strokeWeight: 2
@@ -1617,7 +1825,6 @@
             const container = document.getElementById("lista-locales");
             const visibleLocals = getOrderedLocals().filter(isLocalVisible);
             container.replaceChildren(...visibleLocals.map(createLocalCard));
-            document.getElementById("local-count").textContent = `${visibleLocals.length} ${visibleLocals.length === 1 ? "parada" : "paradas"}`;
             updateScore();
         }
 
@@ -2010,14 +2217,14 @@
             saveSidebarPreferences();
         });
         sidebarResizer.addEventListener("pointerdown", event => {
-            if (window.innerWidth <= 768 || sidebarCollapsed) return;
+            if (sidebarCollapsed) return;
             event.preventDefault();
             resizingSidebar = true;
             sidebarResizer.setPointerCapture(event.pointerId);
-            resizeSidebarAt(event.clientX);
+            resizeSidebarAt(event.clientX, event.clientY);
         });
         sidebarResizer.addEventListener("pointermove", event => {
-            if (resizingSidebar) resizeSidebarAt(event.clientX);
+            if (resizingSidebar) resizeSidebarAt(event.clientX, event.clientY);
         });
         const finishSidebarResize = () => {
             if (!resizingSidebar) return;
@@ -2027,22 +2234,40 @@
         sidebarResizer.addEventListener("pointerup", finishSidebarResize);
         sidebarResizer.addEventListener("pointercancel", finishSidebarResize);
         sidebarResizer.addEventListener("keydown", event => {
-            if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+            const isMobileLayout = window.innerWidth <= 768;
+            const resizeKeys = isMobileLayout
+                ? ["ArrowUp", "ArrowDown", "Home", "End"]
+                : ["ArrowLeft", "ArrowRight", "Home", "End"];
+            if (!resizeKeys.includes(event.key)) return;
             event.preventDefault();
-            const step = event.shiftKey ? 48 : 16;
-            if (event.key === "Home") sidebarWidth = 280;
-            else if (event.key === "End") sidebarWidth = 560;
-            else sidebarWidth += event.key === "ArrowLeft" ? step : -step;
-            sidebarWidth = constrainedSidebarWidth(sidebarWidth);
+            const step = event.shiftKey ? 10 : 3;
+            if (isMobileLayout) {
+                if (event.key === "Home") mobileMapHeight = 25;
+                else if (event.key === "End") mobileMapHeight = 80;
+                else mobileMapHeight += event.key === "ArrowDown" ? step : -step;
+                mobileMapHeight = constrainedMobileMapHeight(mobileMapHeight);
+            } else {
+                const desktopStep = event.shiftKey ? 48 : 16;
+                if (event.key === "Home") sidebarWidth = 280;
+                else if (event.key === "End") sidebarWidth = 560;
+                else sidebarWidth += event.key === "ArrowLeft" ? desktopStep : -desktopStep;
+                sidebarWidth = constrainedSidebarWidth(sidebarWidth);
+            }
             sidebarCollapsed = false;
             applySidebarLayout();
             saveSidebarPreferences();
         });
         sidebarResizer.addEventListener("dblclick", () => {
-            sidebarWidth = constrainedSidebarWidth(390);
+            if (window.innerWidth <= 768) mobileMapHeight = constrainedMobileMapHeight(50);
+            else sidebarWidth = constrainedSidebarWidth(390);
             applySidebarLayout();
             saveSidebarPreferences();
         });
+        document.querySelector(".sidebar").addEventListener("scroll", () => {
+            if (window.innerWidth > 768 || sidebarSnapInProgress) return;
+            clearTimeout(sidebarSnapTimer);
+            sidebarSnapTimer = setTimeout(snapSidebarToNearestLocal, 140);
+        }, { passive: true });
         window.addEventListener("resize", () => {
             if (window.innerWidth > 768) sidebarWidth = constrainedSidebarWidth(sidebarWidth);
             applySidebarLayout();
@@ -2113,13 +2338,24 @@
             if (!userActionsMenu.contains(event.target) && !userMenuToggle.contains(event.target)) setUserMenuOpen(false);
         });
         document.addEventListener("keydown", event => {
-            if (event.key === "Escape") setUserMenuOpen(false);
+            if (event.key === "Escape") {
+                setUserMenuOpen(false);
+                if (!document.getElementById("raffle-overlay").hidden) closeRaffleModal();
+            }
         });
         document.getElementById("logout-button").addEventListener("click", logout);
         document.getElementById("admin-open-button").addEventListener("click", openAdminPanel);
+        document.getElementById("admin-open-raffle").addEventListener("click", openRaffleModal);
         document.getElementById("admin-close").addEventListener("click", () => {
             document.getElementById("admin-overlay").hidden = true;
         });
+        const raffleOverlay = document.getElementById("raffle-overlay");
+        document.getElementById("raffle-close").addEventListener("click", closeRaffleModal);
+        raffleOverlay.addEventListener("click", event => {
+            if (event.target === raffleOverlay) closeRaffleModal();
+        });
+        document.getElementById("raffle-draw").addEventListener("click", drawRaffleWinner);
+        document.getElementById("raffle-reset").addEventListener("click", resetRaffle);
         document.getElementById("admin-refresh").addEventListener("click", loadAdminPanel);
         document.getElementById("admin-search").addEventListener("input", renderAdminPanel);
 
