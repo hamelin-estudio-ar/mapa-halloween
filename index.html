@@ -175,8 +175,8 @@
             box-shadow: none;
         }
         .header-top, .header-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-        .app-footer { display: flex; flex: 0 0 auto; justify-content: center; align-items: center; flex-wrap: wrap; gap: 5px 9px; padding: 9px 14px; border-top: 1px solid var(--line); background: #17141e; color: #b7adbf; text-align: center; font-size: .73rem; }
-        .footer-branding { display: inline-flex; align-items: center; gap: 5px; }
+        .app-footer { display: flex; flex: 0 0 auto; flex-direction: column; justify-content: center; align-items: center; gap: 4px; padding: 9px 14px; border-top: 1px solid var(--line); background: #17141e; color: #b7adbf; text-align: center; font-size: .73rem; }
+        .footer-line { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 5px 8px; }
         .app-footer a { color: #ffad70; text-decoration: none; }
         .app-footer a:hover { color: #ffc18f; text-decoration: underline; }
         header h1 { font-size: 1.15rem; letter-spacing: 0; text-shadow: none; text-transform: none; }
@@ -244,6 +244,9 @@
         .map-local-info { max-width: 260px; padding: 3px 4px; color: #211c24; font-family: inherit; }
         .map-local-info h3 { margin: 0 0 6px; color: #211c24; font-size: .95rem; line-height: 1.25; }
         .map-local-info p { margin: 0 0 5px; color: #514958; font-size: .78rem; line-height: 1.35; }
+        .map-local-visit { display: flex; align-items: center; gap: 6px; margin: 7px 0; color: #342d38; font-size: .78rem; font-weight: 700; cursor: pointer; }
+        .map-local-visit input { width: 16px; height: 16px; margin: 0; accent-color: #26212a; cursor: pointer; }
+        .map-local-visit input:disabled { cursor: wait; }
         .map-local-social { display: inline-flex; margin-top: 3px; padding: 6px 9px; border-radius: 4px; color: #fff; font-size: .78rem; font-weight: 700; text-decoration: none; }
         .map-local-social.instagram { background: #a83174; }
         .map-local-social.facebook { background: #1769aa; }
@@ -265,6 +268,7 @@
         .email-code-row { display: flex; align-items: end; gap: 8px; }
         .email-code-row .form-field { flex: 1; }
         .email-verification-message { min-height: 1em; color: #c5bacd; font-size: .76rem; }
+        .email-code-countdown { min-height: 1em; color: #c5bacd; font-size: .72rem; }
         .guest-access { display: grid; gap: 8px; margin: 4px 0 16px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: #211b2c; }
         .guest-access p { margin: 0; color: #c5bacd; font-size: .78rem; line-height: 1.4; }
         .guest-button { padding: 9px 12px; border: 1px solid #ff7a1a; border-radius: 5px; background: transparent; color: #ffad70; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
@@ -514,10 +518,16 @@
         </aside>
     </main>
     <footer class="app-footer">
-        <span class="footer-branding">Creado por Hamelin Estudio <span aria-hidden="true">·</span> Powered by Google Cloud Platform</span>
-        <a href="mailto:contacto.hamelinestudio@gmail.com">contacto.hamelinestudio@gmail.com</a>
-        <span aria-hidden="true">·</span>
-        <span>© 2026</span>
+        <div class="footer-line">
+            <span>Creado por Hamelin Estudio</span>
+            <span aria-hidden="true">·</span>
+            <a href="mailto:contacto.hamelinestudio@gmail.com">contacto.hamelinestudio@gmail.com</a>
+        </div>
+        <div class="footer-line">
+            <span>Powered by Google Cloud Platform</span>
+            <span aria-hidden="true">·</span>
+            <span>© 2026</span>
+        </div>
     </footer>
 
     <div class="overlay" id="registration-overlay" hidden>
@@ -585,6 +595,7 @@
                     </div>
                     <div class="form-field full email-verification">
                         <button class="admin-action" id="send-email-code" type="button">Enviar código al email</button>
+                        <span class="email-code-countdown" id="email-code-countdown" role="status" aria-live="polite"></span>
                         <div class="email-code-row email-verification-step" id="email-verification-step" hidden>
                             <div class="form-field">
                                 <label for="email-verification-code">Código de 6 dígitos</label>
@@ -1089,6 +1100,7 @@
         let map;
         let infoWindow;
         let mapViewBeforeListSelection = null;
+        let activeMapLocalInfo = null;
         let geocoder;
         let userLocationMarker = null;
         let userAccuracyCircle = null;
@@ -1269,15 +1281,13 @@
             const duration = Math.max(0, Math.ceil(Number(seconds) || 0));
             emailVerificationCooldownEndsAt = Date.now() + duration * 1000;
             const button = document.getElementById("send-email-code");
-            const status = document.getElementById("email-verification-message");
+            const countdown = document.getElementById("email-code-countdown");
             const updateCountdown = () => {
                 const remaining = Math.max(0, Math.ceil((emailVerificationCooldownEndsAt - Date.now()) / 1000));
                 if (remaining > 0) {
                     button.disabled = true;
                     button.textContent = `Reenviar en ${remaining}s`;
-                    status.textContent = codeSent
-                        ? `Código enviado. Podés pedir otro en ${remaining} segundos.`
-                        : `Esperá ${remaining} segundos para volver a pedir el código.`;
+                    countdown.textContent = `Podés pedir otro código en ${remaining} segundos.`;
                     return;
                 }
                 clearInterval(emailVerificationCooldownTimer);
@@ -1285,7 +1295,7 @@
                 emailVerificationCooldownEndsAt = 0;
                 button.disabled = false;
                 button.textContent = "Enviar código al email";
-                status.textContent = codeSent ? "Código enviado. Ya podés pedir otro." : "Ya podés solicitar otro código.";
+                countdown.textContent = "";
             };
             updateCountdown();
             if (duration > 0) emailVerificationCooldownTimer = setInterval(updateCountdown, 1000);
@@ -1306,10 +1316,11 @@
                 document.getElementById("email-verification-step").hidden = false;
                 document.getElementById("email-verification-code").required = true;
                 document.getElementById("email-verification-code").readOnly = false;
+                status.textContent = result.message || "Código enviado. Revisá tu correo.";
                 startEmailVerificationCooldown(result.cooldown_seconds || 60, true);
             } catch (error) {
+                status.textContent = error.message || "No se pudo enviar el código.";
                 if (error.status === 429) startEmailVerificationCooldown(error.retryAfter || 60, false);
-                else status.textContent = error.message || "No se pudo enviar el código.";
             } finally {
                 if (emailVerificationCooldownEndsAt <= Date.now()) {
                     button.disabled = false;
@@ -1429,7 +1440,14 @@
                 verifiedRegistrationEmail = email;
                 emailVerificationToken = result.email_verification_token;
                 codeInput.readOnly = true;
-                status.textContent = "Email verificado.";
+                if (emailVerificationCooldownTimer) clearInterval(emailVerificationCooldownTimer);
+                emailVerificationCooldownTimer = null;
+                emailVerificationCooldownEndsAt = 0;
+                document.getElementById("email-code-countdown").textContent = "";
+                const sendCodeButton = document.getElementById("send-email-code");
+                sendCodeButton.disabled = true;
+                sendCodeButton.textContent = "Email verificado";
+                status.textContent = "Cuenta verificada. Ya podés crear tu cuenta.";
             } catch (error) {
                 verifiedRegistrationEmail = "";
                 emailVerificationToken = "";
@@ -1442,6 +1460,13 @@
         function clearRegistrationEmailVerification() {
             verifiedRegistrationEmail = "";
             emailVerificationToken = "";
+            if (emailVerificationCooldownTimer) clearInterval(emailVerificationCooldownTimer);
+            emailVerificationCooldownTimer = null;
+            emailVerificationCooldownEndsAt = 0;
+            document.getElementById("email-code-countdown").textContent = "";
+            const sendCodeButton = document.getElementById("send-email-code");
+            sendCodeButton.disabled = false;
+            sendCodeButton.textContent = "Enviar código al email";
             const codeInput = document.getElementById("email-verification-code");
             codeInput.value = "";
             codeInput.readOnly = false;
@@ -1949,7 +1974,18 @@
             address.textContent = local.dir;
             const status = document.createElement("p");
             status.textContent = `${getTurnLabel(local)} · ${local.visitado ? "Visitado" : "Pendiente"}`;
-            content.append(title, address, status);
+            const visitLabel = document.createElement("label");
+            visitLabel.className = "map-local-visit";
+            const visitCheckbox = document.createElement("input");
+            visitCheckbox.type = "checkbox";
+            visitCheckbox.checked = local.visitado;
+            visitCheckbox.setAttribute("aria-label", `Marcar visita en ${local.nombre}`);
+            const visitText = document.createElement("span");
+            visitText.textContent = "Visitado";
+            visitLabel.append(visitCheckbox, visitText);
+            activeMapLocalInfo = { localId: local.id, checkbox: visitCheckbox, status };
+            visitCheckbox.addEventListener("change", () => toggleLocalVisitFromMap(local, visitCheckbox.checked));
+            content.append(title, address, status, visitLabel);
             const socialProfile = local.socialProfile || getSocialProfile(local.nombre);
             if (socialProfile) {
                 const socialLink = document.createElement("a");
@@ -1962,6 +1998,26 @@
             }
             infoWindow.setContent(content);
             infoWindow.open({ map, anchor: marker });
+        }
+
+        function syncMapLocalVisitState(local, pending = false) {
+            if (activeMapLocalInfo?.localId !== local.id) return;
+            activeMapLocalInfo.checkbox.checked = local.visitado;
+            activeMapLocalInfo.checkbox.disabled = pending;
+            activeMapLocalInfo.status.textContent = `${getTurnLabel(local)} · ${local.visitado ? "Visitado" : "Pendiente"}`;
+        }
+
+        function toggleLocalVisitFromMap(local, visited) {
+            const card = document.getElementById(`card-${local.id}`);
+            const checkbox = card?.querySelector('input[type="checkbox"]');
+            if (!checkbox || checkbox.disabled) {
+                syncMapLocalVisitState(local, Boolean(checkbox?.disabled));
+                return;
+            }
+            checkbox.checked = visited;
+            const saveVisit = handleVisitToggle(local, card, checkbox);
+            syncMapLocalVisitState(local, true);
+            saveVisit.finally(() => syncMapLocalVisitState(local));
         }
 
         function openLocalOnMap(local) {
@@ -1999,8 +2055,7 @@
             const card = document.getElementById(`card-${local.id}`);
             const checkbox = card?.querySelector('input[type="checkbox"]');
             if (!checkbox || checkbox.disabled || checkbox.checked) return;
-            checkbox.checked = true;
-            handleVisitToggle(local, card, checkbox);
+            toggleLocalVisitFromMap(local, true);
         }
 
         function updateScore() {
@@ -2034,6 +2089,7 @@
             const checkbox = card.querySelector("input[type=checkbox]");
             checkbox.checked = local.visitado;
             card.querySelector(".visit-state").textContent = local.visitado ? "Visita validada · +1 punto" : "";
+            syncMapLocalVisitState(local, checkbox.disabled);
         }
 
         function createLocalCard(local) {
@@ -2155,6 +2211,7 @@
         async function handleVisitToggle(local, card, checkbox) {
             if (guestMode) {
                 checkbox.disabled = true;
+                syncMapLocalVisitState(local, true);
                 try {
                     const guestVisits = new Set(DataRepository.loadGuestVisits());
                     if (checkbox.checked) {
@@ -2175,17 +2232,20 @@
                     showToast(error.message || "No se pudo guardar la visita invitada.");
                 } finally {
                     checkbox.disabled = false;
+                    syncMapLocalVisitState(local);
                 }
                 return;
             }
             if (!activeSession || !currentUser) {
                 checkbox.checked = false;
+                syncMapLocalVisitState(local);
                 showAuthTab("login");
                 document.getElementById("registration-overlay").hidden = false;
                 showToast("Iniciá sesión para guardar tu progreso.");
                 return;
             }
             checkbox.disabled = true;
+            syncMapLocalVisitState(local, true);
             if (!checkbox.checked) {
                 try {
                     await DataRepository.removeVisit(local, activeSession);
@@ -2200,6 +2260,7 @@
                     showToast(error.message || "No se pudo actualizar la visita en el servidor.");
                 } finally {
                     checkbox.disabled = false;
+                    syncMapLocalVisitState(local);
                 }
                 return;
             }
@@ -2223,6 +2284,7 @@
                 if (error.status === 401) logout();
             } finally {
                 checkbox.disabled = false;
+                syncMapLocalVisitState(local);
             }
         }
 
@@ -2474,6 +2536,7 @@
             });
             infoWindow = new google.maps.InfoWindow();
             infoWindow.addListener("closeclick", () => {
+                activeMapLocalInfo = null;
                 const previousView = mapViewBeforeListSelection;
                 mapViewBeforeListSelection = null;
                 if (!previousView?.center) return;
