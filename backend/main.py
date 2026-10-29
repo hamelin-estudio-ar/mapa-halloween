@@ -39,6 +39,9 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", os.getenv("SMTP_USER", "")).strip()
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USERNAME).strip()
+class SMTPConfigurationError(RuntimeError):
+    pass
+
 EMAIL_CODE_TTL_SECONDS = 10 * 60
 EMAIL_CODE_COOLDOWN_SECONDS = 60
 EMAIL_CODE_MAX_ATTEMPTS = 5
@@ -244,6 +247,14 @@ def send_verification_email(email, code):
         f"Tu código para verificar el email en Ruta Mágica 2026 es: {code}\n\n"
         "Vence en 10 minutos. Si no solicitaste este código, podés ignorar este mensaje."
     )
+    if SMTP_USERNAME:
+        try:
+            SMTP_USERNAME.encode("ascii")
+            SMTP_PASSWORD.encode("ascii")
+        except UnicodeEncodeError as error:
+            raise SMTPConfigurationError(
+                "La cuenta o contraseña SMTP de GCP contiene caracteres no ASCII. Actualizá SMTP_USER/SMTP_PASSWORD con credenciales SMTP compatibles."
+            ) from error
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
         server.starttls()
         if SMTP_USERNAME:
@@ -298,23 +309,45 @@ def enviar_codigo_verificacion():
 
     update_json("email_verificaciones.json", {}, store_code)
     if result.get("cooldown"):
-        return jsonify({"error": f"Esperá {result['cooldown']} segundos antes de pedir otro código"}), 429
+        retry_after = result["cooldown"]
+        response = jsonify({
+            "error": f"Esperá {retry_after} segundos antes de pedir otro código",
+            "retry_after_seconds": retry_after,
+        })
+        response.headers["Retry-After"] = str(retry_after)
+        return response, 429
 
-    try:
-        send_verification_email(email, code)
-    except (OSError, smtplib.SMTPException, RuntimeError) as error:
-        app.logger.warning("No se pudo enviar un código de verificación: %s", error)
-
-        def remove_failed_code(records):
+    def remove_failed_code():
+        def remove_record(records):
             current = records.get(email)
             if current and current.get("code_hash") == record["code_hash"]:
                 records.pop(email, None)
             return records, None
 
-        update_json("email_verificaciones.json", {}, remove_failed_code)
+        update_json("email_verificaciones.json", {}, remove_record)
+
+    try:
+        send_verification_email(email, code)
+    except SMTPConfigurationError as error:
+        app.logger.warning("La autenticación SMTP requiere credenciales compatibles con ASCII")
+        remove_failed_code()
+        return jsonify({"error": str(error)}), 503
+    except UnicodeError:
+        app.logger.warning("La autenticación SMTP contiene credenciales no ASCII")
+        remove_failed_code()
+        return jsonify({
+            "error": "La cuenta o contraseña SMTP de GCP contiene caracteres no ASCII. Actualizá SMTP_USER/SMTP_PASSWORD con credenciales SMTP compatibles."
+        }), 503
+    except (OSError, smtplib.SMTPException, RuntimeError) as error:
+        app.logger.warning("No se pudo enviar un código de verificación: %s", error)
+        remove_failed_code()
         return jsonify({"error": "No se pudo enviar el email. Revisá la configuración del servidor e intentá de nuevo"}), 503
 
-    return jsonify({"success": True, "message": "Si el email puede recibir mensajes, enviamos un código de verificación"}), 200
+    return jsonify({
+        "success": True,
+        "message": "Si el email puede recibir mensajes, enviamos un código de verificación",
+        "cooldown_seconds": EMAIL_CODE_COOLDOWN_SECONDS,
+    }), 200
 
 
 @app.post("/api/auth/email/verify-code")

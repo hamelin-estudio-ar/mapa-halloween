@@ -532,11 +532,11 @@
                 <div class="form-grid">
                     <div class="form-field">
                         <label for="register-first-name">Nombre</label>
-                        <input id="register-first-name" name="nombre" autocomplete="given-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}' -]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
+                        <input id="register-first-name" name="nombre" autocomplete="given-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}\p{M}' \x2D]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
                     </div>
                     <div class="form-field">
                         <label for="register-last-name">Apellido</label>
-                        <input id="register-last-name" name="apellido" autocomplete="family-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}' -]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
+                        <input id="register-last-name" name="apellido" autocomplete="family-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}\p{M}' \x2D]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
                     </div>
                     <div class="form-field full">
                         <label for="register-email">Email</label>
@@ -857,6 +857,7 @@
                 if (!response.ok) {
                     const error = new Error(payload.error || `Error del servidor (${response.status})`);
                     error.status = response.status;
+                    error.retryAfter = Number(payload.retry_after_seconds || response.headers.get("Retry-After") || 0);
                     throw error;
                 }
                 return payload;
@@ -1044,6 +1045,8 @@
         let sidebarSnapInProgress = false;
         let verifiedRegistrationEmail = "";
         let emailVerificationToken = "";
+        let emailVerificationCooldownTimer = null;
+        let emailVerificationCooldownEndsAt = 0;
         let backendVisits = [];
         let backendVisitsLoaded = false;
         let appInitialization;
@@ -1193,6 +1196,33 @@
             showToast("Modo invitado: progreso sólo en este dispositivo; no participás del sorteo.");
         }
 
+        function startEmailVerificationCooldown(seconds, codeSent) {
+            if (emailVerificationCooldownTimer) clearInterval(emailVerificationCooldownTimer);
+            const duration = Math.max(0, Math.ceil(Number(seconds) || 0));
+            emailVerificationCooldownEndsAt = Date.now() + duration * 1000;
+            const button = document.getElementById("send-email-code");
+            const status = document.getElementById("email-verification-message");
+            const updateCountdown = () => {
+                const remaining = Math.max(0, Math.ceil((emailVerificationCooldownEndsAt - Date.now()) / 1000));
+                if (remaining > 0) {
+                    button.disabled = true;
+                    button.textContent = `Reenviar en ${remaining}s`;
+                    status.textContent = codeSent
+                        ? `Código enviado. Podés pedir otro en ${remaining} segundos.`
+                        : `Esperá ${remaining} segundos para volver a pedir el código.`;
+                    return;
+                }
+                clearInterval(emailVerificationCooldownTimer);
+                emailVerificationCooldownTimer = null;
+                emailVerificationCooldownEndsAt = 0;
+                button.disabled = false;
+                button.textContent = "Enviar código al email";
+                status.textContent = codeSent ? "Código enviado. Ya podés pedir otro." : "Ya podés solicitar otro código.";
+            };
+            updateCountdown();
+            if (duration > 0) emailVerificationCooldownTimer = setInterval(updateCountdown, 1000);
+        }
+
         async function sendRegistrationEmailCode() {
             const emailInput = document.getElementById("register-email");
             const button = document.getElementById("send-email-code");
@@ -1208,11 +1238,15 @@
                 document.getElementById("email-verification-step").hidden = false;
                 document.getElementById("email-verification-code").required = true;
                 document.getElementById("email-verification-code").readOnly = false;
-                status.textContent = result.message || "Código enviado. Revisá tu correo.";
+                startEmailVerificationCooldown(result.cooldown_seconds || 60, true);
             } catch (error) {
-                status.textContent = error.message || "No se pudo enviar el código.";
+                if (error.status === 429) startEmailVerificationCooldown(error.retryAfter || 60, false);
+                else status.textContent = error.message || "No se pudo enviar el código.";
             } finally {
-                button.disabled = false;
+                if (emailVerificationCooldownEndsAt <= Date.now()) {
+                    button.disabled = false;
+                    button.textContent = "Enviar código al email";
+                }
             }
         }
 
