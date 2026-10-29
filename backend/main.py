@@ -236,17 +236,28 @@ def valid_phone(value):
     return isinstance(value, str) and PHONE_PATTERN.fullmatch(value.strip()) is not None
 
 
-def send_verification_email(email, code):
+def send_verification_email(email, code, purpose="register"):
     if not SMTP_HOST or not SMTP_FROM:
         raise RuntimeError("El envío de email no está configurado en el servidor")
     message = EmailMessage()
-    message["Subject"] = "Código de verificación - Ruta Mágica 2026"
+    is_password_reset = purpose == "password_reset"
+    message["Subject"] = (
+        "Código para recuperar la contraseña - Ruta Mágica 2026"
+        if is_password_reset
+        else "Código de verificación - Ruta Mágica 2026"
+    )
     message["From"] = SMTP_FROM
     message["To"] = email
-    message.set_content(
-        f"Tu código para verificar el email en Ruta Mágica 2026 es: {code}\n\n"
-        "Vence en 10 minutos. Si no solicitaste este código, podés ignorar este mensaje."
-    )
+    if is_password_reset:
+        message.set_content(
+            f"Tu código para recuperar la contraseña de Ruta Mágica 2026 es: {code}\n\n"
+            "Vence en 10 minutos. Si no solicitaste este código, podés ignorar este mensaje."
+        )
+    else:
+        message.set_content(
+            f"Tu código para verificar el email en Ruta Mágica 2026 es: {code}\n\n"
+            "Vence en 10 minutos. Si no solicitaste este código, podés ignorar este mensaje."
+        )
     if SMTP_USERNAME:
         try:
             SMTP_USERNAME.encode("ascii")
@@ -270,6 +281,82 @@ def verification_expired(record, now):
     except (KeyError, TypeError, ValueError):
         return True
     return now >= expires_at
+
+
+def issue_password_reset_code(email):
+    if EMAIL_VERIFICATION_SERIALIZER is None:
+        return jsonify({"error": "El backend no tiene SECRET_KEY configurada"}), 503
+    if not SMTP_HOST or not SMTP_FROM:
+        return jsonify({"error": "La recuperación por email todavía no está configurada en el servidor"}), 503
+
+    users = read_json("usuarios.json", {})
+    if email not in users:
+        return jsonify({
+            "success": True,
+            "message": "Si existe una cuenta con ese email, recibirá un código para recuperar la contraseña",
+        }), 200
+
+    now = datetime.now(timezone.utc)
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    record_key = f"password-reset:{email}"
+    record = {
+        "code_hash": generate_password_hash(code),
+        "sent_at": now.isoformat(),
+        "expires_at": (now + timedelta(seconds=EMAIL_CODE_TTL_SECONDS)).isoformat(),
+        "attempts": 0,
+    }
+    result = {}
+
+    def store_code(records):
+        previous = records.get(record_key)
+        if previous:
+            try:
+                previous_sent_at = datetime.fromisoformat(previous.get("sent_at", ""))
+                elapsed = (now - previous_sent_at).total_seconds()
+            except (TypeError, ValueError):
+                elapsed = EMAIL_CODE_COOLDOWN_SECONDS
+            if elapsed < EMAIL_CODE_COOLDOWN_SECONDS:
+                result["cooldown"] = int(EMAIL_CODE_COOLDOWN_SECONDS - elapsed)
+                return records, None
+        records[record_key] = record
+        return records, None
+
+    update_json("email_verificaciones.json", {}, store_code)
+    if result.get("cooldown"):
+        retry_after = result["cooldown"]
+        response = jsonify({
+            "error": f"Esperá {retry_after} segundos antes de pedir otro código",
+            "retry_after_seconds": retry_after,
+        })
+        response.headers["Retry-After"] = str(retry_after)
+        return response, 429
+
+    def remove_failed_code(records):
+        current = records.get(record_key)
+        if current and current.get("code_hash") == record["code_hash"]:
+            records.pop(record_key, None)
+        return records, None
+
+    try:
+        send_verification_email(email, code, purpose="password_reset")
+    except SMTPConfigurationError:
+        app.logger.warning("La autenticación SMTP requiere credenciales compatibles con ASCII")
+        update_json("email_verificaciones.json", {}, remove_failed_code)
+        return jsonify({"error": "La configuración SMTP contiene caracteres no compatibles. Revisá las credenciales en GCP."}), 503
+    except UnicodeError:
+        app.logger.warning("La autenticación SMTP contiene credenciales no ASCII")
+        update_json("email_verificaciones.json", {}, remove_failed_code)
+        return jsonify({"error": "La configuración SMTP contiene caracteres no compatibles. Revisá las credenciales en GCP."}), 503
+    except (OSError, smtplib.SMTPException, RuntimeError) as error:
+        app.logger.warning("No se pudo enviar un código de recuperación: %s", error)
+        update_json("email_verificaciones.json", {}, remove_failed_code)
+        return jsonify({"error": "No se pudo enviar el email. Revisá la configuración del servidor e intentá de nuevo"}), 503
+
+    return jsonify({
+        "success": True,
+        "message": "Si existe una cuenta con ese email, recibirá un código para recuperar la contraseña",
+        "cooldown_seconds": EMAIL_CODE_COOLDOWN_SECONDS,
+    }), 200
 
 
 @app.post("/api/auth/email/send-code")
@@ -391,6 +478,76 @@ def verificar_codigo_email():
     return jsonify({"success": True, "email_verification_token": token}), 200
 
 
+@app.post("/api/auth/password-reset/send-code")
+def enviar_codigo_recuperacion():
+    data = request.get_json(silent=True) or {}
+    email = normalize_email(data.get("email"))
+    if len(email) > 160 or not EMAIL_PATTERN.fullmatch(email):
+        return jsonify({"error": "Ingresá un email válido con formato nombre@dominio.com"}), 400
+    return issue_password_reset_code(email)
+
+
+@app.post("/api/auth/password-reset")
+def restablecer_contrasena():
+    data = request.get_json(silent=True) or {}
+    email = normalize_email(data.get("email"))
+    code = data.get("code")
+    password = data.get("password")
+    if len(email) > 160 or not EMAIL_PATTERN.fullmatch(email):
+        return jsonify({"error": "Email o código incorrectos"}), 400
+    if not isinstance(code, str) or not re.fullmatch(r"[0-9]{6}", code):
+        return jsonify({"error": "Ingresá el código de 6 dígitos"}), 400
+    if not valid_password(password):
+        return jsonify({"error": "La contraseña requiere 8 caracteres, una mayúscula y un carácter especial"}), 400
+
+    now = datetime.now(timezone.utc)
+    record_key = f"password-reset:{email}"
+    result = {}
+
+    def consume_code(records):
+        record = records.get(record_key)
+        if not record:
+            result["error"] = "El código no es válido. Solicitá uno nuevo"
+            return records, None
+        if verification_expired(record, now):
+            records.pop(record_key, None)
+            result["error"] = "El código venció. Solicitá uno nuevo"
+            return records, None
+        if record.get("attempts", 0) >= EMAIL_CODE_MAX_ATTEMPTS:
+            records.pop(record_key, None)
+            result["error"] = "Se superó el máximo de intentos. Solicitá un código nuevo"
+            return records, None
+        if not check_password_hash(record.get("code_hash", ""), code):
+            record["attempts"] = record.get("attempts", 0) + 1
+            result["error"] = "El código ingresado no es válido"
+            return records, None
+        records.pop(record_key, None)
+        result["verified"] = True
+        return records, None
+
+    update_json("email_verificaciones.json", {}, consume_code)
+    if not result.get("verified"):
+        return jsonify({"error": result.get("error", "No se pudo verificar el código")}), 400
+
+    user_result = {}
+
+    def change_password(users):
+        user = users.get(email)
+        if not user:
+            user_result["not_found"] = True
+            return users, None
+        user["password_hash"] = generate_password_hash(password)
+        user["auth_version"] = int(user.get("auth_version", 0)) + 1
+        user["password_reset_at"] = now.isoformat()
+        user_result["updated"] = True
+        return users, None
+
+    update_json("usuarios.json", {}, change_password)
+    if not user_result.get("updated"):
+        return jsonify({"error": "No se pudo restablecer la contraseña. Solicitá un código nuevo"}), 400
+    return jsonify({"success": True, "message": "Contraseña actualizada. Ya podés iniciar sesión."}), 200
+
+
 def public_user(user):
     return {
         "nombre": user["nombre"],
@@ -404,10 +561,10 @@ def public_user(user):
     }
 
 
-def issue_token(email):
+def issue_token(email, auth_version=0):
     if TOKEN_SERIALIZER is None:
         raise RuntimeError("El backend requiere configurar SECRET_KEY para habilitar sesiones")
-    return TOKEN_SERIALIZER.dumps({"email": email})
+    return TOKEN_SERIALIZER.dumps({"email": email, "auth_version": auth_version})
 
 
 def ensure_bootstrap_admin():
@@ -458,6 +615,16 @@ def require_session(view):
         except BadSignature:
             return jsonify({"error": "La sesión no es válida"}), 401
         g.user_email = payload.get("email", "")
+        user = read_json("usuarios.json", {}).get(g.user_email)
+        if not user:
+            return jsonify({"error": "La cuenta ya no está disponible. Iniciá sesión nuevamente"}), 401
+        try:
+            token_version = int(payload.get("auth_version", 0))
+            current_version = int(user.get("auth_version", 0))
+        except (TypeError, ValueError):
+            return jsonify({"error": "La sesión no es válida"}), 401
+        if token_version != current_version:
+            return jsonify({"error": "La sesión fue revocada. Iniciá sesión nuevamente"}), 401
         return view(*args, **kwargs)
 
     return wrapped
@@ -567,6 +734,7 @@ def registrar_usuario():
         "tipo_documento": tipo_documento,
         "documento": documento,
         "rol": "user",
+        "auth_version": 1,
         "password_hash": generate_password_hash(password),
         "timestampRegistro": utc_now(),
         "acepta_terminos": True,
@@ -589,7 +757,7 @@ def registrar_usuario():
     update_json("usuarios.json", {}, add_user)
     if not result["created"]:
         return jsonify({"error": "Ya existe una cuenta con ese email"}), 409
-    return jsonify({"success": True, "token": issue_token(email), "user": public_user(user_record)}), 201
+    return jsonify({"success": True, "token": issue_token(email, user_record["auth_version"]), "user": public_user(user_record)}), 201
 
 
 @app.post("/api/auth/login")
@@ -620,7 +788,7 @@ def iniciar_sesion():
 
         update_json("usuarios.json", {}, persist_role)
         user["rol"] = role
-    return jsonify({"success": True, "token": issue_token(email), "user": public_user(user)}), 200
+    return jsonify({"success": True, "token": issue_token(email, int(user.get("auth_version", 0))), "user": public_user(user)}), 200
 
 
 def admin_user_summary(email, user):
@@ -681,6 +849,67 @@ def cambiar_rol_admin():
     if result.get("last_admin"):
         return jsonify({"error": "Debe quedar al menos un administrador"}), 409
     return jsonify({"success": True, "usuario": result["user"]}), 200
+
+
+@app.post("/api/admin/usuarios/recuperar-clave")
+@require_session
+@require_admin
+def recuperar_clave_usuario_admin():
+    data = request.get_json(silent=True) or {}
+    email = normalize_email(data.get("email"))
+    if not EMAIL_PATTERN.fullmatch(email):
+        return jsonify({"error": "Ingresá un email válido"}), 400
+    users = read_json("usuarios.json", {})
+    if email not in users:
+        return jsonify({"error": "No existe un usuario con ese email"}), 404
+    return issue_password_reset_code(email)
+
+
+@app.post("/api/admin/eliminar-usuario")
+@require_session
+@require_admin
+def eliminar_usuario_admin():
+    data = request.get_json(silent=True) or {}
+    email = normalize_email(data.get("email"))
+    if not EMAIL_PATTERN.fullmatch(email):
+        return jsonify({"error": "Ingresá un email válido"}), 400
+    if email == g.user_email:
+        return jsonify({"error": "No podés eliminar tu propia cuenta"}), 409
+    users = read_json("usuarios.json", {})
+    target = users.get(email)
+    if not target:
+        return jsonify({"error": "No existe un usuario con ese email"}), 404
+    if email == ADMIN_EMAIL or target.get("rol") == "admin":
+        return jsonify({"error": "No se pueden eliminar cuentas de administrador"}), 409
+
+    result = {}
+
+    def remove_user(records):
+        current = records.get(email)
+        if not current:
+            result["not_found"] = True
+            return records, None
+        if current.get("rol") == "admin" or email == ADMIN_EMAIL:
+            result["admin"] = True
+            return records, None
+        records.pop(email, None)
+        result["deleted"] = True
+        return records, None
+
+    update_json("usuarios.json", {}, remove_user)
+    if result.get("not_found"):
+        return jsonify({"error": "No existe un usuario con ese email"}), 404
+    if result.get("admin"):
+        return jsonify({"error": "No se pueden eliminar cuentas de administrador"}), 409
+
+    update_json("visitas.json", [], lambda visits: (
+        [visit for visit in visits if visit.get("email") != email], None
+    ))
+    update_json("email_verificaciones.json", {}, lambda records: (
+        (records.pop(email, None), records.pop(f"password-reset:{email}", None), records)[-1],
+        None,
+    ))
+    return jsonify({"success": True, "email": email}), 200
 
 
 @app.get("/api/admin/visitas-resumen")
