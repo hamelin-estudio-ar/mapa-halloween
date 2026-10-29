@@ -5,6 +5,7 @@ import os
 import re
 import tempfile
 import threading
+import unicodedata
 from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
@@ -25,7 +26,11 @@ CORS(
 
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).resolve().parent / "data"))
 GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "").strip()
+GCS_DATA_PREFIX = "ruta_magica"
+PERSISTENCE_FILES = {"usuarios.json", "visitas.json", "locales.json"}
 SESSION_SECRET = os.getenv("SECRET_KEY", "").strip()
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@rutamagica.com.ar").strip().lower()
+ADMIN_INITIAL_PASSWORD = os.getenv("ADMIN_INITIAL_PASSWORD", "")
 SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
 TOKEN_SERIALIZER = (
     URLSafeTimedSerializer(SESSION_SECRET, salt="ruta-magica-session-v1")
@@ -33,7 +38,32 @@ TOKEN_SERIALIZER = (
     else None
 )
 LOCAL_STORAGE_LOCK = threading.RLock()
-EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+EMAIL_PATTERN = re.compile(
+    r"^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@"
+    r"[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?"
+    r"(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$",
+    re.IGNORECASE,
+)
+PHONE_PATTERN = re.compile(r"[0-9]{8,15}")
+DOCUMENT_TYPES = {
+    "dni",
+    "pasaporte_argentino",
+    "pasaporte_extranjero",
+    "pasaporte_emergencia",
+    "pasaporte_excepcional",
+    "cedula_identidad",
+    "libreta_civica",
+    "libreta_enrolamiento",
+    "documento_viaje",
+    "residencia_precaria",
+    "otro",
+}
+PASSPORT_TYPES = {
+    "pasaporte_argentino",
+    "pasaporte_extranjero",
+    "pasaporte_emergencia",
+    "pasaporte_excepcional",
+}
 
 DEFAULT_LOCALES = [
     {"id": 1, "nombre": "Il Gioco Tienda de Ropa", "dir": "Av Rivadavia 4995, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
@@ -76,6 +106,12 @@ def _gcs_bucket():
     return storage.Client().bucket(GCS_BUCKET_NAME)
 
 
+def _gcs_object_name(filename):
+    if filename not in PERSISTENCE_FILES:
+        raise ValueError("Archivo de persistencia no permitido")
+    return f"{GCS_DATA_PREFIX}/{filename}"
+
+
 def _decode_json(raw, filename):
     try:
         return json.loads(raw)
@@ -90,7 +126,7 @@ def read_json(filename, default):
         from google.api_core.exceptions import NotFound
 
         try:
-            return _decode_json(bucket.blob(filename).download_as_text(), filename)
+            return _decode_json(bucket.blob(_gcs_object_name(filename)).download_as_text(), filename)
         except NotFound:
             return copy.deepcopy(default)
 
@@ -117,7 +153,7 @@ def update_json(filename, default, mutator):
         from google.api_core.exceptions import NotFound, PreconditionFailed
 
         for _ in range(6):
-            blob = bucket.blob(filename)
+            blob = bucket.blob(_gcs_object_name(filename))
             try:
                 blob.reload()
                 generation = int(blob.generation)
@@ -157,9 +193,28 @@ def valid_password(password):
     return (
         isinstance(password, str)
         and len(password) >= 8
+        and len(password) <= 128
         and re.search(r"[A-Z]", password) is not None
         and re.search(r"[^A-Za-z0-9]", password) is not None
     )
+
+
+def valid_person_name(value):
+    if not isinstance(value, str):
+        return False
+    name = value.strip()
+    if not 2 <= len(name) <= 60 or not name[0].isalpha():
+        return False
+    return all(
+        character.isalpha()
+        or unicodedata.category(character).startswith("M")
+        or character in " '\u2019-"
+        for character in name[1:]
+    )
+
+
+def valid_phone(value):
+    return isinstance(value, str) and PHONE_PATTERN.fullmatch(value.strip()) is not None
 
 
 def public_user(user):
@@ -168,6 +223,9 @@ def public_user(user):
         "apellido": user["apellido"],
         "email": user["email"],
         "telefono": user.get("telefono", ""),
+        "tipo_documento": user.get("tipo_documento", ""),
+        "documento": user.get("documento", ""),
+        "rol": "admin" if user.get("rol") == "admin" else "user",
         "timestampRegistro": user["timestampRegistro"],
     }
 
@@ -176,6 +234,38 @@ def issue_token(email):
     if TOKEN_SERIALIZER is None:
         raise RuntimeError("El backend requiere configurar SECRET_KEY para habilitar sesiones")
     return TOKEN_SERIALIZER.dumps({"email": email})
+
+
+def ensure_bootstrap_admin():
+    if not ADMIN_EMAIL or not valid_password(ADMIN_INITIAL_PASSWORD):
+        return
+
+    timestamp = utc_now()
+    seeded_admin = {
+        "nombre": "Administrador",
+        "apellido": "Ruta Mágica",
+        "email": ADMIN_EMAIL,
+        "telefono": "",
+        "tipo_documento": "",
+        "documento": "",
+        "rol": "admin",
+        "password_hash": generate_password_hash(ADMIN_INITIAL_PASSWORD),
+        "timestampRegistro": timestamp,
+        "acepta_terminos": False,
+        "fecha_aceptacion_terminos": None,
+        "consentimiento_promociones": False,
+        "fecha_consentimiento_promociones": None,
+    }
+
+    def seed_admin(users):
+        existing = users.get(ADMIN_EMAIL)
+        if existing:
+            existing["rol"] = "admin"
+        else:
+            users[ADMIN_EMAIL] = seeded_admin
+        return users, None
+
+    update_json("usuarios.json", {}, seed_admin)
 
 
 def require_session(view):
@@ -194,6 +284,29 @@ def require_session(view):
         except BadSignature:
             return jsonify({"error": "La sesión no es válida"}), 401
         g.user_email = payload.get("email", "")
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
+def require_admin(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        users = read_json("usuarios.json", {})
+        user = users.get(g.user_email)
+        if not user:
+            return jsonify({"error": "Usuario no encontrado"}), 401
+        if g.user_email == ADMIN_EMAIL and user.get("rol") != "admin":
+            def promote_bootstrap_admin(records):
+                if g.user_email in records:
+                    records[g.user_email]["rol"] = "admin"
+                return records, None
+
+            update_json("usuarios.json", {}, promote_bootstrap_admin)
+            user["rol"] = "admin"
+        if user.get("rol") != "admin":
+            return jsonify({"error": "Se requiere rol de administrador"}), 403
+        g.admin_user = user
         return view(*args, **kwargs)
 
     return wrapped
@@ -230,20 +343,50 @@ def registrar_usuario():
     apellido = data.get("apellido", "").strip() if isinstance(data.get("apellido"), str) else ""
     email = normalize_email(data.get("email"))
     telefono = data.get("telefono", "").strip() if isinstance(data.get("telefono", ""), str) else ""
+    tipo_documento = data.get("tipo_documento", "").strip().lower() if isinstance(data.get("tipo_documento"), str) else ""
+    documento = data.get("documento", "").strip().upper() if isinstance(data.get("documento"), str) else ""
     password = data.get("password")
 
-    if not nombre or not apellido or not EMAIL_PATTERN.fullmatch(email):
-        return jsonify({"error": "Ingresá nombre, apellido y un email válido"}), 400
+    if not valid_person_name(nombre) or not valid_person_name(apellido):
+        return jsonify({"error": "Nombre y apellido deben tener entre 2 y 60 letras"}), 400
+    if len(email) > 160 or not EMAIL_PATTERN.fullmatch(email):
+        return jsonify({"error": "Ingresá un email válido con formato nombre@dominio.com"}), 400
+    if not valid_phone(telefono):
+        return jsonify({"error": "Ingresá un teléfono válido de 8 a 20 caracteres"}), 400
+    if data.get("acepta_terminos") is not True:
+        return jsonify({"error": "Debés aceptar las bases de participación y el aviso de privacidad"}), 400
+    if tipo_documento not in DOCUMENT_TYPES:
+        return jsonify({"error": "Seleccioná un tipo de documento válido"}), 400
+    if tipo_documento == "dni" and not re.fullmatch(r"[0-9]{7,8}", documento):
+        return jsonify({"error": "El DNI debe contener 7 u 8 números"}), 400
+    if tipo_documento in PASSPORT_TYPES and not re.fullmatch(r"[A-Z0-9-]{4,20}", documento):
+        return jsonify({"error": "El pasaporte debe tener entre 4 y 20 letras, números o guiones"}), 400
+    if tipo_documento not in PASSPORT_TYPES and not re.fullmatch(r"[A-Z0-9./ -]{1,32}", documento):
+        return jsonify({"error": "El documento contiene caracteres no admitidos"}), 400
     if not valid_password(password):
         return jsonify({"error": "La contraseña requiere 8 caracteres, una mayúscula y un carácter especial"}), 400
 
+    if email == ADMIN_EMAIL:
+        if not valid_password(ADMIN_INITIAL_PASSWORD):
+            return jsonify({"error": "La cuenta admin inicial no tiene una contraseña válida en Secret Manager"}), 503
+        ensure_bootstrap_admin()
+
+    terms_timestamp = utc_now()
+    promotions_consent = data.get("consentimiento_promociones") is True
     user_record = {
         "nombre": nombre,
         "apellido": apellido,
         "email": email,
         "telefono": telefono,
+        "tipo_documento": tipo_documento,
+        "documento": documento,
+        "rol": "user",
         "password_hash": generate_password_hash(password),
         "timestampRegistro": utc_now(),
+        "acepta_terminos": True,
+        "fecha_aceptacion_terminos": terms_timestamp,
+        "consentimiento_promociones": promotions_consent,
+        "fecha_consentimiento_promociones": terms_timestamp if promotions_consent else None,
     }
     result = {}
 
@@ -272,10 +415,132 @@ def iniciar_sesion():
         return jsonify({"error": "Email o contraseña incorrectos"}), 401
 
     users = read_json("usuarios.json", {})
+    if email == ADMIN_EMAIL and email not in users:
+        if not valid_password(ADMIN_INITIAL_PASSWORD):
+            return jsonify({"error": "La cuenta admin inicial no tiene una contraseña válida en Secret Manager"}), 503
+        ensure_bootstrap_admin()
+        users = read_json("usuarios.json", {})
     user = users.get(email)
     if not user or not check_password_hash(user.get("password_hash", ""), password):
         return jsonify({"error": "Email o contraseña incorrectos"}), 401
+    role = "admin" if email == ADMIN_EMAIL or user.get("rol") == "admin" else "user"
+    if user.get("rol") != role:
+        def persist_role(records):
+            if email in records:
+                records[email]["rol"] = role
+            return records, None
+
+        update_json("usuarios.json", {}, persist_role)
+        user["rol"] = role
     return jsonify({"success": True, "token": issue_token(email), "user": public_user(user)}), 200
+
+
+def admin_user_summary(email, user):
+    return {
+        "email": email,
+        "nombre": user.get("nombre", ""),
+        "apellido": user.get("apellido", ""),
+        "telefono": user.get("telefono", ""),
+        "rol": "admin" if email == ADMIN_EMAIL or user.get("rol") == "admin" else "user",
+        "fecha_registro": user.get("timestampRegistro", ""),
+    }
+
+
+@app.get("/api/admin/usuarios")
+@require_session
+@require_admin
+def listar_usuarios_admin():
+    users = read_json("usuarios.json", {})
+    usuarios = [admin_user_summary(email, user) for email, user in users.items()]
+    usuarios.sort(key=lambda user: (user["apellido"].casefold(), user["nombre"].casefold(), user["email"]))
+    return jsonify({"success": True, "usuarios": usuarios, "total_usuarios": len(usuarios)}), 200
+
+
+@app.post("/api/admin/cambiar-rol")
+@require_session
+@require_admin
+def cambiar_rol_admin():
+    data = request.get_json(silent=True) or {}
+    email = normalize_email(data.get("email"))
+    role = data.get("rol")
+    if not EMAIL_PATTERN.fullmatch(email) or not isinstance(role, str) or role not in {"user", "admin"}:
+        return jsonify({"error": "Ingresá un email y un rol válidos"}), 400
+    if email == ADMIN_EMAIL and role != "admin":
+        return jsonify({"error": "No se puede degradar al administrador principal"}), 409
+
+    result = {}
+
+    def set_role(users):
+        target = users.get(email)
+        if not target:
+            result["not_found"] = True
+            return users, None
+        if role == "user":
+            admins = sum(
+                1 for user_email, user in users.items()
+                if user_email == ADMIN_EMAIL or user.get("rol") == "admin"
+            )
+            if admins <= 1 and target.get("rol") == "admin":
+                result["last_admin"] = True
+                return users, None
+        target["rol"] = role
+        result["user"] = admin_user_summary(email, target)
+        return users, None
+
+    update_json("usuarios.json", {}, set_role)
+    if result.get("not_found"):
+        return jsonify({"error": "No existe un usuario con ese email"}), 404
+    if result.get("last_admin"):
+        return jsonify({"error": "Debe quedar al menos un administrador"}), 409
+    return jsonify({"success": True, "usuario": result["user"]}), 200
+
+
+@app.get("/api/admin/visitas-resumen")
+@require_session
+@require_admin
+def resumen_visitas_admin():
+    users = read_json("usuarios.json", {})
+    visits = read_json("visitas.json", [])
+    locales = read_json("locales.json", DEFAULT_LOCALES)
+    local_names = {local.get("id"): local.get("nombre", "Local") for local in locales}
+    visits_by_email = {}
+    visits_by_local = {}
+
+    for visit in visits:
+        email = visit.get("email")
+        local_id = visit.get("local_id")
+        if email not in users or type(local_id) is not int:
+            continue
+        visits_by_email.setdefault(email, []).append({
+            "local_id": local_id,
+            "nombre": local_names.get(local_id, "Local"),
+            "timestamp": visit.get("timestamp", ""),
+            "distancia": visit.get("distancia"),
+        })
+        visits_by_local[local_id] = visits_by_local.get(local_id, 0) + 1
+
+    usuarios = []
+    for email, user in users.items():
+        user_visits = visits_by_email.get(email, [])
+        usuarios.append({
+            **admin_user_summary(email, user),
+            "total_checkins": len(user_visits),
+            "visitas": user_visits,
+        })
+    usuarios.sort(key=lambda user: (-user["total_checkins"], user["apellido"].casefold(), user["email"]))
+    locales_mas_visitados = [
+        {"local_id": local_id, "nombre": local_names.get(local_id, "Local"), "checkins": count}
+        for local_id, count in visits_by_local.items()
+    ]
+    locales_mas_visitados.sort(key=lambda local: (-local["checkins"], local["local_id"]))
+
+    return jsonify({
+        "success": True,
+        "total_usuarios": len(users),
+        "total_checkins": sum(len(user_visits) for user_visits in visits_by_email.values()),
+        "usuarios": usuarios,
+        "locales_mas_visitados": locales_mas_visitados,
+    }), 200
 
 
 @app.get("/api/visitas")

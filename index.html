@@ -221,12 +221,48 @@
         .visit-filters { display: flex; gap: 6px; margin: 0 0 12px; }
         .visit-filter { padding: 6px 9px; border: 1px solid #51445d; border-radius: 5px; background: #191521; color: #ddd2e5; font: inherit; font-size: .75rem; cursor: pointer; }
         .visit-filter.active { border-color: #ff7a1a; background: #633519; color: #ffd1ab; }
+        .admin-open-button { padding: 8px 11px; border: 1px solid #ff7a1a; border-radius: 5px; background: #ff7a1a; color: #1a1010; font: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; }
+        .admin-open-button:hover { background: #ff9347; }
+        .admin-dialog { width: min(96vw, 1120px); max-height: 92vh; overflow: auto; padding: 22px; border: 1px solid #684b7a; border-radius: 9px; background: #17141e; box-shadow: 0 24px 80px rgba(0,0,0,.6); }
+        .admin-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+        .admin-dialog-header h2 { font-size: 1.2rem; margin-bottom: 5px; }
+        .admin-dialog-header p { color: #c5bacd; font-size: .84rem; }
+        .admin-close { width: 34px; height: 34px; border: 1px solid #51445d; border-radius: 5px; background: #191521; color: #eee5f3; font-size: 1.2rem; cursor: pointer; }
+        .admin-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+        .admin-stat { padding: 12px 14px; border: 1px solid var(--line); border-left: 3px solid #ff7a1a; border-radius: 6px; background: #211b2c; }
+        .admin-stat span { display: block; color: #c5bacd; font-size: .78rem; }
+        .admin-stat strong { display: block; margin-top: 3px; color: #ff9a45; font-size: 1.35rem; }
+        .admin-toolbar { display: flex; align-items: end; gap: 10px; margin-bottom: 12px; }
+        .admin-toolbar .form-field { flex: 1; }
+        .admin-table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+        .admin-table { width: 100%; min-width: 760px; border-collapse: collapse; }
+        .admin-table th, .admin-table td { padding: 10px 11px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; font-size: .8rem; }
+        .admin-table th { position: sticky; top: 0; background: #211b2c; color: #f0e5f7; }
+        .admin-table td { color: #d3cad9; }
+        .admin-table tr:last-child td { border-bottom: 0; }
+        .admin-role-control { display: flex; align-items: center; gap: 6px; }
+        .admin-role-control select { min-width: 86px; padding: 6px; border: 1px solid #51445d; border-radius: 4px; background: #110f16; color: #fff; font: inherit; }
+        .admin-action { padding: 6px 8px; border: 1px solid #72518a; border-radius: 4px; background: #191521; color: #eee5f3; font: inherit; font-size: .75rem; cursor: pointer; white-space: nowrap; }
+        .admin-action:hover { border-color: #ff7a1a; color: #ffad70; }
+        .admin-action:disabled { opacity: .45; cursor: wait; }
+        .admin-user-detail td { padding: 12px 16px; background: #13111a; }
+        .admin-user-detail ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 6px 18px; list-style: none; }
+        .admin-user-detail li { color: #d3cad9; font-size: .78rem; }
+        .admin-message { min-height: 1.2em; margin: 0 0 10px; color: #ffad70; font-size: .82rem; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .form-field { display: grid; gap: 6px; }
         .form-field.full { grid-column: 1 / -1; }
         .form-field label { color: #ded4e5; font-size: .8rem; font-weight: 600; }
         .form-field input { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #51445d; border-radius: 5px; outline: none; background: #110f16; color: #fff; font: inherit; }
-        .form-field input:focus { border-color: #b07bea; box-shadow: 0 0 0 2px rgba(176,123,234,.18); }
+        .form-field select { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #51445d; border-radius: 5px; outline: none; background: #110f16; color: #fff; font: inherit; }
+        .document-control { height: 44px; }
+        .form-field input:focus, .form-field select:focus { border-color: #b07bea; box-shadow: 0 0 0 2px rgba(176,123,234,.18); }
+        .consent-section { display: grid; gap: 10px; }
+        .consent-section details { color: #c5bacd; font-size: .76rem; line-height: 1.45; }
+        .consent-section summary { color: #e6d9ed; cursor: pointer; font-weight: 700; }
+        .consent-section details p { margin: 7px 0 0; font-size: .76rem; }
+        .consent-check { display: flex; align-items: flex-start; gap: 9px; color: #ddd2e5; font-size: .78rem; line-height: 1.4; }
+        .consent-check input { flex: 0 0 17px; width: 17px; height: 17px; margin: 1px 0 0; accent-color: #ff7a1a; }
         .submit-button { width: 100%; margin-top: 18px; padding: 11px 14px; border: 0; border-radius: 5px; background: #ff7a1a; color: #1a1010; font: inherit; font-weight: 800; cursor: pointer; }
         .submit-button:hover { background: #ff9347; }
         .toast { position: fixed; z-index: 3000; left: 50%; bottom: 22px; transform: translate(-50%, 16px); width: min(90vw, 460px); padding: 12px 16px; border: 1px solid #76518c; border-radius: 7px; background: #211b2c; color: #fff; box-shadow: 0 10px 35px rgba(0,0,0,.4); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
@@ -273,6 +309,10 @@
             .sidebar-tools { align-items: flex-end; flex-direction: column; gap: 6px; }
             .route-sort { align-items: flex-start; flex-direction: column; gap: 4px; }
             .route-sort select { max-width: 175px; }
+            .admin-dialog { padding: 16px; }
+            .admin-toolbar { align-items: stretch; flex-direction: column; }
+            .admin-stats { gap: 7px; }
+            .admin-stat { padding: 10px; }
         }
     </style>
 </head>
@@ -285,6 +325,7 @@
             </div>
             <div class="user-actions">
                 <div class="user-chip" id="user-chip">Participante sin registrar</div>
+                <button class="admin-open-button" id="admin-open-button" type="button" hidden>Panel Admin</button>
                 <button class="logout-button" id="logout-button" type="button" hidden>Cerrar sesión</button>
             </div>
         </div>
@@ -338,7 +379,7 @@
             <form id="login-form" class="auth-form">
                 <div class="form-field">
                     <label for="login-email">Email</label>
-                    <input id="login-email" name="email" type="email" autocomplete="email" required maxlength="160">
+                        <input id="login-email" name="email" type="email" autocomplete="email" required maxlength="160" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}">
                 </div>
                 <div class="form-field">
                     <label for="login-password">Contraseña</label>
@@ -351,25 +392,59 @@
                 <div class="form-grid">
                     <div class="form-field">
                         <label for="register-first-name">Nombre</label>
-                        <input id="register-first-name" name="nombre" autocomplete="given-name" required maxlength="80">
+                        <input id="register-first-name" name="nombre" autocomplete="given-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}\p{M} '’\-]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
                     </div>
                     <div class="form-field">
                         <label for="register-last-name">Apellido</label>
-                        <input id="register-last-name" name="apellido" autocomplete="family-name" required maxlength="80">
+                        <input id="register-last-name" name="apellido" autocomplete="family-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}\p{M} '’\-]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
                     </div>
                     <div class="form-field full">
                         <label for="register-email">Email</label>
-                        <input id="register-email" name="email" type="email" autocomplete="email" required maxlength="160">
+                        <input id="register-email" name="email" type="email" autocomplete="email" required minlength="6" maxlength="160" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}" title="Ingresá un email con formato nombre@dominio.com">
                     </div>
                     <div class="form-field full">
                         <label for="register-phone">Teléfono</label>
-                        <input id="register-phone" name="telefono" type="tel" autocomplete="tel" required maxlength="40">
+                        <input id="register-phone" name="telefono" type="tel" inputmode="numeric" autocomplete="tel" required minlength="8" maxlength="15" pattern="[0-9]{8,15}" title="Ingresá entre 8 y 15 dígitos">
+                    </div>
+                    <div class="form-field">
+                        <label for="register-document-type">Tipo de documento</label>
+                        <select class="document-control" id="register-document-type" name="tipo_documento" required>
+                            <option value="dni">DNI</option>
+                            <option value="pasaporte_argentino">Pasaporte argentino</option>
+                            <option value="pasaporte_extranjero">Pasaporte extranjero</option>
+                            <option value="pasaporte_emergencia">Pasaporte de emergencia</option>
+                            <option value="pasaporte_excepcional">Pasaporte excepcional</option>
+                            <option value="cedula_identidad">Cédula / CI Mercosur</option>
+                            <option value="libreta_civica">Libreta Cívica</option>
+                            <option value="libreta_enrolamiento">Libreta de Enrolamiento</option>
+                            <option value="documento_viaje">Documento de viaje</option>
+                            <option value="residencia_precaria">Residencia precaria</option>
+                            <option value="otro">Otro documento</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="register-document-number">Número de documento</label>
+                        <input class="document-control" id="register-document-number" name="documento" type="text" inputmode="numeric" autocomplete="off" required minlength="7" maxlength="8" pattern="[0-9]{7,8}" title="El DNI admite 7 u 8 números">
                     </div>
                     <div class="form-field full">
                         <label for="register-password">Contraseña</label>
                         <input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128" pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}" title="Mínimo 8 caracteres, una mayúscula y un carácter especial">
-                        <span class="password-hint">Mínimo 8 caracteres, 1 mayúscula y 1 carácter especial.</span>
+                        <span class="password-hint">La contraseña debe tener entre 8 y 128 caracteres.</span>
                     </div>
+                </div>
+                <div class="consent-section">
+                    <details>
+                        <summary>Leer bases y aviso de privacidad</summary>
+                        <p>Usaremos tus datos para gestionar tu cuenta, participación y check-ins de Ruta Mágica 2026. Si aceptás recibir promociones, podremos usar tu email y teléfono para enviarte novedades de los locales. Los datos se almacenan en el servicio de la aplicación. La autorización promocional es opcional y podés solicitar su baja a la organización.</p>
+                    </details>
+                    <label class="consent-check">
+                        <input type="checkbox" name="acepta_terminos" value="true" required>
+                        <span>Acepto las bases de participación y el aviso de privacidad.</span>
+                    </label>
+                    <label class="consent-check">
+                        <input type="checkbox" name="consentimiento_promociones" value="true">
+                        <span>Quiero recibir promociones y novedades de los locales por email o teléfono. Es opcional.</span>
+                    </label>
                 </div>
                 <p class="auth-error" id="register-error" role="alert"></p>
                 <button class="submit-button" type="submit">Crear cuenta</button>
@@ -382,6 +457,44 @@
             <h2 id="welcome-title">¡Gracias por participar de la Ruta Magica 2026!</h2>
             <p>Tu recorrido está listo. ¡Que tengas una aventura increíble!</p>
             <button class="welcome-close" id="welcome-close" type="button">Comenzar recorrido</button>
+        </section>
+    </div>
+    <div class="overlay" id="admin-overlay" hidden>
+        <section class="admin-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+            <div class="admin-dialog-header">
+                <div>
+                    <h2 id="admin-title">Administración de Usuarios y Visitas</h2>
+                    <p>Usuarios registrados, roles y actividad del recorrido.</p>
+                </div>
+                <button class="admin-close" id="admin-close" type="button" aria-label="Cerrar panel admin" title="Cerrar">×</button>
+            </div>
+            <div class="admin-stats" aria-live="polite">
+                <div class="admin-stat"><span>Total de usuarios</span><strong id="admin-user-total">0</strong></div>
+                <div class="admin-stat"><span>Total de check-ins</span><strong id="admin-checkin-total">0</strong></div>
+            </div>
+            <div class="admin-toolbar">
+                <div class="form-field">
+                    <label for="admin-search">Buscar usuario</label>
+                    <input id="admin-search" type="search" placeholder="Nombre, apellido o email" autocomplete="off">
+                </div>
+                <button class="admin-action" id="admin-refresh" type="button">Actualizar</button>
+            </div>
+            <p class="admin-message" id="admin-message" role="status" aria-live="polite"></p>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Teléfono</th>
+                            <th>Registrado</th>
+                            <th>Check-ins</th>
+                            <th>Rol / acciones</th>
+                            <th>Visitas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-body"></tbody>
+                </table>
+            </div>
         </section>
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -480,6 +593,19 @@
                 const email = encodeURIComponent(session.user.email);
                 const payload = await this.request(`/api/visitas?email=${email}`, {}, session);
                 return Array.isArray(payload.visitas) ? payload.visitas : [];
+            },
+            async loadAdminUsers(session) {
+                const payload = await this.request("/api/admin/usuarios", {}, session);
+                return Array.isArray(payload.usuarios) ? payload.usuarios : [];
+            },
+            async loadAdminSummary(session) {
+                return this.request("/api/admin/visitas-resumen", {}, session);
+            },
+            async changeUserRole(email, role, session) {
+                return this.request("/api/admin/cambiar-rol", {
+                    method: "POST",
+                    body: JSON.stringify({ email, rol: role })
+                }, session);
             },
             async recordVisit(local, distanceMeters, session) {
                 const payload = await this.request("/api/visita", {
@@ -609,6 +735,9 @@
         let backendVisits = [];
         let backendVisitsLoaded = false;
         let appInitialization;
+        let adminUsers = [];
+        let adminSummary = null;
+        const expandedAdminUsers = new Set();
         const markersById = new Map();
         const coordinatePromises = new Map();
         let toastTimer;
@@ -627,6 +756,174 @@
 
         function getTurnLabel(local) {
             return local.turno === "manana" ? "☀️ Turno Mañana" : "🌙 Turno Tarde";
+        }
+
+        function updateAdminVisibility() {
+            document.getElementById("admin-open-button").hidden = currentUser?.rol !== "admin";
+            if (currentUser?.rol !== "admin") document.getElementById("admin-overlay").hidden = true;
+        }
+
+        function formatAdminDate(value) {
+            if (!value) return "Sin fecha";
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("es-AR");
+        }
+
+        function createAdminCell(text) {
+            const cell = document.createElement("td");
+            cell.textContent = text;
+            return cell;
+        }
+
+        function renderAdminPanel() {
+            const body = document.getElementById("admin-users-body");
+            const search = document.getElementById("admin-search").value.trim().toLocaleLowerCase("es-AR");
+            const visitSummaryByEmail = new Map((adminSummary?.usuarios || []).map(user => [user.email, user]));
+            const visibleUsers = adminUsers.filter(user =>
+                `${user.nombre} ${user.apellido} ${user.email}`.toLocaleLowerCase("es-AR").includes(search)
+            );
+            body.replaceChildren();
+            document.getElementById("admin-user-total").textContent = String(adminSummary?.total_usuarios ?? adminUsers.length);
+            document.getElementById("admin-checkin-total").textContent = String(adminSummary?.total_checkins ?? 0);
+
+            if (visibleUsers.length === 0) {
+                const row = document.createElement("tr");
+                const empty = createAdminCell(search ? "No hay usuarios que coincidan." : "No hay usuarios registrados.");
+                empty.colSpan = 6;
+                row.append(empty);
+                body.append(row);
+                return;
+            }
+
+            visibleUsers.forEach(user => {
+                const row = document.createElement("tr");
+                const visits = visitSummaryByEmail.get(user.email)?.visitas || [];
+                row.append(
+                    createAdminCell(`${user.nombre} ${user.apellido} · ${user.email}`),
+                    createAdminCell(user.telefono || "—"),
+                    createAdminCell(formatAdminDate(user.fecha_registro)),
+                    createAdminCell(String(visits.length))
+                );
+
+                const roleCell = document.createElement("td");
+                const roleControl = document.createElement("div");
+                roleControl.className = "admin-role-control";
+                const roleSelect = document.createElement("select");
+                roleSelect.setAttribute("aria-label", `Rol de ${user.email}`);
+                [["user", "Usuario"], ["admin", "Admin"]].forEach(([value, label]) => {
+                    const option = document.createElement("option");
+                    option.value = value;
+                    option.textContent = label;
+                    roleSelect.append(option);
+                });
+                roleSelect.value = user.rol;
+                const saveRole = document.createElement("button");
+                saveRole.type = "button";
+                saveRole.className = "admin-action";
+                saveRole.textContent = "Guardar";
+                saveRole.addEventListener("click", () => saveAdminRole(user.email, roleSelect, saveRole));
+                roleControl.append(roleSelect, saveRole);
+                roleCell.append(roleControl);
+                row.append(roleCell);
+
+                const detailCell = document.createElement("td");
+                const detailButton = document.createElement("button");
+                detailButton.type = "button";
+                detailButton.className = "admin-action";
+                detailButton.textContent = expandedAdminUsers.has(user.email) ? "Ocultar visitas" : "Ver visitas";
+                detailButton.setAttribute("aria-expanded", String(expandedAdminUsers.has(user.email)));
+                detailButton.addEventListener("click", () => {
+                    if (expandedAdminUsers.has(user.email)) expandedAdminUsers.delete(user.email);
+                    else expandedAdminUsers.add(user.email);
+                    renderAdminPanel();
+                });
+                detailCell.append(detailButton);
+                row.append(detailCell);
+                body.append(row);
+
+                if (expandedAdminUsers.has(user.email)) {
+                    const detailRow = document.createElement("tr");
+                    detailRow.className = "admin-user-detail";
+                    const detail = document.createElement("td");
+                    detail.colSpan = 6;
+                    const list = document.createElement("ul");
+                    if (visits.length === 0) {
+                        const item = document.createElement("li");
+                        item.textContent = "Sin check-ins registrados.";
+                        list.append(item);
+                    } else {
+                        visits.forEach(visit => {
+                            const item = document.createElement("li");
+                            const distance = Number.isFinite(Number(visit.distancia)) ? ` · ${Math.round(Number(visit.distancia))} m` : "";
+                            item.textContent = `${visit.nombre} · ${formatAdminDate(visit.timestamp)}${distance}`;
+                            list.append(item);
+                        });
+                    }
+                    detail.append(list);
+                    detailRow.append(detail);
+                    body.append(detailRow);
+                }
+            });
+        }
+
+        async function loadAdminPanel() {
+            if (!activeSession || currentUser?.rol !== "admin") {
+                document.getElementById("admin-message").textContent = "Se requiere rol de administrador.";
+                updateAdminVisibility();
+                return;
+            }
+            const message = document.getElementById("admin-message");
+            message.textContent = "Cargando datos...";
+            document.getElementById("admin-refresh").disabled = true;
+            try {
+                const [users, summary] = await Promise.all([
+                    DataRepository.loadAdminUsers(activeSession),
+                    DataRepository.loadAdminSummary(activeSession)
+                ]);
+                adminUsers = users;
+                adminSummary = summary;
+                message.textContent = "";
+                renderAdminPanel();
+            } catch (error) {
+                message.textContent = error.message || "No se pudo cargar el panel.";
+                if (error.status === 401) logout();
+                if (error.status === 403) {
+                    currentUser.rol = "user";
+                    activeSession.user = currentUser;
+                    DataRepository.saveSession(activeSession);
+                    updateAdminVisibility();
+                }
+            } finally {
+                document.getElementById("admin-refresh").disabled = false;
+            }
+        }
+
+        async function saveAdminRole(email, select, button) {
+            const previousRole = adminUsers.find(user => user.email === email)?.rol || "user";
+            if (select.value === previousRole) return;
+            button.disabled = true;
+            try {
+                const result = await DataRepository.changeUserRole(email, select.value, activeSession);
+                if (email === currentUser.email) {
+                    currentUser.rol = result.usuario.rol;
+                    activeSession.user = currentUser;
+                    DataRepository.saveSession(activeSession);
+                    updateAdminVisibility();
+                }
+                document.getElementById("admin-message").textContent = "Rol actualizado.";
+                await loadAdminPanel();
+            } catch (error) {
+                select.value = previousRole;
+                document.getElementById("admin-message").textContent = error.message || "No se pudo cambiar el rol.";
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        function openAdminPanel() {
+            if (currentUser?.rol !== "admin") return;
+            document.getElementById("admin-overlay").hidden = false;
+            loadAdminPanel();
         }
 
         function isLocalVisible(local) {
@@ -984,8 +1281,12 @@
             currentUser = null;
             backendVisits = [];
             backendVisitsLoaded = false;
+            adminUsers = [];
+            adminSummary = null;
             document.getElementById("user-chip").textContent = "Participante sin registrar";
+            document.getElementById("admin-overlay").hidden = true;
             document.getElementById("logout-button").hidden = true;
+            updateAdminVisibility();
             document.getElementById("welcome-overlay").hidden = true;
             showAuthTab("login");
             document.getElementById("registration-overlay").hidden = false;
@@ -1020,12 +1321,43 @@
             document.getElementById("register-error").textContent = "";
         }
 
+        function configureDocumentField() {
+            const type = document.getElementById("register-document-type").value;
+            const documentInput = document.getElementById("register-document-number");
+            if (type === "dni") {
+                documentInput.inputMode = "numeric";
+                documentInput.minLength = 7;
+                documentInput.maxLength = 8;
+                documentInput.pattern = "[0-9]{7,8}";
+                documentInput.title = "El DNI admite 7 u 8 números";
+                documentInput.value = documentInput.value.replace(/\D/g, "");
+                return;
+            }
+            documentInput.inputMode = "text";
+            const isPassport = type.startsWith("pasaporte_");
+            documentInput.maxLength = isPassport ? 20 : 32;
+            documentInput.pattern = isPassport ? "[A-Za-z0-9\\-]{4,20}" : "[A-Za-z0-9.\\/ \\-]{1,32}";
+            documentInput.title = isPassport
+                ? "El pasaporte admite letras, números y guion (4 a 20 caracteres)"
+                : "Ingresá letras, números o separadores válidos del documento";
+        }
+
+            function validatePhoneField() {
+                const phoneInput = document.getElementById("register-phone");
+                const digits = phoneInput.value.replace(/\D/g, "").slice(0, 15);
+                if (phoneInput.value !== digits) phoneInput.value = digits;
+                phoneInput.setCustomValidity(digits.length >= 8 && digits.length <= 15
+                ? ""
+                : "El teléfono debe contener entre 8 y 15 dígitos.");
+            }
+
         async function activateSession(payload) {
             if (!payload.token || !payload.user?.email) throw new Error("El servidor devolvió una sesión incompleta");
             const nextSession = { token: payload.token, user: payload.user };
             DataRepository.saveSession(nextSession);
             activeSession = nextSession;
             currentUser = payload.user;
+            updateAdminVisibility();
             try {
                 backendVisits = await DataRepository.loadVisits(activeSession);
                 backendVisitsLoaded = true;
@@ -1053,7 +1385,11 @@
             const submitButton = form.querySelector("button[type=submit]");
             const formData = new FormData(form);
             const credentials = Object.fromEntries(formData.entries());
-            if (!register) {
+            if (register) {
+                credentials.email = String(credentials.email).trim().toLowerCase();
+                credentials.acepta_terminos = formData.has("acepta_terminos");
+                credentials.consentimiento_promociones = formData.has("consentimiento_promociones");
+            } else {
                 credentials.email = String(credentials.email).trim().toLowerCase();
             }
             errorElement.textContent = "";
@@ -1097,6 +1433,7 @@
                         DataRepository.removeSession();
                         activeSession = null;
                         currentUser = null;
+                        updateAdminVisibility();
                         document.getElementById("logout-button").hidden = true;
                         document.getElementById("user-chip").textContent = "Participante sin registrar";
                         document.getElementById("registration-overlay").hidden = false;
@@ -1148,6 +1485,14 @@
         document.querySelectorAll("[data-auth-tab]").forEach(button => {
             button.addEventListener("click", () => showAuthTab(button.dataset.authTab));
         });
+        document.getElementById("register-document-type").addEventListener("change", configureDocumentField);
+        document.getElementById("register-phone").addEventListener("input", validatePhoneField);
+        document.getElementById("register-phone").addEventListener("change", validatePhoneField);
+        document.getElementById("register-document-number").addEventListener("input", () => {
+            if (document.getElementById("register-document-type").value === "dni") configureDocumentField();
+        });
+        configureDocumentField();
+        validatePhoneField();
 
         document.getElementById("route-sort").value = routeMode;
         document.getElementById("route-sort").addEventListener("change", event => {
@@ -1164,6 +1509,12 @@
             document.getElementById("welcome-overlay").hidden = true;
         });
         document.getElementById("logout-button").addEventListener("click", logout);
+        document.getElementById("admin-open-button").addEventListener("click", openAdminPanel);
+        document.getElementById("admin-close").addEventListener("click", () => {
+            document.getElementById("admin-overlay").hidden = true;
+        });
+        document.getElementById("admin-refresh").addEventListener("click", loadAdminPanel);
+        document.getElementById("admin-search").addEventListener("input", renderAdminPanel);
 
         document.getElementById("login-form").addEventListener("submit", event => submitAuthForm(event, "login"));
         document.getElementById("register-form").addEventListener("submit", event => submitAuthForm(event, "register"));
@@ -1176,6 +1527,7 @@
             document.getElementById("registration-overlay").hidden = false;
             showAuthTab("login");
         }
+        updateAdminVisibility();
         renderLocalCards();
         appInitialization = initializeAppData();
     </script>
