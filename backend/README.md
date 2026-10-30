@@ -36,6 +36,8 @@ No guardar `SECRET_KEY` en este repositorio. Sin esa variable, las rutas de aute
 - `POST /api/admin/locales`: requiere rol admin y crea un local en `locales`.
 - `PUT /api/admin/locales/<id>`: requiere rol admin y edita los datos de un local.
 - `DELETE /api/admin/locales/<id>`: requiere rol admin e inhabilita el local con `activo=false`; no elimina sus visitas históricas.
+- `DELETE /api/admin/locales/<id>/definitivo`: requiere rol admin y elimina locales sin check-ins; responde `409` si hay historial, para evitar dejar visitas huérfanas.
+- `DELETE /api/admin/locales/<id>/definitivo`: requiere rol admin y elimina el documento sólo si no tiene check-ins históricos; si los tiene, responde `409` para preservar la referencia.
 - `GET /api/auth/google/config` y `POST /api/auth/google`: publican la configuración de Google y verifican el ID token en backend. Las cuentas nuevas requieren aceptar las bases y el aviso de privacidad; el consentimiento de promociones es opcional y se guarda con su fecha.
 - `GET /api/visitas?email=...`: requiere `Authorization: Bearer <token>` y devuelve el historial de ese usuario.
 - `POST /api/visita`: registra un check-in autenticado con `local_id` y `distancia`.

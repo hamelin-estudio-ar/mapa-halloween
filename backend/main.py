@@ -21,7 +21,7 @@ CORS(
     app,
     resources={r"/api/*": {"origins": allowed_origins}},
     allow_headers=["Content-Type", "Authorization"],
-    methods=["GET", "POST", "DELETE", "OPTIONS"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 )
 
 FIRESTORE_DATABASE = os.getenv("FIRESTORE_DATABASE", "(default)").strip() or "(default)"
@@ -411,6 +411,31 @@ def desactivar_local_admin(local_id):
     return jsonify({"success": True, "id": local_id, "activo": False}), 200
 
 
+@app.delete("/api/admin/locales/<int:local_id>/definitivo")
+@require_session
+@require_admin
+def eliminar_local_admin(local_id):
+    local_ref = _collection("locales.json").document(str(local_id))
+    visit_query = _collection("visitas.json").where("local_id", "==", local_id).limit(1)
+
+    def delete_local(transaction):
+        local_snapshot = transaction_get_document(transaction, local_ref)
+        if not local_snapshot.exists:
+            return {"not_found": True}
+        historical_visits = list(visit_query.stream(transaction=transaction))
+        if historical_visits:
+            return {"has_history": True}
+        transaction.delete(local_ref)
+        return {"deleted": True}
+
+    result = run_transaction(delete_local)
+    if result.get("not_found"):
+        return jsonify({"error": "No existe un local con ese ID"}), 404
+    if result.get("has_history"):
+        return jsonify({"error": "El local tiene visitas históricas. Inhabilitalo para conservarlas."}), 409
+    return jsonify({"success": True, "id": local_id, "deleted": True}), 200
+
+
 @app.get("/api/auth/google/config")
 def configuracion_login_google():
     return jsonify({
@@ -679,9 +704,6 @@ def registrar_visita():
         return jsonify({"error": "local_id y distancia son obligatorios"}), 400
     if local_id <= 0 or not math.isfinite(distancia) or distancia < 0 or distancia >= CHECKIN_DISTANCE_LIMIT_METERS:
         return jsonify({"error": "La visita debe estar a menos de 2 metros del local"}), 400
-    local = get_document("locales.json", str(local_id))
-    if not local or local.get("activo", True) is False:
-        return jsonify({"error": "El local no existe"}), 404
     user = get_document("usuarios.json", user_document_id(g.user_email))
     if not user:
         return jsonify({"error": "Usuario no encontrado"}), 401
@@ -694,8 +716,13 @@ def registrar_visita():
     }
     visit_ref = _collection("visitas.json").document(visit_document_id(g.user_email, local_id))
     user_ref = _collection("usuarios.json").document(user_document_id(g.user_email))
+    local_ref = _collection("locales.json").document(str(local_id))
 
     def add_visit(transaction):
+        local_snapshot = transaction_get_document(transaction, local_ref)
+        local_record = local_snapshot.to_dict() if local_snapshot.exists else None
+        if not local_record or local_record.get("activo", True) is False:
+            return {"local_unavailable": True}
         user_snapshot = transaction_get_document(transaction, user_ref)
         if not user_snapshot.exists:
             return {"account_missing": True}
@@ -706,6 +733,8 @@ def registrar_visita():
         return {"created": True, "visit": visit}
 
     result = run_transaction(add_visit)
+    if result.get("local_unavailable"):
+        return jsonify({"error": "El local ya no está disponible"}), 404
     if result.get("account_missing"):
         return jsonify({"error": "La cuenta ya no está disponible. Iniciá sesión nuevamente"}), 401
     total = len(get_visits_for(g.user_email))

@@ -1043,6 +1043,18 @@
                 }
                 return this.request(`/api/admin/locales/${localId}`, { method: "DELETE" }, session);
             },
+            async deleteAdminLocalePermanently(localId, session) {
+                if (isLocalAdminDemoSession(session)) {
+                    if (localAdminDemoVisits.some(visit => visit.local_id === localId)) {
+                        const error = new Error("El local tiene visitas de demo; inhabilitalo para conservarlas.");
+                        error.status = 409;
+                        throw error;
+                    }
+                    localAdminDemoLocales = localAdminDemoLocales.filter(local => local.id !== localId);
+                    return { success: true, id: localId, deleted: true };
+                }
+                return this.request(`/api/admin/locales/${localId}/definitivo`, { method: "DELETE" }, session);
+            },
             async loadVisits(session) {
                 if (isLocalAdminDemoSession(session)) {
                     return cloneDemoData(localAdminDemoVisits.filter(visit => visit.email === session.user.email));
@@ -1951,6 +1963,12 @@
                 active.textContent = local.activo === false ? "Reactivar" : "Inhabilitar";
                 active.addEventListener("click", () => setAdminLocaleActive(local, active));
                 actions.append(active);
+                const remove = document.createElement("button");
+                remove.type = "button";
+                remove.className = "admin-action danger";
+                remove.textContent = "Eliminar";
+                remove.addEventListener("click", () => deleteAdminLocale(local, remove));
+                actions.append(remove);
                 row.append(info, actions);
                 list.append(row);
             });
@@ -2065,6 +2083,25 @@
                 message.textContent = local.activo === false ? "Local reactivado." : "Local inhabilitado; se conservaron sus visitas.";
             } catch (error) {
                 message.textContent = error.message || "No se pudo actualizar el estado del local.";
+                if (error.status === 401) logout();
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function deleteAdminLocale(local, button) {
+            if (!activeSession || currentUser?.rol !== "admin") return;
+            const confirmed = window.confirm(`¿Eliminar definitivamente ${local.nombre}? Sólo se puede borrar si no tiene check-ins históricos.`);
+            if (!confirmed) return;
+            button.disabled = true;
+            const message = document.getElementById("locations-admin-message");
+            try {
+                await DataRepository.deleteAdminLocalePermanently(local.id, activeSession);
+                await Promise.all([loadAdminLocations(), reloadActiveLocales()]);
+                if (Number(document.getElementById("location-id").value) === local.id) resetLocaleForm();
+                message.textContent = "Local eliminado definitivamente.";
+            } catch (error) {
+                message.textContent = error.message || "No se pudo eliminar el local.";
                 if (error.status === 401) logout();
             } finally {
                 button.disabled = false;
