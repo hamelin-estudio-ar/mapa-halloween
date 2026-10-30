@@ -117,6 +117,13 @@ def run_transaction(callback):
     return firestore.transactional(callback)(transaction)
 
 
+def transaction_get_document(transaction, document_ref):
+    result = transaction.get(document_ref)
+    if hasattr(result, "exists"):
+        return result
+    return next(iter(result))
+
+
 def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
@@ -336,13 +343,13 @@ def crear_local_admin():
     counter_ref = _firestore_client().collection("sistema").document("locales")
 
     def create_local(transaction):
-        counter_snapshot = transaction.get(counter_ref)
+        counter_snapshot = transaction_get_document(transaction, counter_ref)
         if counter_snapshot.exists:
             next_id = max(1, int((counter_snapshot.to_dict() or {}).get("next_id", 1)))
         else:
             existing = collection.stream(transaction=transaction)
             next_id = max((int((snapshot.to_dict() or {}).get("id", 0)) for snapshot in existing), default=0) + 1
-        while transaction.get(collection.document(str(next_id))).exists:
+        while transaction_get_document(transaction, collection.document(str(next_id))).exists:
             next_id += 1
         local = {**payload, "id": next_id, "activo": True, "created_at": utc_now(), "updated_at": utc_now()}
         transaction.create(collection.document(str(next_id)), local)
@@ -363,7 +370,7 @@ def actualizar_local_admin(local_id):
     local_ref = _collection("locales.json").document(str(local_id))
 
     def update_local(transaction):
-        snapshot = transaction.get(local_ref)
+        snapshot = transaction_get_document(transaction, local_ref)
         if not snapshot.exists:
             return None
         current = snapshot.to_dict() or {}
@@ -390,7 +397,7 @@ def desactivar_local_admin(local_id):
     local_ref = _collection("locales.json").document(str(local_id))
 
     def deactivate_local(transaction):
-        snapshot = transaction.get(local_ref)
+        snapshot = transaction_get_document(transaction, local_ref)
         if not snapshot.exists:
             return False
         local = snapshot.to_dict() or {}
@@ -469,7 +476,7 @@ def iniciar_sesion_google():
     user_ref = _collection("usuarios.json").document(user_document_id(email))
 
     def upsert_google_user(transaction):
-        snapshot = transaction.get(user_ref)
+        snapshot = transaction_get_document(transaction, user_ref)
         user = snapshot.to_dict() if snapshot.exists else None
         if user:
             linked_sub = user.get("google_sub")
@@ -538,11 +545,11 @@ def cambiar_rol_admin():
     roles_ref = _firestore_client().collection("sistema").document("roles")
 
     def set_role(transaction):
-        snapshot = transaction.get(user_ref)
+        snapshot = transaction_get_document(transaction, user_ref)
         target = snapshot.to_dict() if snapshot.exists else None
         if not target:
             return {"not_found": True}
-        roles_snapshot = transaction.get(roles_ref)
+        roles_snapshot = transaction_get_document(transaction, roles_ref)
         if roles_snapshot.exists:
             admin_count = int((roles_snapshot.to_dict() or {}).get("admin_count", 0))
         else:
@@ -581,7 +588,7 @@ def eliminar_usuario_admin():
     user_ref = _collection("usuarios.json").document(user_document_id(email))
 
     def remove_user(transaction):
-        snapshot = transaction.get(user_ref)
+        snapshot = transaction_get_document(transaction, user_ref)
         current = snapshot.to_dict() if snapshot.exists else None
         if not current:
             return {"not_found": True}
@@ -689,10 +696,10 @@ def registrar_visita():
     user_ref = _collection("usuarios.json").document(user_document_id(g.user_email))
 
     def add_visit(transaction):
-        user_snapshot = transaction.get(user_ref)
+        user_snapshot = transaction_get_document(transaction, user_ref)
         if not user_snapshot.exists:
             return {"account_missing": True}
-        snapshot = transaction.get(visit_ref)
+        snapshot = transaction_get_document(transaction, visit_ref)
         if snapshot.exists:
             return {"created": False, "visit": snapshot.to_dict() or {}}
         transaction.create(visit_ref, visit)
@@ -711,7 +718,7 @@ def eliminar_visita(local_id):
     visit_ref = _collection("visitas.json").document(visit_document_id(g.user_email, local_id))
 
     def remove_visit(transaction):
-        snapshot = transaction.get(visit_ref)
+        snapshot = transaction_get_document(transaction, visit_ref)
         if not snapshot.exists:
             return {"removed": False}
         transaction.delete(visit_ref)
