@@ -13,6 +13,9 @@ from email.message import EmailMessage
 from functools import wraps
 from pathlib import Path
 
+from google.auth.exceptions import GoogleAuthError
+from google.auth.transport.requests import Request as GoogleAuthRequest
+from google.oauth2 import id_token as google_id_token
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
@@ -34,6 +37,7 @@ PERSISTENCE_FILES = {"usuarios.json", "visitas.json", "locales.json", "email_ver
 SESSION_SECRET = os.getenv("SECRET_KEY", "").strip()
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@rutamagica.com.ar").strip().lower()
 ADMIN_INITIAL_PASSWORD = os.getenv("ADMIN_INITIAL_PASSWORD", "")
+GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "").strip()
 SMTP_HOST = os.getenv("SMTP_HOST", os.getenv("SMTP_SERVER", "")).strip()
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", os.getenv("SMTP_USER", "")).strip()
@@ -64,26 +68,6 @@ EMAIL_PATTERN = re.compile(
     re.IGNORECASE,
 )
 PHONE_PATTERN = re.compile(r"[0-9]{8,15}")
-DOCUMENT_TYPES = {
-    "dni",
-    "pasaporte_argentino",
-    "pasaporte_extranjero",
-    "pasaporte_emergencia",
-    "pasaporte_excepcional",
-    "cedula_identidad",
-    "libreta_civica",
-    "libreta_enrolamiento",
-    "documento_viaje",
-    "residencia_precaria",
-    "otro",
-}
-PASSPORT_TYPES = {
-    "pasaporte_argentino",
-    "pasaporte_extranjero",
-    "pasaporte_emergencia",
-    "pasaporte_excepcional",
-}
-
 DEFAULT_LOCALES = [
     {"id": 1, "nombre": "Il Gioco Tienda de Ropa", "dir": "Av Rivadavia 4995, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
     {"id": 2, "nombre": "BetyGino", "dir": "Rosario 190, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
@@ -139,13 +123,35 @@ def _decode_json(raw, filename):
         raise RuntimeError(f"El archivo de datos {filename} no es JSON válido") from error
 
 
+def _strip_legacy_document_fields(users):
+    if not isinstance(users, dict):
+        return users, False
+    changed = False
+    for user in users.values():
+        if not isinstance(user, dict):
+            continue
+        changed = user.pop("tipo_documento", None) is not None or changed
+        changed = user.pop("documento", None) is not None or changed
+    return users, changed
+
+
+def _sanitize_user_records(filename, records):
+    if filename != "usuarios.json":
+        return records
+    sanitized, changed = _strip_legacy_document_fields(copy.deepcopy(records))
+    if changed:
+        update_json(filename, {}, lambda users: (_strip_legacy_document_fields(users)[0], None))
+    return sanitized
+
+
 def read_json(filename, default):
     bucket = _gcs_bucket()
     if bucket:
         from google.api_core.exceptions import NotFound
 
         try:
-            return _decode_json(bucket.blob(_gcs_object_name(filename)).download_as_text(), filename)
+            records = _decode_json(bucket.blob(_gcs_object_name(filename)).download_as_text(), filename)
+            return _sanitize_user_records(filename, records)
         except NotFound:
             return copy.deepcopy(default)
 
@@ -153,7 +159,8 @@ def read_json(filename, default):
     with LOCAL_STORAGE_LOCK:
         if not path.exists():
             return copy.deepcopy(default)
-        return _decode_json(path.read_text(encoding="utf-8"), filename)
+        records = _decode_json(path.read_text(encoding="utf-8"), filename)
+        return _sanitize_user_records(filename, records)
 
 
 def _write_local_json(filename, value):
@@ -212,10 +219,13 @@ def valid_password(password):
     return (
         isinstance(password, str)
         and len(password) >= 8
-        and len(password) <= 128
         and re.search(r"[A-Z]", password) is not None
         and re.search(r"[^A-Za-z0-9]", password) is not None
     )
+
+
+def valid_admin_password(password):
+    return valid_password(password)
 
 
 def valid_person_name(value):
@@ -554,8 +564,6 @@ def public_user(user):
         "apellido": user["apellido"],
         "email": user["email"],
         "telefono": user.get("telefono", ""),
-        "tipo_documento": user.get("tipo_documento", ""),
-        "documento": user.get("documento", ""),
         "rol": "admin" if user.get("rol") == "admin" else "user",
         "timestampRegistro": user["timestampRegistro"],
     }
@@ -568,7 +576,7 @@ def issue_token(email, auth_version=0):
 
 
 def ensure_bootstrap_admin():
-    if not ADMIN_EMAIL or not valid_password(ADMIN_INITIAL_PASSWORD):
+    if not ADMIN_EMAIL or not valid_admin_password(ADMIN_INITIAL_PASSWORD):
         return
 
     timestamp = utc_now()
@@ -577,8 +585,6 @@ def ensure_bootstrap_admin():
         "apellido": "Ruta Mágica",
         "email": ADMIN_EMAIL,
         "telefono": "",
-        "tipo_documento": "",
-        "documento": "",
         "rol": "admin",
         "password_hash": generate_password_hash(ADMIN_INITIAL_PASSWORD),
         "timestampRegistro": timestamp,
@@ -675,6 +681,14 @@ def listar_locales():
     return jsonify({"success": True, "locales": locales}), 200
 
 
+@app.get("/api/auth/google/config")
+def configuracion_login_google():
+    return jsonify({
+        "enabled": bool(GOOGLE_OAUTH_CLIENT_ID),
+        "client_id": GOOGLE_OAUTH_CLIENT_ID,
+    }), 200
+
+
 @app.post("/api/auth/register")
 def registrar_usuario():
     if TOKEN_SERIALIZER is None:
@@ -684,8 +698,6 @@ def registrar_usuario():
     apellido = data.get("apellido", "").strip() if isinstance(data.get("apellido"), str) else ""
     email = normalize_email(data.get("email"))
     telefono = data.get("telefono", "").strip() if isinstance(data.get("telefono", ""), str) else ""
-    tipo_documento = data.get("tipo_documento", "").strip().lower() if isinstance(data.get("tipo_documento"), str) else ""
-    documento = data.get("documento", "").strip().upper() if isinstance(data.get("documento"), str) else ""
     password = data.get("password")
     verification_token = data.get("email_verification_token")
 
@@ -708,19 +720,11 @@ def registrar_usuario():
         return jsonify({"error": "La verificación del email venció o no es válida. Solicitá un código nuevo"}), 400
     if verification.get("email") != email or verification.get("purpose") != "register":
         return jsonify({"error": "El email verificado no coincide con el email de registro"}), 400
-    if tipo_documento not in DOCUMENT_TYPES:
-        return jsonify({"error": "Seleccioná un tipo de documento válido"}), 400
-    if tipo_documento == "dni" and not re.fullmatch(r"[0-9]{7,8}", documento):
-        return jsonify({"error": "El DNI debe contener 7 u 8 números"}), 400
-    if tipo_documento in PASSPORT_TYPES and not re.fullmatch(r"[A-Z0-9-]{4,20}", documento):
-        return jsonify({"error": "El pasaporte debe tener entre 4 y 20 letras, números o guiones"}), 400
-    if tipo_documento not in PASSPORT_TYPES and not re.fullmatch(r"[A-Z0-9./ -]{1,32}", documento):
-        return jsonify({"error": "El documento contiene caracteres no admitidos"}), 400
     if not valid_password(password):
-        return jsonify({"error": "La contraseña requiere 8 caracteres, una mayúscula y un carácter especial"}), 400
+        return jsonify({"error": "La contraseña debe tener al menos 8 caracteres"}), 400
 
     if email == ADMIN_EMAIL:
-        if not valid_password(ADMIN_INITIAL_PASSWORD):
+        if not valid_admin_password(ADMIN_INITIAL_PASSWORD):
             return jsonify({"error": "La cuenta admin inicial no tiene una contraseña válida en Secret Manager"}), 503
         ensure_bootstrap_admin()
 
@@ -731,8 +735,6 @@ def registrar_usuario():
         "apellido": apellido,
         "email": email,
         "telefono": telefono,
-        "tipo_documento": tipo_documento,
-        "documento": documento,
         "rol": "user",
         "auth_version": 1,
         "password_hash": generate_password_hash(password),
@@ -772,7 +774,7 @@ def iniciar_sesion():
 
     users = read_json("usuarios.json", {})
     if email == ADMIN_EMAIL and email not in users:
-        if not valid_password(ADMIN_INITIAL_PASSWORD):
+        if not valid_admin_password(ADMIN_INITIAL_PASSWORD):
             return jsonify({"error": "La cuenta admin inicial no tiene una contraseña válida en Secret Manager"}), 503
         ensure_bootstrap_admin()
         users = read_json("usuarios.json", {})
@@ -788,6 +790,101 @@ def iniciar_sesion():
 
         update_json("usuarios.json", {}, persist_role)
         user["rol"] = role
+    return jsonify({"success": True, "token": issue_token(email, int(user.get("auth_version", 0))), "user": public_user(user)}), 200
+
+
+@app.post("/api/auth/google")
+def iniciar_sesion_google():
+    if TOKEN_SERIALIZER is None:
+        return jsonify({"error": "El backend no tiene SECRET_KEY configurada"}), 503
+    if not GOOGLE_OAUTH_CLIENT_ID:
+        return jsonify({"error": "El acceso con Google todavía no está configurado"}), 503
+
+    data = request.get_json(silent=True) or {}
+    credential = data.get("credential")
+    if not isinstance(credential, str) or not credential:
+        return jsonify({"error": "Google no devolvió una credencial válida"}), 400
+    try:
+        claims = google_id_token.verify_oauth2_token(
+            credential,
+            GoogleAuthRequest(),
+            GOOGLE_OAUTH_CLIENT_ID,
+        )
+    except (ValueError, GoogleAuthError):
+        return jsonify({"error": "No se pudo verificar tu cuenta de Google. Intentá nuevamente."}), 401
+
+    email = normalize_email(claims.get("email"))
+    google_sub = claims.get("sub")
+    if not EMAIL_PATTERN.fullmatch(email) or not isinstance(google_sub, str) or not google_sub:
+        return jsonify({"error": "Google no devolvió un email válido"}), 401
+    if claims.get("email_verified") is not True:
+        return jsonify({"error": "Necesitamos un email verificado por Google"}), 401
+
+    users = read_json("usuarios.json", {})
+    existing_user = users.get(email)
+    is_new_user = existing_user is None
+    if is_new_user and data.get("acepta_terminos") is not True:
+        return jsonify({
+            "error": "Aceptá las bases y el aviso de privacidad para crear la cuenta con Google",
+            "requires_terms": True,
+        }), 428
+    if email == ADMIN_EMAIL and is_new_user:
+        if not valid_admin_password(ADMIN_INITIAL_PASSWORD):
+            return jsonify({"error": "La cuenta admin inicial no tiene una contraseña válida en Secret Manager"}), 503
+        ensure_bootstrap_admin()
+        users = read_json("usuarios.json", {})
+        existing_user = users.get(email)
+        is_new_user = existing_user is None
+
+    full_name = str(claims.get("name", "")).strip().split()
+    first_name = str(claims.get("given_name") or (full_name[0] if full_name else "Participante")).strip()
+    last_name = str(claims.get("family_name") or " ".join(full_name[1:]) or "Google").strip()
+    if not valid_person_name(first_name):
+        first_name = "Participante"
+    if not valid_person_name(last_name):
+        last_name = "Google"
+    now = utc_now()
+    result = {}
+
+    def upsert_google_user(records):
+        user = records.get(email)
+        if user:
+            linked_sub = user.get("google_sub")
+            if linked_sub and linked_sub != google_sub:
+                result["conflict"] = True
+                return records, None
+            user["google_sub"] = google_sub
+            user["email_verificado"] = True
+            user.setdefault("fecha_verificacion_email", now)
+            result["user"] = copy.deepcopy(user)
+            return records, None
+        user = {
+            "nombre": first_name,
+            "apellido": last_name,
+            "email": email,
+            "telefono": "",
+            "rol": "admin" if email == ADMIN_EMAIL else "user",
+            "auth_version": 1,
+            "password_hash": generate_password_hash(secrets.token_urlsafe(48)),
+            "google_sub": google_sub,
+            "timestampRegistro": now,
+            "acepta_terminos": True,
+            "fecha_aceptacion_terminos": now,
+            "consentimiento_promociones": data.get("consentimiento_promociones") is True,
+            "fecha_consentimiento_promociones": now if data.get("consentimiento_promociones") is True else None,
+            "email_verificado": True,
+            "fecha_verificacion_email": now,
+        }
+        records[email] = user
+        result["user"] = copy.deepcopy(user)
+        return records, None
+
+    update_json("usuarios.json", {}, upsert_google_user)
+    if result.get("conflict"):
+        return jsonify({"error": "Esta cuenta ya está vinculada a otro perfil de Google"}), 409
+    user = result.get("user")
+    if not user:
+        return jsonify({"error": "No se pudo iniciar sesión con Google"}), 500
     return jsonify({"success": True, "token": issue_token(email, int(user.get("auth_version", 0))), "user": public_user(user)}), 200
 
 

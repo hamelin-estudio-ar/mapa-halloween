@@ -255,6 +255,13 @@
         .auth-tab.active { background: #a56de2; color: #160f1d; font-weight: 700; }
         .auth-form[hidden] { display: none; }
         .auth-form { display: grid; gap: 12px; }
+        .google-login { display: grid; gap: 10px; margin: 12px 0; }
+        .google-login[hidden], .google-terms-prompt[hidden] { display: none; }
+        .google-login-divider { display: flex; align-items: center; gap: 10px; color: #a99caf; font-size: .75rem; }
+        .google-login-divider::before, .google-login-divider::after { height: 1px; flex: 1; background: var(--line); content: ""; }
+        .google-signin-button { display: flex; justify-content: center; min-height: 40px; }
+        .google-login-message { min-height: 1.1em; margin: 0; color: #ff9a84; font-size: .78rem; }
+        .google-terms-prompt { display: grid; gap: 10px; padding: 11px; border: 1px solid var(--line); border-radius: 6px; background: #211b2c; }
         .auth-link { justify-self: start; padding: 2px 0; border: 0; background: transparent; color: #ffad70; font: inherit; font-size: .82rem; text-decoration: underline; cursor: pointer; }
         .password-reset-fields { display: grid; gap: 12px; }
         .password-reset-fields[hidden] { display: none; }
@@ -338,7 +345,6 @@
         .form-field label { color: #ded4e5; font-size: .8rem; font-weight: 600; }
         .form-field input { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #51445d; border-radius: 5px; outline: none; background: #110f16; color: #fff; font: inherit; }
         .form-field select { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #51445d; border-radius: 5px; outline: none; background: #110f16; color: #fff; font: inherit; }
-        .document-control { height: 44px; }
         .form-field input:focus, .form-field select:focus { border-color: #b07bea; box-shadow: 0 0 0 2px rgba(176,123,234,.18); }
         .consent-section { display: grid; gap: 10px; }
         .consent-section details { color: #c5bacd; font-size: .76rem; line-height: 1.45; }
@@ -549,12 +555,28 @@
                 </div>
                 <div class="form-field">
                     <label for="login-password">Contraseña</label>
-                    <input id="login-password" name="password" type="password" autocomplete="current-password" required maxlength="128">
+                    <input id="login-password" name="password" type="password" autocomplete="current-password" required>
                 </div>
                 <p class="auth-error" id="login-error" role="alert"></p>
                 <button class="submit-button" type="submit">Iniciar Sesión</button>
                 <button class="auth-link" id="forgot-password-button" type="button">Olvidé mi contraseña</button>
             </form>
+            <div class="google-login" id="google-login-container" hidden>
+                <div class="google-login-divider"><span>o</span></div>
+                <div id="google-signin-button"></div>
+                <p class="auth-error" id="google-login-message" role="alert"></p>
+                <div class="google-terms-prompt" id="google-terms-prompt" hidden>
+                    <label class="consent-check">
+                        <input id="google-accept-terms" type="checkbox" required>
+                        <span>Acepto las bases de participación y el aviso de privacidad para crear la cuenta.</span>
+                    </label>
+                    <label class="consent-check">
+                        <input id="google-promotions-consent" type="checkbox">
+                        <span>Quiero recibir promociones. Es opcional.</span>
+                    </label>
+                    <button class="submit-button" id="google-complete-signup" type="button">Continuar con Google</button>
+                </div>
+            </div>
             <div class="auth-form password-recovery-panel" id="password-recovery-panel" hidden>
                 <button class="auth-link" id="password-recovery-back" type="button">← Volver a iniciar sesión</button>
                 <div class="form-field">
@@ -569,11 +591,11 @@
                     </div>
                     <div class="form-field">
                         <label for="password-reset-new">Nueva contraseña</label>
-                        <input id="password-reset-new" type="password" autocomplete="new-password" minlength="8" maxlength="128" pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}" title="Mínimo 8 caracteres, una mayúscula y un carácter especial">
+                        <input id="password-reset-new" type="password" autocomplete="new-password" minlength="8" pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}" title="Mínimo 8 caracteres, una mayúscula y un carácter especial">
                     </div>
                     <div class="form-field">
                         <label for="password-reset-confirm">Repetir contraseña</label>
-                        <input id="password-reset-confirm" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+                        <input id="password-reset-confirm" type="password" autocomplete="new-password" minlength="8" required>
                     </div>
                     <button class="submit-button" id="complete-password-reset" type="button">Guardar nueva contraseña</button>
                 </div>
@@ -609,30 +631,10 @@
                         <label for="register-phone">Teléfono</label>
                         <input id="register-phone" name="telefono" type="tel" inputmode="numeric" autocomplete="tel" required minlength="8" maxlength="15" pattern="[0-9]{8,15}" title="Ingresá entre 8 y 15 dígitos">
                     </div>
-                    <div class="form-field">
-                        <label for="register-document-type">Tipo de documento</label>
-                        <select class="document-control" id="register-document-type" name="tipo_documento" required>
-                            <option value="dni">DNI</option>
-                            <option value="pasaporte_argentino">Pasaporte argentino</option>
-                            <option value="pasaporte_extranjero">Pasaporte extranjero</option>
-                            <option value="pasaporte_emergencia">Pasaporte de emergencia</option>
-                            <option value="pasaporte_excepcional">Pasaporte excepcional</option>
-                            <option value="cedula_identidad">Cédula / CI Mercosur</option>
-                            <option value="libreta_civica">Libreta Cívica</option>
-                            <option value="libreta_enrolamiento">Libreta de Enrolamiento</option>
-                            <option value="documento_viaje">Documento de viaje</option>
-                            <option value="residencia_precaria">Residencia precaria</option>
-                            <option value="otro">Otro documento</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label for="register-document-number">Número de documento</label>
-                        <input class="document-control" id="register-document-number" name="documento" type="text" inputmode="numeric" autocomplete="off" required maxlength="12" pattern="[0-9]{1,12}" title="El DNI admite únicamente números">
-                    </div>
                     <div class="form-field full">
                         <label for="register-password">Contraseña</label>
-                        <input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128" pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}" title="Mínimo 8 caracteres, una mayúscula y un carácter especial">
-                        <span class="password-hint">La contraseña debe tener entre 8 y 128 caracteres.</span>
+                        <input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="8" pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}" title="Mínimo 8 caracteres, una mayúscula y un carácter especial">
+                        <span class="password-hint">Mínimo 8 caracteres, una mayúscula y un carácter especial. Sin límite máximo.</span>
                     </div>
                 </div>
                 <div class="consent-section">
@@ -910,6 +912,7 @@
                     const error = new Error(payload.error || `Error del servidor (${response.status})`);
                     error.status = response.status;
                     error.retryAfter = Number(payload.retry_after_seconds || response.headers.get("Retry-After") || 0);
+                    error.requiresTerms = payload.requires_terms === true;
                     throw error;
                 }
                 return payload;
@@ -918,6 +921,19 @@
                 return this.request(`/api/auth/${action}`, {
                     method: "POST",
                     body: JSON.stringify(credentials)
+                });
+            },
+            async loadGoogleAuthConfig() {
+                return this.request("/api/auth/google/config");
+            },
+            async authenticateWithGoogle(credential, acceptsTerms, promotionsConsent) {
+                return this.request("/api/auth/google", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        credential,
+                        acepta_terminos: acceptsTerms,
+                        consentimiento_promociones: promotionsConsent
+                    })
                 });
             },
             async sendEmailVerificationCode(email) {
@@ -1115,6 +1131,8 @@
         let activeSession = DataRepository.loadSession();
         let currentUser = activeSession?.user || null;
         let guestMode = false;
+        let googleOAuthClientId = "";
+        let pendingGoogleCredential = "";
         let sidebarWidth = loadSavedSidebarWidth();
         let mobileMapHeight = loadSavedMobileMapHeight();
         let sidebarCollapsed = loadSavedSidebarCollapsed();
@@ -1344,6 +1362,91 @@
             document.getElementById("password-reset-confirm").required = false;
             document.getElementById("password-reset-message").textContent = "";
             document.getElementById("password-reset-email").focus();
+        }
+
+        function loadGoogleIdentityServices() {
+            if (window.google?.accounts?.id) return Promise.resolve();
+            return new Promise((resolve, reject) => {
+                const script = document.createElement("script");
+                script.src = "https://accounts.google.com/gsi/client";
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error("No se pudo cargar Google Sign-In."));
+                document.head.append(script);
+            });
+        }
+
+        async function initializeGoogleSignIn() {
+            try {
+                const config = await DataRepository.loadGoogleAuthConfig();
+                if (!config.enabled || !config.client_id) return;
+                googleOAuthClientId = config.client_id;
+                await loadGoogleIdentityServices();
+                window.google.accounts.id.initialize({
+                    client_id: googleOAuthClientId,
+                    callback: handleGoogleCredential,
+                    auto_select: false,
+                    cancel_on_tap_outside: true
+                });
+                window.google.accounts.id.renderButton(document.getElementById("google-signin-button"), {
+                    type: "standard",
+                    theme: "outline",
+                    size: "large",
+                    text: "continue_with",
+                    shape: "rectangular",
+                    logo_alignment: "left",
+                    width: Math.max(240, Math.min(360, document.querySelector(".registration-dialog").clientWidth - 52))
+                });
+                const loginVisible = !document.getElementById("login-form").hidden;
+                document.getElementById("google-login-container").hidden = !loginVisible;
+            } catch (error) {
+                console.warn("Google Sign-In no está disponible.", error);
+            }
+        }
+
+        async function handleGoogleCredential(response) {
+            if (!response?.credential) return;
+            pendingGoogleCredential = response.credential;
+            document.getElementById("google-login-message").textContent = "";
+            await submitGoogleCredential(false);
+        }
+
+        async function submitGoogleCredential(acceptsTerms) {
+            if (!pendingGoogleCredential) return;
+            const message = document.getElementById("google-login-message");
+            const continueButton = document.getElementById("google-complete-signup");
+            if (acceptsTerms) continueButton.disabled = true;
+            message.textContent = "Verificando cuenta de Google...";
+            try {
+                const payload = await DataRepository.authenticateWithGoogle(
+                    pendingGoogleCredential,
+                    acceptsTerms,
+                    document.getElementById("google-promotions-consent").checked
+                );
+                pendingGoogleCredential = "";
+                await activateSession(payload);
+            } catch (error) {
+                if (error.requiresTerms) {
+                    document.getElementById("google-terms-prompt").hidden = false;
+                    message.textContent = "Para crear una cuenta nueva, aceptá las bases y el aviso de privacidad.";
+                    document.getElementById("google-accept-terms").focus();
+                } else {
+                    message.textContent = error.message || "No se pudo iniciar sesión con Google.";
+                }
+            } finally {
+                continueButton.disabled = false;
+            }
+        }
+
+        function completeGoogleSignup() {
+            const termsCheckbox = document.getElementById("google-accept-terms");
+            if (!termsCheckbox.checked) {
+                termsCheckbox.setCustomValidity("Aceptá las bases y el aviso de privacidad para crear la cuenta.");
+                termsCheckbox.reportValidity();
+                return;
+            }
+            termsCheckbox.setCustomValidity("");
+            submitGoogleCredential(true);
         }
 
         function startPasswordResetCooldown(seconds, codeSent) {
@@ -2382,6 +2485,9 @@
         function showAuthTab(tab) {
             const isLogin = tab === "login";
             document.getElementById("password-recovery-panel").hidden = true;
+            document.getElementById("google-login-container").hidden = !isLogin || !googleOAuthClientId;
+            document.getElementById("google-terms-prompt").hidden = true;
+            document.getElementById("google-login-message").textContent = "";
             document.getElementById("auth-tabs").hidden = false;
             document.querySelector(".guest-access").hidden = false;
             document.getElementById("registration-description").textContent = "Iniciá sesión o creá una cuenta para guardar tu progreso en el recorrido.";
@@ -2393,26 +2499,6 @@
             document.getElementById("register-tab").setAttribute("aria-selected", String(!isLogin));
             document.getElementById("login-error").textContent = "";
             document.getElementById("register-error").textContent = "";
-        }
-
-        function configureDocumentField() {
-            const type = document.getElementById("register-document-type").value;
-            const documentInput = document.getElementById("register-document-number");
-            if (type === "dni") {
-                documentInput.inputMode = "numeric";
-                documentInput.maxLength = 12;
-                documentInput.pattern = "[0-9]{1,12}";
-                documentInput.title = "El DNI admite únicamente números";
-                documentInput.value = documentInput.value.replace(/\D/g, "");
-                return;
-            }
-            documentInput.inputMode = "text";
-            const isPassport = type.startsWith("pasaporte_");
-            documentInput.maxLength = isPassport ? 20 : 32;
-            documentInput.pattern = isPassport ? "[A-Za-z0-9\\-]{4,20}" : "[A-Za-z0-9.\\/ \\-]{1,32}";
-            documentInput.title = isPassport
-                ? "El pasaporte admite letras, números y guion (4 a 20 caracteres)"
-                : "Ingresá letras, números o separadores válidos del documento";
         }
 
             function validatePhoneField() {
@@ -2644,7 +2730,7 @@
         document.getElementById("password-recovery-back").addEventListener("click", () => showAuthTab("login"));
         document.getElementById("send-password-reset-code").addEventListener("click", sendPasswordResetCode);
         document.getElementById("complete-password-reset").addEventListener("click", completePasswordReset);
-        document.getElementById("register-document-type").addEventListener("change", configureDocumentField);
+        document.getElementById("google-complete-signup").addEventListener("click", completeGoogleSignup);
         document.getElementById("locate-me").addEventListener("click", centerOnUser);
         const avatarSelector = document.getElementById("user-avatar");
         avatarSelector.value = selectedUserAvatar;
@@ -2666,10 +2752,6 @@
         document.getElementById("register-email").addEventListener("input", clearRegistrationEmailVerification);
         document.getElementById("register-phone").addEventListener("input", validatePhoneField);
         document.getElementById("register-phone").addEventListener("change", validatePhoneField);
-        document.getElementById("register-document-number").addEventListener("input", () => {
-            if (document.getElementById("register-document-type").value === "dni") configureDocumentField();
-        });
-        configureDocumentField();
         validatePhoneField();
 
         document.getElementById("route-sort").value = routeMode;
@@ -2734,6 +2816,7 @@
         updateAdminVisibility();
         renderLocalCards();
         appInitialization = initializeAppData();
+        initializeGoogleSignIn();
     </script>
 
     <!-- RECORDÁ PEGAR TU API KEY DE GOOGLE MAPS ACÁ -->
