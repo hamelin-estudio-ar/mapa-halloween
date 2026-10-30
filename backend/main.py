@@ -1,17 +1,11 @@
 import copy
-import smtplib
-import json
+import hashlib
 import math
 import os
 import re
-import secrets
-import tempfile
-import threading
 import unicodedata
-from datetime import datetime, timedelta, timezone
-from email.message import EmailMessage
-from functools import wraps
-from pathlib import Path
+from datetime import datetime, timezone
+from functools import lru_cache, wraps
 
 from google.auth.exceptions import GoogleAuthError
 from google.auth.transport.requests import Request as GoogleAuthRequest
@@ -19,7 +13,6 @@ from google.oauth2 import id_token as google_id_token
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
-from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 allowed_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "*").split(",") if origin.strip()]
@@ -30,44 +23,26 @@ CORS(
     methods=["GET", "POST", "DELETE", "OPTIONS"],
 )
 
-DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).resolve().parent / "data"))
-GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "").strip()
-GCS_DATA_PREFIX = "ruta_magica"
-PERSISTENCE_FILES = {"usuarios.json", "visitas.json", "locales.json", "email_verificaciones.json"}
+FIRESTORE_DATABASE = os.getenv("FIRESTORE_DATABASE", "(default)").strip() or "(default)"
+FIRESTORE_COLLECTIONS = {
+    "usuarios.json": "usuarios",
+    "visitas.json": "visitas",
+    "locales.json": "locales",
+}
 SESSION_SECRET = os.getenv("SECRET_KEY", "").strip()
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@rutamagica.com.ar").strip().lower()
-ADMIN_INITIAL_PASSWORD = os.getenv("ADMIN_INITIAL_PASSWORD", "")
 GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "").strip()
-SMTP_HOST = os.getenv("SMTP_HOST", os.getenv("SMTP_SERVER", "")).strip()
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USERNAME = os.getenv("SMTP_USERNAME", os.getenv("SMTP_USER", "")).strip()
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USERNAME).strip()
-class SMTPConfigurationError(RuntimeError):
-    pass
-
-EMAIL_CODE_TTL_SECONDS = 10 * 60
-EMAIL_CODE_COOLDOWN_SECONDS = 60
-EMAIL_CODE_MAX_ATTEMPTS = 5
 SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
 TOKEN_SERIALIZER = (
     URLSafeTimedSerializer(SESSION_SECRET, salt="ruta-magica-session-v1")
     if SESSION_SECRET
     else None
 )
-EMAIL_VERIFICATION_SERIALIZER = (
-    URLSafeTimedSerializer(SESSION_SECRET, salt="ruta-magica-email-verification-v1")
-    if SESSION_SECRET
-    else None
-)
-LOCAL_STORAGE_LOCK = threading.RLock()
 EMAIL_PATTERN = re.compile(
     r"^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@"
     r"[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?"
     r"(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$",
     re.IGNORECASE,
 )
-PHONE_PATTERN = re.compile(r"[0-9]{8,15}")
 DEFAULT_LOCALES = [
     {"id": 1, "nombre": "Il Gioco Tienda de Ropa", "dir": "Av Rivadavia 4995, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
     {"id": 2, "nombre": "BetyGino", "dir": "Rosario 190, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
@@ -99,112 +74,76 @@ DEFAULT_LOCALES = [
 ]
 
 
-def _gcs_bucket():
-    if not GCS_BUCKET_NAME:
-        if os.getenv("K_SERVICE"):
-            raise RuntimeError("Cloud Run requiere configurar GCS_BUCKET_NAME para persistir datos")
-        return None
-    from google.cloud import storage
+@lru_cache(maxsize=1)
+def _firestore_client():
+    from google.cloud import firestore
 
-    return storage.Client().bucket(GCS_BUCKET_NAME)
+    return firestore.Client(database=FIRESTORE_DATABASE)
 
 
-def _gcs_object_name(filename):
-    if filename not in PERSISTENCE_FILES:
-        raise ValueError("Archivo de persistencia no permitido")
-    return f"{GCS_DATA_PREFIX}/{filename}"
-
-
-def _decode_json(raw, filename):
+def _collection(filename):
     try:
-        return json.loads(raw)
-    except json.JSONDecodeError as error:
-        app.logger.exception("El objeto %s contiene JSON inválido", filename)
-        raise RuntimeError(f"El archivo de datos {filename} no es JSON válido") from error
+        collection_name = FIRESTORE_COLLECTIONS[filename]
+    except KeyError as error:
+        raise ValueError("Colección de persistencia no permitida") from error
+    return _firestore_client().collection(collection_name)
 
 
-def _strip_legacy_document_fields(users):
-    if not isinstance(users, dict):
-        return users, False
-    changed = False
-    for user in users.values():
-        if not isinstance(user, dict):
-            continue
-        changed = user.pop("tipo_documento", None) is not None or changed
-        changed = user.pop("documento", None) is not None or changed
-    return users, changed
+def get_document(filename, document_id):
+    snapshot = _collection(filename).document(document_id).get()
+    return snapshot.to_dict() if snapshot.exists else None
 
 
-def _sanitize_user_records(filename, records):
-    if filename != "usuarios.json":
-        return records
-    sanitized, changed = _strip_legacy_document_fields(copy.deepcopy(records))
-    if changed:
-        update_json(filename, {}, lambda users: (_strip_legacy_document_fields(users)[0], None))
-    return sanitized
+def user_document_id(email):
+    return hashlib.sha256(email.encode("utf-8")).hexdigest()
+
+
+def visit_document_id(email, local_id):
+    value = f"{email}:{int(local_id)}".encode("utf-8")
+    return hashlib.sha256(value).hexdigest()
 
 
 def read_json(filename, default):
-    bucket = _gcs_bucket()
-    if bucket:
-        from google.api_core.exceptions import NotFound
-
-        try:
-            records = _decode_json(bucket.blob(_gcs_object_name(filename)).download_as_text(), filename)
-            return _sanitize_user_records(filename, records)
-        except NotFound:
-            return copy.deepcopy(default)
-
-    path = DATA_DIR / filename
-    with LOCAL_STORAGE_LOCK:
-        if not path.exists():
-            return copy.deepcopy(default)
-        records = _decode_json(path.read_text(encoding="utf-8"), filename)
-        return _sanitize_user_records(filename, records)
-
-
-def _write_local_json(filename, value):
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    path = DATA_DIR / filename
-    serialized = json.dumps(value, ensure_ascii=False, indent=2)
-    with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=DATA_DIR, delete=False) as temp_file:
-        temp_file.write(serialized)
-        temp_path = Path(temp_file.name)
-    os.replace(temp_path, path)
-
-
-def update_json(filename, default, mutator):
-    bucket = _gcs_bucket()
-    if bucket:
-        from google.api_core.exceptions import NotFound, PreconditionFailed
-
-        for _ in range(6):
-            blob = bucket.blob(_gcs_object_name(filename))
-            try:
-                blob.reload()
-                generation = int(blob.generation)
-                current = _decode_json(blob.download_as_text(if_generation_match=generation), filename)
-            except NotFound:
-                generation = 0
-                current = copy.deepcopy(default)
-            next_value, result = mutator(current)
-            try:
-                blob.upload_from_string(
-                    json.dumps(next_value, ensure_ascii=False, indent=2),
-                    content_type="application/json; charset=utf-8",
-                    if_generation_match=generation,
-                )
-                return result
-            except PreconditionFailed:
+    collection = _collection(filename)
+    if filename == "usuarios.json":
+        records = {}
+        for snapshot in collection.stream():
+            record = snapshot.to_dict() or {}
+            email = normalize_email(record.get("email") or snapshot.id)
+            if email == "admin@rutamagica.com.ar":
+                snapshot.reference.delete()
                 continue
-        raise RuntimeError(f"No se pudo actualizar {filename} por escrituras concurrentes")
+            legacy_fields = {"tipo_documento", "documento", "password_hash", "password_reset_at"}
+            fields_to_remove = legacy_fields.intersection(record)
+            if fields_to_remove:
+                from google.cloud import firestore
 
-    with LOCAL_STORAGE_LOCK:
-        path = DATA_DIR / filename
-        current = _decode_json(path.read_text(encoding="utf-8"), filename) if path.exists() else copy.deepcopy(default)
-        next_value, result = mutator(current)
-        _write_local_json(filename, next_value)
-        return result
+                snapshot.reference.update({field: firestore.DELETE_FIELD for field in fields_to_remove})
+                for field in fields_to_remove:
+                    record.pop(field, None)
+            record.setdefault("email", email)
+            records[email] = record
+        return records if records else copy.deepcopy(default)
+
+    records = []
+    for snapshot in collection.stream():
+        record = snapshot.to_dict() or {}
+        if filename == "visitas.json" and record.get("email") == "admin@rutamagica.com.ar":
+            snapshot.reference.delete()
+            continue
+        records.append(record)
+    if not records:
+        return copy.deepcopy(default)
+    if filename == "locales.json":
+        records.sort(key=lambda record: int(record.get("id", 0)))
+    return records
+
+
+def run_transaction(callback):
+    from google.cloud import firestore
+
+    transaction = _firestore_client().transaction()
+    return firestore.transactional(callback)(transaction)
 
 
 def utc_now():
@@ -213,19 +152,6 @@ def utc_now():
 
 def normalize_email(value):
     return value.strip().lower() if isinstance(value, str) else ""
-
-
-def valid_password(password):
-    return (
-        isinstance(password, str)
-        and len(password) >= 8
-        and re.search(r"[A-Z]", password) is not None
-        and re.search(r"[^A-Za-z0-9]", password) is not None
-    )
-
-
-def valid_admin_password(password):
-    return valid_password(password)
 
 
 def valid_person_name(value):
@@ -240,322 +166,6 @@ def valid_person_name(value):
         or character in " '\u2019-"
         for character in name[1:]
     )
-
-
-def valid_phone(value):
-    return isinstance(value, str) and PHONE_PATTERN.fullmatch(value.strip()) is not None
-
-
-def send_verification_email(email, code, purpose="register"):
-    if not SMTP_HOST or not SMTP_FROM:
-        raise RuntimeError("El envío de email no está configurado en el servidor")
-    message = EmailMessage()
-    is_password_reset = purpose == "password_reset"
-    message["Subject"] = (
-        "Código para recuperar la contraseña - Ruta Mágica 2026"
-        if is_password_reset
-        else "Código de verificación - Ruta Mágica 2026"
-    )
-    message["From"] = SMTP_FROM
-    message["To"] = email
-    if is_password_reset:
-        message.set_content(
-            f"Tu código para recuperar la contraseña de Ruta Mágica 2026 es: {code}\n\n"
-            "Vence en 10 minutos. Si no solicitaste este código, podés ignorar este mensaje."
-        )
-    else:
-        message.set_content(
-            f"Tu código para verificar el email en Ruta Mágica 2026 es: {code}\n\n"
-            "Vence en 10 minutos. Si no solicitaste este código, podés ignorar este mensaje."
-        )
-    if SMTP_USERNAME:
-        try:
-            SMTP_USERNAME.encode("ascii")
-            SMTP_PASSWORD.encode("ascii")
-        except UnicodeEncodeError as error:
-            raise SMTPConfigurationError(
-                "La cuenta o contraseña SMTP de GCP contiene caracteres no ASCII. Actualizá SMTP_USER/SMTP_PASSWORD con credenciales SMTP compatibles."
-            ) from error
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-        server.starttls()
-        if SMTP_USERNAME:
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-        server.send_message(message)
-
-
-def verification_expired(record, now):
-    try:
-        expires_at = datetime.fromisoformat(record["expires_at"])
-        if expires_at.tzinfo is None:
-            expires_at = expires_at.replace(tzinfo=timezone.utc)
-    except (KeyError, TypeError, ValueError):
-        return True
-    return now >= expires_at
-
-
-def issue_password_reset_code(email):
-    if EMAIL_VERIFICATION_SERIALIZER is None:
-        return jsonify({"error": "El backend no tiene SECRET_KEY configurada"}), 503
-    if not SMTP_HOST or not SMTP_FROM:
-        return jsonify({"error": "La recuperación por email todavía no está configurada en el servidor"}), 503
-
-    users = read_json("usuarios.json", {})
-    if email not in users:
-        return jsonify({
-            "success": True,
-            "message": "Si existe una cuenta con ese email, recibirá un código para recuperar la contraseña",
-        }), 200
-
-    now = datetime.now(timezone.utc)
-    code = f"{secrets.randbelow(1_000_000):06d}"
-    record_key = f"password-reset:{email}"
-    record = {
-        "code_hash": generate_password_hash(code),
-        "sent_at": now.isoformat(),
-        "expires_at": (now + timedelta(seconds=EMAIL_CODE_TTL_SECONDS)).isoformat(),
-        "attempts": 0,
-    }
-    result = {}
-
-    def store_code(records):
-        previous = records.get(record_key)
-        if previous:
-            try:
-                previous_sent_at = datetime.fromisoformat(previous.get("sent_at", ""))
-                elapsed = (now - previous_sent_at).total_seconds()
-            except (TypeError, ValueError):
-                elapsed = EMAIL_CODE_COOLDOWN_SECONDS
-            if elapsed < EMAIL_CODE_COOLDOWN_SECONDS:
-                result["cooldown"] = int(EMAIL_CODE_COOLDOWN_SECONDS - elapsed)
-                return records, None
-        records[record_key] = record
-        return records, None
-
-    update_json("email_verificaciones.json", {}, store_code)
-    if result.get("cooldown"):
-        retry_after = result["cooldown"]
-        response = jsonify({
-            "error": f"Esperá {retry_after} segundos antes de pedir otro código",
-            "retry_after_seconds": retry_after,
-        })
-        response.headers["Retry-After"] = str(retry_after)
-        return response, 429
-
-    def remove_failed_code(records):
-        current = records.get(record_key)
-        if current and current.get("code_hash") == record["code_hash"]:
-            records.pop(record_key, None)
-        return records, None
-
-    try:
-        send_verification_email(email, code, purpose="password_reset")
-    except SMTPConfigurationError:
-        app.logger.warning("La autenticación SMTP requiere credenciales compatibles con ASCII")
-        update_json("email_verificaciones.json", {}, remove_failed_code)
-        return jsonify({"error": "La configuración SMTP contiene caracteres no compatibles. Revisá las credenciales en GCP."}), 503
-    except UnicodeError:
-        app.logger.warning("La autenticación SMTP contiene credenciales no ASCII")
-        update_json("email_verificaciones.json", {}, remove_failed_code)
-        return jsonify({"error": "La configuración SMTP contiene caracteres no compatibles. Revisá las credenciales en GCP."}), 503
-    except (OSError, smtplib.SMTPException, RuntimeError) as error:
-        app.logger.warning("No se pudo enviar un código de recuperación: %s", error)
-        update_json("email_verificaciones.json", {}, remove_failed_code)
-        return jsonify({"error": "No se pudo enviar el email. Revisá la configuración del servidor e intentá de nuevo"}), 503
-
-    return jsonify({
-        "success": True,
-        "message": "Si existe una cuenta con ese email, recibirá un código para recuperar la contraseña",
-        "cooldown_seconds": EMAIL_CODE_COOLDOWN_SECONDS,
-    }), 200
-
-
-@app.post("/api/auth/email/send-code")
-def enviar_codigo_verificacion():
-    if EMAIL_VERIFICATION_SERIALIZER is None:
-        return jsonify({"error": "El backend no tiene SECRET_KEY configurada"}), 503
-    if not SMTP_HOST or not SMTP_FROM:
-        return jsonify({"error": "La verificación por email todavía no está configurada en el servidor"}), 503
-    data = request.get_json(silent=True) or {}
-    email = normalize_email(data.get("email"))
-    if len(email) > 160 or not EMAIL_PATTERN.fullmatch(email):
-        return jsonify({"error": "Ingresá un email válido con formato nombre@dominio.com"}), 400
-
-    now = datetime.now(timezone.utc)
-    code = f"{secrets.randbelow(1_000_000):06d}"
-    record = {
-        "code_hash": generate_password_hash(code),
-        "sent_at": now.isoformat(),
-        "expires_at": (now + timedelta(seconds=EMAIL_CODE_TTL_SECONDS)).isoformat(),
-        "attempts": 0,
-    }
-    result = {}
-
-    def store_code(records):
-        previous = records.get(email)
-        if previous:
-            try:
-                previous_sent_at = datetime.fromisoformat(previous.get("sent_at", ""))
-                elapsed = (now - previous_sent_at).total_seconds()
-            except (TypeError, ValueError):
-                elapsed = EMAIL_CODE_COOLDOWN_SECONDS
-            if elapsed < EMAIL_CODE_COOLDOWN_SECONDS:
-                result["cooldown"] = int(EMAIL_CODE_COOLDOWN_SECONDS - elapsed)
-                return records, None
-        records[email] = record
-        return records, None
-
-    update_json("email_verificaciones.json", {}, store_code)
-    if result.get("cooldown"):
-        retry_after = result["cooldown"]
-        response = jsonify({
-            "error": f"Esperá {retry_after} segundos antes de pedir otro código",
-            "retry_after_seconds": retry_after,
-        })
-        response.headers["Retry-After"] = str(retry_after)
-        return response, 429
-
-    def remove_failed_code():
-        def remove_record(records):
-            current = records.get(email)
-            if current and current.get("code_hash") == record["code_hash"]:
-                records.pop(email, None)
-            return records, None
-
-        update_json("email_verificaciones.json", {}, remove_record)
-
-    try:
-        send_verification_email(email, code)
-    except SMTPConfigurationError as error:
-        app.logger.warning("La autenticación SMTP requiere credenciales compatibles con ASCII")
-        remove_failed_code()
-        return jsonify({"error": str(error)}), 503
-    except UnicodeError:
-        app.logger.warning("La autenticación SMTP contiene credenciales no ASCII")
-        remove_failed_code()
-        return jsonify({
-            "error": "La cuenta o contraseña SMTP de GCP contiene caracteres no ASCII. Actualizá SMTP_USER/SMTP_PASSWORD con credenciales SMTP compatibles."
-        }), 503
-    except (OSError, smtplib.SMTPException, RuntimeError) as error:
-        app.logger.warning("No se pudo enviar un código de verificación: %s", error)
-        remove_failed_code()
-        return jsonify({"error": "No se pudo enviar el email. Revisá la configuración del servidor e intentá de nuevo"}), 503
-
-    return jsonify({
-        "success": True,
-        "message": "Si el email puede recibir mensajes, enviamos un código de verificación",
-        "cooldown_seconds": EMAIL_CODE_COOLDOWN_SECONDS,
-    }), 200
-
-
-@app.post("/api/auth/email/verify-code")
-def verificar_codigo_email():
-    if EMAIL_VERIFICATION_SERIALIZER is None:
-        return jsonify({"error": "El backend no tiene SECRET_KEY configurada"}), 503
-    data = request.get_json(silent=True) or {}
-    email = normalize_email(data.get("email"))
-    code = data.get("code")
-    if len(email) > 160 or not EMAIL_PATTERN.fullmatch(email) or not isinstance(code, str) or not re.fullmatch(r"[0-9]{6}", code):
-        return jsonify({"error": "Ingresá un email válido y un código de 6 dígitos"}), 400
-
-    now = datetime.now(timezone.utc)
-    result = {}
-
-    def check_code(records):
-        record = records.get(email)
-        if not record:
-            result["error"] = "Solicitá un código nuevo para verificar tu email"
-            return records, None
-        if verification_expired(record, now):
-            records.pop(email, None)
-            result["error"] = "El código venció. Solicitá uno nuevo"
-            return records, None
-        if record.get("attempts", 0) >= EMAIL_CODE_MAX_ATTEMPTS:
-            records.pop(email, None)
-            result["error"] = "Se superó el máximo de intentos. Solicitá un código nuevo"
-            return records, None
-        if not check_password_hash(record.get("code_hash", ""), code):
-            record["attempts"] = record.get("attempts", 0) + 1
-            result["error"] = "El código ingresado no es válido"
-            return records, None
-        records.pop(email, None)
-        result["verified"] = True
-        return records, None
-
-    update_json("email_verificaciones.json", {}, check_code)
-    if not result.get("verified"):
-        return jsonify({"error": result.get("error", "No se pudo verificar el email")}), 400
-    token = EMAIL_VERIFICATION_SERIALIZER.dumps({"email": email, "purpose": "register"})
-    return jsonify({"success": True, "email_verification_token": token}), 200
-
-
-@app.post("/api/auth/password-reset/send-code")
-def enviar_codigo_recuperacion():
-    data = request.get_json(silent=True) or {}
-    email = normalize_email(data.get("email"))
-    if len(email) > 160 or not EMAIL_PATTERN.fullmatch(email):
-        return jsonify({"error": "Ingresá un email válido con formato nombre@dominio.com"}), 400
-    return issue_password_reset_code(email)
-
-
-@app.post("/api/auth/password-reset")
-def restablecer_contrasena():
-    data = request.get_json(silent=True) or {}
-    email = normalize_email(data.get("email"))
-    code = data.get("code")
-    password = data.get("password")
-    if len(email) > 160 or not EMAIL_PATTERN.fullmatch(email):
-        return jsonify({"error": "Email o código incorrectos"}), 400
-    if not isinstance(code, str) or not re.fullmatch(r"[0-9]{6}", code):
-        return jsonify({"error": "Ingresá el código de 6 dígitos"}), 400
-    if not valid_password(password):
-        return jsonify({"error": "La contraseña requiere 8 caracteres, una mayúscula y un carácter especial"}), 400
-
-    now = datetime.now(timezone.utc)
-    record_key = f"password-reset:{email}"
-    result = {}
-
-    def consume_code(records):
-        record = records.get(record_key)
-        if not record:
-            result["error"] = "El código no es válido. Solicitá uno nuevo"
-            return records, None
-        if verification_expired(record, now):
-            records.pop(record_key, None)
-            result["error"] = "El código venció. Solicitá uno nuevo"
-            return records, None
-        if record.get("attempts", 0) >= EMAIL_CODE_MAX_ATTEMPTS:
-            records.pop(record_key, None)
-            result["error"] = "Se superó el máximo de intentos. Solicitá un código nuevo"
-            return records, None
-        if not check_password_hash(record.get("code_hash", ""), code):
-            record["attempts"] = record.get("attempts", 0) + 1
-            result["error"] = "El código ingresado no es válido"
-            return records, None
-        records.pop(record_key, None)
-        result["verified"] = True
-        return records, None
-
-    update_json("email_verificaciones.json", {}, consume_code)
-    if not result.get("verified"):
-        return jsonify({"error": result.get("error", "No se pudo verificar el código")}), 400
-
-    user_result = {}
-
-    def change_password(users):
-        user = users.get(email)
-        if not user:
-            user_result["not_found"] = True
-            return users, None
-        user["password_hash"] = generate_password_hash(password)
-        user["auth_version"] = int(user.get("auth_version", 0)) + 1
-        user["password_reset_at"] = now.isoformat()
-        user_result["updated"] = True
-        return users, None
-
-    update_json("usuarios.json", {}, change_password)
-    if not user_result.get("updated"):
-        return jsonify({"error": "No se pudo restablecer la contraseña. Solicitá un código nuevo"}), 400
-    return jsonify({"success": True, "message": "Contraseña actualizada. Ya podés iniciar sesión."}), 200
 
 
 def public_user(user):
@@ -575,36 +185,6 @@ def issue_token(email, auth_version=0):
     return TOKEN_SERIALIZER.dumps({"email": email, "auth_version": auth_version})
 
 
-def ensure_bootstrap_admin():
-    if not ADMIN_EMAIL or not valid_admin_password(ADMIN_INITIAL_PASSWORD):
-        return
-
-    timestamp = utc_now()
-    seeded_admin = {
-        "nombre": "Administrador",
-        "apellido": "Ruta Mágica",
-        "email": ADMIN_EMAIL,
-        "telefono": "",
-        "rol": "admin",
-        "password_hash": generate_password_hash(ADMIN_INITIAL_PASSWORD),
-        "timestampRegistro": timestamp,
-        "acepta_terminos": False,
-        "fecha_aceptacion_terminos": None,
-        "consentimiento_promociones": False,
-        "fecha_consentimiento_promociones": None,
-    }
-
-    def seed_admin(users):
-        existing = users.get(ADMIN_EMAIL)
-        if existing:
-            existing["rol"] = "admin"
-        else:
-            users[ADMIN_EMAIL] = seeded_admin
-        return users, None
-
-    update_json("usuarios.json", {}, seed_admin)
-
-
 def require_session(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
@@ -621,7 +201,7 @@ def require_session(view):
         except BadSignature:
             return jsonify({"error": "La sesión no es válida"}), 401
         g.user_email = payload.get("email", "")
-        user = read_json("usuarios.json", {}).get(g.user_email)
+        user = get_document("usuarios.json", user_document_id(g.user_email))
         if not user:
             return jsonify({"error": "La cuenta ya no está disponible. Iniciá sesión nuevamente"}), 401
         try:
@@ -639,18 +219,9 @@ def require_session(view):
 def require_admin(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
-        users = read_json("usuarios.json", {})
-        user = users.get(g.user_email)
+        user = get_document("usuarios.json", user_document_id(g.user_email))
         if not user:
             return jsonify({"error": "Usuario no encontrado"}), 401
-        if g.user_email == ADMIN_EMAIL and user.get("rol") != "admin":
-            def promote_bootstrap_admin(records):
-                if g.user_email in records:
-                    records[g.user_email]["rol"] = "admin"
-                return records, None
-
-            update_json("usuarios.json", {}, promote_bootstrap_admin)
-            user["rol"] = "admin"
         if user.get("rol") != "admin":
             return jsonify({"error": "Se requiere rol de administrador"}), 403
         g.admin_user = user
@@ -660,8 +231,22 @@ def require_admin(view):
 
 
 def get_visits_for(email):
-    visits = read_json("visitas.json", [])
-    return [visit for visit in visits if visit.get("email") == email]
+    return [snapshot.to_dict() or {} for snapshot in _collection("visitas.json").where("email", "==", email).stream()]
+
+
+def delete_visits_for_email(email):
+    collection = _collection("visitas.json")
+    batch = _firestore_client().batch()
+    pending = 0
+    for snapshot in collection.where("email", "==", email).stream():
+        batch.delete(snapshot.reference)
+        pending += 1
+        if pending == 450:
+            batch.commit()
+            batch = _firestore_client().batch()
+            pending = 0
+    if pending:
+        batch.commit()
 
 
 @app.get("/")
@@ -669,7 +254,7 @@ def health_check():
     return jsonify({
         "status": "ok",
         "message": "Backend Ruta Mágica 2026 activo",
-        "storage": "gcs" if GCS_BUCKET_NAME else "local",
+        "storage": "firestore",
     }), 200
 
 
@@ -677,7 +262,15 @@ def health_check():
 def listar_locales():
     locales = read_json("locales.json", None)
     if not isinstance(locales, list) or not locales:
-        locales = update_json("locales.json", DEFAULT_LOCALES, lambda value: (value or copy.deepcopy(DEFAULT_LOCALES), value or copy.deepcopy(DEFAULT_LOCALES)))
+        from google.api_core.exceptions import AlreadyExists
+
+        collection = _collection("locales.json")
+        for local in DEFAULT_LOCALES:
+            try:
+                collection.document(str(local["id"])).create(local)
+            except AlreadyExists:
+                pass
+        locales = read_json("locales.json", DEFAULT_LOCALES)
     return jsonify({"success": True, "locales": locales}), 200
 
 
@@ -687,110 +280,6 @@ def configuracion_login_google():
         "enabled": bool(GOOGLE_OAUTH_CLIENT_ID),
         "client_id": GOOGLE_OAUTH_CLIENT_ID,
     }), 200
-
-
-@app.post("/api/auth/register")
-def registrar_usuario():
-    if TOKEN_SERIALIZER is None:
-        return jsonify({"error": "El backend no tiene SECRET_KEY configurada"}), 503
-    data = request.get_json(silent=True) or {}
-    nombre = data.get("nombre", "").strip() if isinstance(data.get("nombre"), str) else ""
-    apellido = data.get("apellido", "").strip() if isinstance(data.get("apellido"), str) else ""
-    email = normalize_email(data.get("email"))
-    telefono = data.get("telefono", "").strip() if isinstance(data.get("telefono", ""), str) else ""
-    password = data.get("password")
-    verification_token = data.get("email_verification_token")
-
-    if not valid_person_name(nombre) or not valid_person_name(apellido):
-        return jsonify({"error": "Nombre y apellido deben tener entre 2 y 60 letras"}), 400
-    if len(email) > 160 or not EMAIL_PATTERN.fullmatch(email):
-        return jsonify({"error": "Ingresá un email válido con formato nombre@dominio.com"}), 400
-    if not valid_phone(telefono):
-        return jsonify({"error": "Ingresá un teléfono válido de 8 a 20 caracteres"}), 400
-    if data.get("acepta_terminos") is not True:
-        return jsonify({"error": "Debés aceptar las bases de participación y el aviso de privacidad"}), 400
-    if not isinstance(verification_token, str) or EMAIL_VERIFICATION_SERIALIZER is None:
-        return jsonify({"error": "Verificá tu email antes de crear la cuenta"}), 400
-    try:
-        verification = EMAIL_VERIFICATION_SERIALIZER.loads(
-            verification_token,
-            max_age=EMAIL_CODE_TTL_SECONDS,
-        )
-    except (BadSignature, SignatureExpired):
-        return jsonify({"error": "La verificación del email venció o no es válida. Solicitá un código nuevo"}), 400
-    if verification.get("email") != email or verification.get("purpose") != "register":
-        return jsonify({"error": "El email verificado no coincide con el email de registro"}), 400
-    if not valid_password(password):
-        return jsonify({"error": "La contraseña debe tener al menos 8 caracteres"}), 400
-
-    if email == ADMIN_EMAIL:
-        if not valid_admin_password(ADMIN_INITIAL_PASSWORD):
-            return jsonify({"error": "La cuenta admin inicial no tiene una contraseña válida en Secret Manager"}), 503
-        ensure_bootstrap_admin()
-
-    terms_timestamp = utc_now()
-    promotions_consent = data.get("consentimiento_promociones") is True
-    user_record = {
-        "nombre": nombre,
-        "apellido": apellido,
-        "email": email,
-        "telefono": telefono,
-        "rol": "user",
-        "auth_version": 1,
-        "password_hash": generate_password_hash(password),
-        "timestampRegistro": utc_now(),
-        "acepta_terminos": True,
-        "fecha_aceptacion_terminos": terms_timestamp,
-        "consentimiento_promociones": promotions_consent,
-        "fecha_consentimiento_promociones": terms_timestamp if promotions_consent else None,
-        "email_verificado": True,
-        "fecha_verificacion_email": utc_now(),
-    }
-    result = {}
-
-    def add_user(users):
-        if email in users:
-            result["created"] = False
-            return users, None
-        users[email] = user_record
-        result["created"] = True
-        return users, None
-
-    update_json("usuarios.json", {}, add_user)
-    if not result["created"]:
-        return jsonify({"error": "Ya existe una cuenta con ese email"}), 409
-    return jsonify({"success": True, "token": issue_token(email, user_record["auth_version"]), "user": public_user(user_record)}), 201
-
-
-@app.post("/api/auth/login")
-def iniciar_sesion():
-    if TOKEN_SERIALIZER is None:
-        return jsonify({"error": "El backend no tiene SECRET_KEY configurada"}), 503
-    data = request.get_json(silent=True) or {}
-    email = normalize_email(data.get("email"))
-    password = data.get("password")
-    if not EMAIL_PATTERN.fullmatch(email) or not isinstance(password, str):
-        return jsonify({"error": "Email o contraseña incorrectos"}), 401
-
-    users = read_json("usuarios.json", {})
-    if email == ADMIN_EMAIL and email not in users:
-        if not valid_admin_password(ADMIN_INITIAL_PASSWORD):
-            return jsonify({"error": "La cuenta admin inicial no tiene una contraseña válida en Secret Manager"}), 503
-        ensure_bootstrap_admin()
-        users = read_json("usuarios.json", {})
-    user = users.get(email)
-    if not user or not check_password_hash(user.get("password_hash", ""), password):
-        return jsonify({"error": "Email o contraseña incorrectos"}), 401
-    role = "admin" if email == ADMIN_EMAIL or user.get("rol") == "admin" else "user"
-    if user.get("rol") != role:
-        def persist_role(records):
-            if email in records:
-                records[email]["rol"] = role
-            return records, None
-
-        update_json("usuarios.json", {}, persist_role)
-        user["rol"] = role
-    return jsonify({"success": True, "token": issue_token(email, int(user.get("auth_version", 0))), "user": public_user(user)}), 200
 
 
 @app.post("/api/auth/google")
@@ -820,22 +309,6 @@ def iniciar_sesion_google():
     if claims.get("email_verified") is not True:
         return jsonify({"error": "Necesitamos un email verificado por Google"}), 401
 
-    users = read_json("usuarios.json", {})
-    existing_user = users.get(email)
-    is_new_user = existing_user is None
-    if is_new_user and data.get("acepta_terminos") is not True:
-        return jsonify({
-            "error": "Aceptá las bases y el aviso de privacidad para crear la cuenta con Google",
-            "requires_terms": True,
-        }), 428
-    if email == ADMIN_EMAIL and is_new_user:
-        if not valid_admin_password(ADMIN_INITIAL_PASSWORD):
-            return jsonify({"error": "La cuenta admin inicial no tiene una contraseña válida en Secret Manager"}), 503
-        ensure_bootstrap_admin()
-        users = read_json("usuarios.json", {})
-        existing_user = users.get(email)
-        is_new_user = existing_user is None
-
     full_name = str(claims.get("name", "")).strip().split()
     first_name = str(claims.get("given_name") or (full_name[0] if full_name else "Participante")).strip()
     last_name = str(claims.get("family_name") or " ".join(full_name[1:]) or "Google").strip()
@@ -844,42 +317,49 @@ def iniciar_sesion_google():
     if not valid_person_name(last_name):
         last_name = "Google"
     now = utc_now()
-    result = {}
+    new_user = {
+        "nombre": first_name,
+        "apellido": last_name,
+        "email": email,
+        "telefono": "",
+        "rol": "user",
+        "auth_version": 1,
+        "google_sub": google_sub,
+        "timestampRegistro": now,
+        "acepta_terminos": True,
+        "fecha_aceptacion_terminos": now,
+        "consentimiento_promociones": data.get("consentimiento_promociones") is True,
+        "fecha_consentimiento_promociones": now if data.get("consentimiento_promociones") is True else None,
+        "email_verificado": True,
+        "fecha_verificacion_email": now,
+    }
+    user_ref = _collection("usuarios.json").document(user_document_id(email))
 
-    def upsert_google_user(records):
-        user = records.get(email)
+    def upsert_google_user(transaction):
+        snapshot = transaction.get(user_ref)
+        user = snapshot.to_dict() if snapshot.exists else None
         if user:
             linked_sub = user.get("google_sub")
             if linked_sub and linked_sub != google_sub:
-                result["conflict"] = True
-                return records, None
-            user["google_sub"] = google_sub
-            user["email_verificado"] = True
-            user.setdefault("fecha_verificacion_email", now)
-            result["user"] = copy.deepcopy(user)
-            return records, None
-        user = {
-            "nombre": first_name,
-            "apellido": last_name,
-            "email": email,
-            "telefono": "",
-            "rol": "admin" if email == ADMIN_EMAIL else "user",
-            "auth_version": 1,
-            "password_hash": generate_password_hash(secrets.token_urlsafe(48)),
-            "google_sub": google_sub,
-            "timestampRegistro": now,
-            "acepta_terminos": True,
-            "fecha_aceptacion_terminos": now,
-            "consentimiento_promociones": data.get("consentimiento_promociones") is True,
-            "fecha_consentimiento_promociones": now if data.get("consentimiento_promociones") is True else None,
-            "email_verificado": True,
-            "fecha_verificacion_email": now,
-        }
-        records[email] = user
-        result["user"] = copy.deepcopy(user)
-        return records, None
+                return {"conflict": True}
+            user.update({
+                "google_sub": google_sub,
+                "email_verificado": True,
+                "fecha_verificacion_email": user.get("fecha_verificacion_email") or now,
+            })
+            transaction.set(user_ref, user)
+            return {"user": user}
+        if data.get("acepta_terminos") is not True:
+            return {"requires_terms": True}
+        transaction.create(user_ref, new_user)
+        return {"user": new_user}
 
-    update_json("usuarios.json", {}, upsert_google_user)
+    result = run_transaction(upsert_google_user)
+    if result.get("requires_terms"):
+        return jsonify({
+            "error": "Aceptá las bases y el aviso de privacidad para crear la cuenta con Google",
+            "requires_terms": True,
+        }), 428
     if result.get("conflict"):
         return jsonify({"error": "Esta cuenta ya está vinculada a otro perfil de Google"}), 409
     user = result.get("user")
@@ -894,7 +374,7 @@ def admin_user_summary(email, user):
         "nombre": user.get("nombre", ""),
         "apellido": user.get("apellido", ""),
         "telefono": user.get("telefono", ""),
-        "rol": "admin" if email == ADMIN_EMAIL or user.get("rol") == "admin" else "user",
+        "rol": "admin" if user.get("rol") == "admin" else "user",
         "fecha_registro": user.get("timestampRegistro", ""),
     }
 
@@ -918,48 +398,40 @@ def cambiar_rol_admin():
     role = data.get("rol")
     if not EMAIL_PATTERN.fullmatch(email) or not isinstance(role, str) or role not in {"user", "admin"}:
         return jsonify({"error": "Ingresá un email y un rol válidos"}), 400
-    if email == ADMIN_EMAIL and role != "admin":
-        return jsonify({"error": "No se puede degradar al administrador principal"}), 409
-
     result = {}
 
-    def set_role(users):
-        target = users.get(email)
-        if not target:
-            result["not_found"] = True
-            return users, None
-        if role == "user":
-            admins = sum(
-                1 for user_email, user in users.items()
-                if user_email == ADMIN_EMAIL or user.get("rol") == "admin"
-            )
-            if admins <= 1 and target.get("rol") == "admin":
-                result["last_admin"] = True
-                return users, None
-        target["rol"] = role
-        result["user"] = admin_user_summary(email, target)
-        return users, None
+    user_ref = _collection("usuarios.json").document(user_document_id(email))
+    roles_ref = _firestore_client().collection("sistema").document("roles")
 
-    update_json("usuarios.json", {}, set_role)
+    def set_role(transaction):
+        snapshot = transaction.get(user_ref)
+        target = snapshot.to_dict() if snapshot.exists else None
+        if not target:
+            return {"not_found": True}
+        roles_snapshot = transaction.get(roles_ref)
+        if roles_snapshot.exists:
+            admin_count = int((roles_snapshot.to_dict() or {}).get("admin_count", 0))
+        else:
+            admins = list(_collection("usuarios.json").where("rol", "==", "admin").stream(transaction=transaction))
+            admin_count = len(admins)
+        previous_role = target.get("rol")
+        if previous_role == "admin" and role == "user":
+            if admin_count <= 1:
+                return {"last_admin": True}
+            admin_count -= 1
+        elif previous_role != "admin" and role == "admin":
+            admin_count += 1
+        target["rol"] = role
+        transaction.set(roles_ref, {"admin_count": admin_count})
+        transaction.set(user_ref, target)
+        return {"user": admin_user_summary(email, target)}
+
+    result = run_transaction(set_role)
     if result.get("not_found"):
         return jsonify({"error": "No existe un usuario con ese email"}), 404
     if result.get("last_admin"):
         return jsonify({"error": "Debe quedar al menos un administrador"}), 409
     return jsonify({"success": True, "usuario": result["user"]}), 200
-
-
-@app.post("/api/admin/usuarios/recuperar-clave")
-@require_session
-@require_admin
-def recuperar_clave_usuario_admin():
-    data = request.get_json(silent=True) or {}
-    email = normalize_email(data.get("email"))
-    if not EMAIL_PATTERN.fullmatch(email):
-        return jsonify({"error": "Ingresá un email válido"}), 400
-    users = read_json("usuarios.json", {})
-    if email not in users:
-        return jsonify({"error": "No existe un usuario con ese email"}), 404
-    return issue_password_reset_code(email)
 
 
 @app.post("/api/admin/eliminar-usuario")
@@ -972,40 +444,25 @@ def eliminar_usuario_admin():
         return jsonify({"error": "Ingresá un email válido"}), 400
     if email == g.user_email:
         return jsonify({"error": "No podés eliminar tu propia cuenta"}), 409
-    users = read_json("usuarios.json", {})
-    target = users.get(email)
-    if not target:
-        return jsonify({"error": "No existe un usuario con ese email"}), 404
-    if email == ADMIN_EMAIL or target.get("rol") == "admin":
-        return jsonify({"error": "No se pueden eliminar cuentas de administrador"}), 409
+    user_ref = _collection("usuarios.json").document(user_document_id(email))
 
-    result = {}
-
-    def remove_user(records):
-        current = records.get(email)
+    def remove_user(transaction):
+        snapshot = transaction.get(user_ref)
+        current = snapshot.to_dict() if snapshot.exists else None
         if not current:
-            result["not_found"] = True
-            return records, None
-        if current.get("rol") == "admin" or email == ADMIN_EMAIL:
-            result["admin"] = True
-            return records, None
-        records.pop(email, None)
-        result["deleted"] = True
-        return records, None
+            return {"not_found": True}
+        if current.get("rol") == "admin":
+            return {"admin": True}
+        transaction.delete(user_ref)
+        return {"deleted": True}
 
-    update_json("usuarios.json", {}, remove_user)
+    result = run_transaction(remove_user)
     if result.get("not_found"):
         return jsonify({"error": "No existe un usuario con ese email"}), 404
     if result.get("admin"):
         return jsonify({"error": "No se pueden eliminar cuentas de administrador"}), 409
 
-    update_json("visitas.json", [], lambda visits: (
-        [visit for visit in visits if visit.get("email") != email], None
-    ))
-    update_json("email_verificaciones.json", {}, lambda records: (
-        (records.pop(email, None), records.pop(f"password-reset:{email}", None), records)[-1],
-        None,
-    ))
+    delete_visits_for_email(email)
     return jsonify({"success": True, "email": email}), 200
 
 
@@ -1084,8 +541,7 @@ def registrar_visita():
     locales = read_json("locales.json", DEFAULT_LOCALES)
     if not any(local.get("id") == local_id for local in locales):
         return jsonify({"error": "El local no existe"}), 404
-    users = read_json("usuarios.json", {})
-    user = users.get(g.user_email)
+    user = get_document("usuarios.json", user_document_id(g.user_email))
     if not user:
         return jsonify({"error": "Usuario no encontrado"}), 401
 
@@ -1095,20 +551,22 @@ def registrar_visita():
         "timestamp": utc_now(),
         "distancia": round(distancia, 2),
     }
-    result = {}
+    visit_ref = _collection("visitas.json").document(visit_document_id(g.user_email, local_id))
+    user_ref = _collection("usuarios.json").document(user_document_id(g.user_email))
 
-    def add_visit(visits):
-        existing = next((item for item in visits if item.get("email") == g.user_email and item.get("local_id") == local_id), None)
-        if existing:
-            result["created"] = False
-            result["visit"] = existing
-            return visits, None
-        visits.append(visit)
-        result["created"] = True
-        result["visit"] = visit
-        return visits, None
+    def add_visit(transaction):
+        user_snapshot = transaction.get(user_ref)
+        if not user_snapshot.exists:
+            return {"account_missing": True}
+        snapshot = transaction.get(visit_ref)
+        if snapshot.exists:
+            return {"created": False, "visit": snapshot.to_dict() or {}}
+        transaction.create(visit_ref, visit)
+        return {"created": True, "visit": visit}
 
-    update_json("visitas.json", [], add_visit)
+    result = run_transaction(add_visit)
+    if result.get("account_missing"):
+        return jsonify({"error": "La cuenta ya no está disponible. Iniciá sesión nuevamente"}), 401
     total = len(get_visits_for(g.user_email))
     return jsonify({"success": True, "visitado": result["visit"], "created": result["created"], "total_visitados": total}), 200
 
@@ -1116,17 +574,16 @@ def registrar_visita():
 @app.delete("/api/visitas/<int:local_id>")
 @require_session
 def eliminar_visita(local_id):
-    result = {"removed": False}
+    visit_ref = _collection("visitas.json").document(visit_document_id(g.user_email, local_id))
 
-    def remove_visit(visits):
-        remaining = [
-            visit for visit in visits
-            if not (visit.get("email") == g.user_email and visit.get("local_id") == local_id)
-        ]
-        result["removed"] = len(remaining) != len(visits)
-        return remaining, None
+    def remove_visit(transaction):
+        snapshot = transaction.get(visit_ref)
+        if not snapshot.exists:
+            return {"removed": False}
+        transaction.delete(visit_ref)
+        return {"removed": True}
 
-    update_json("visitas.json", [], remove_visit)
+    result = run_transaction(remove_visit)
     return jsonify({"success": True, "removed": result["removed"]}), 200
 
 

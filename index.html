@@ -250,42 +250,18 @@
         .map-local-social { display: inline-flex; margin-top: 3px; padding: 6px 9px; border-radius: 4px; color: #fff; font-size: .78rem; font-weight: 700; text-decoration: none; }
         .map-local-social.instagram { background: #a83174; }
         .map-local-social.facebook { background: #1769aa; }
-        .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 18px 0; padding: 4px; border-radius: 6px; background: #110f16; }
-        .auth-tab { padding: 9px 8px; border: 0; border-radius: 4px; background: transparent; color: #c5bacd; font: inherit; font-size: .85rem; cursor: pointer; }
-        .auth-tab.active { background: #a56de2; color: #160f1d; font-weight: 700; }
-        .auth-form[hidden] { display: none; }
-        .auth-form { display: grid; gap: 12px; }
         .google-login { display: grid; gap: 10px; margin: 12px 0; }
         .google-login[hidden], .google-terms-prompt[hidden] { display: none; }
         .google-login-divider { display: flex; align-items: center; gap: 10px; color: #a99caf; font-size: .75rem; }
         .google-login-divider::before, .google-login-divider::after { height: 1px; flex: 1; background: var(--line); content: ""; }
         .google-signin-button { display: flex; justify-content: center; min-height: 40px; }
+        #google-signin-button { display: flex; justify-content: center; width: 100%; }
         .google-login-message { min-height: 1.1em; margin: 0; color: #ff9a84; font-size: .78rem; }
         .google-terms-prompt { display: grid; gap: 10px; padding: 11px; border: 1px solid var(--line); border-radius: 6px; background: #211b2c; }
-        .auth-link { justify-self: start; padding: 2px 0; border: 0; background: transparent; color: #ffad70; font: inherit; font-size: .82rem; text-decoration: underline; cursor: pointer; }
-        .password-reset-fields { display: grid; gap: 12px; }
-        .password-reset-fields[hidden] { display: none; }
-        .password-reset-message { min-height: 1.2em; margin: 0; color: #ffad70; font-size: .78rem; }
         .guest-access { display: grid; gap: 8px; margin: 4px 0 16px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: #211b2c; }
         .guest-access p { margin: 0; color: #c5bacd; font-size: .78rem; line-height: 1.4; }
-        .guest-button { padding: 9px 12px; border: 1px solid #ff7a1a; border-radius: 5px; background: transparent; color: #ffad70; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
+        .guest-button { width: 100%; padding: 9px 12px; border: 1px solid #ff7a1a; border-radius: 5px; background: transparent; color: #ffad70; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
         .guest-button:hover { background: rgba(255,122,26,.12); }
-        .email-verification { display: grid; gap: 8px; }
-        .email-verification-step[hidden] { display: none; }
-        .email-code-row { display: flex; align-items: end; gap: 8px; }
-        .email-code-row .form-field { flex: 1; }
-        .email-verification-message { min-height: 1em; color: #c5bacd; font-size: .76rem; }
-        .email-code-countdown { min-height: 1em; color: #c5bacd; font-size: .72rem; }
-        .guest-access { display: grid; gap: 8px; margin: 4px 0 16px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: #211b2c; }
-        .guest-access p { margin: 0; color: #c5bacd; font-size: .78rem; line-height: 1.4; }
-        .guest-button { padding: 9px 12px; border: 1px solid #ff7a1a; border-radius: 5px; background: transparent; color: #ffad70; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
-        .guest-button:hover { background: rgba(255,122,26,.12); }
-        .email-verification { display: grid; gap: 8px; }
-        .email-verification-step[hidden] { display: none; }
-        .email-code-row { display: flex; gap: 8px; align-items: end; }
-        .email-code-row .form-field { flex: 1; }
-        .email-verification-message { min-height: 1.1em; color: #c5bacd; font-size: .75rem; }
-        .password-hint { color: #b7adbf; font-size: .75rem; line-height: 1.4; }
         .auth-error { min-height: 1.2em; margin: 0 !important; color: #ff9a84 !important; font-size: .82rem !important; }
         .visit-filters { display: flex; align-items: center; gap: 6px; margin: 0; padding: 4px 0 8px; }
         .visit-filter { padding: 6px 9px; border: 1px solid #51445d; border-radius: 5px; background: #191521; color: #ddd2e5; font: inherit; font-size: .75rem; cursor: pointer; }
@@ -539,28 +515,11 @@
     <div class="overlay" id="registration-overlay" hidden>
         <section class="registration-dialog" role="dialog" aria-modal="true" aria-labelledby="registration-title">
             <h2 id="registration-title">Ruta Mágica 2026</h2>
-            <p id="registration-description">Iniciá sesión o creá una cuenta para guardar tu progreso en el recorrido.</p>
-            <div class="auth-tabs" id="auth-tabs" role="tablist" aria-label="Acceso a la ruta">
-                <button class="auth-tab active" id="login-tab" type="button" role="tab" aria-selected="true" aria-controls="login-form" data-auth-tab="login">Iniciar Sesión</button>
-                <button class="auth-tab" id="register-tab" type="button" role="tab" aria-selected="false" aria-controls="register-form" data-auth-tab="register">Registrarse</button>
-            </div>
+            <p id="registration-description">Entrá con Google para guardar tu recorrido, o seguí como invitado.</p>
             <div class="guest-access">
                 <p>Recorré sin registrarte. El progreso queda en este dispositivo y no participás de ningún sorteo.</p>
                 <button class="guest-button" id="guest-mode-button" type="button">Ingresar como invitado</button>
             </div>
-            <form id="login-form" class="auth-form">
-                <div class="form-field">
-                    <label for="login-email">Email</label>
-                        <input id="login-email" name="email" type="email" autocomplete="email" required maxlength="160" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}">
-                </div>
-                <div class="form-field">
-                    <label for="login-password">Contraseña</label>
-                    <input id="login-password" name="password" type="password" autocomplete="current-password" required>
-                </div>
-                <p class="auth-error" id="login-error" role="alert"></p>
-                <button class="submit-button" type="submit">Iniciar Sesión</button>
-                <button class="auth-link" id="forgot-password-button" type="button">Olvidé mi contraseña</button>
-            </form>
             <div class="google-login" id="google-login-container" hidden>
                 <div class="google-login-divider"><span>o</span></div>
                 <div id="google-signin-button"></div>
@@ -577,83 +536,6 @@
                     <button class="submit-button" id="google-complete-signup" type="button">Continuar con Google</button>
                 </div>
             </div>
-            <div class="auth-form password-recovery-panel" id="password-recovery-panel" hidden>
-                <button class="auth-link" id="password-recovery-back" type="button">← Volver a iniciar sesión</button>
-                <div class="form-field">
-                    <label for="password-reset-email">Email de la cuenta</label>
-                    <input id="password-reset-email" type="email" autocomplete="email" required minlength="6" maxlength="160" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}" title="Ingresá un email con formato nombre@dominio.com">
-                </div>
-                <button class="admin-action" id="send-password-reset-code" type="button">Enviar código de recuperación</button>
-                <div class="password-reset-fields" id="password-reset-fields" hidden>
-                    <div class="form-field">
-                        <label for="password-reset-code">Código de 6 dígitos</label>
-                        <input id="password-reset-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" title="Ingresá el código de 6 dígitos">
-                    </div>
-                    <div class="form-field">
-                        <label for="password-reset-new">Nueva contraseña</label>
-                        <input id="password-reset-new" type="password" autocomplete="new-password" minlength="8" pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}" title="Mínimo 8 caracteres, una mayúscula y un carácter especial">
-                    </div>
-                    <div class="form-field">
-                        <label for="password-reset-confirm">Repetir contraseña</label>
-                        <input id="password-reset-confirm" type="password" autocomplete="new-password" minlength="8" required>
-                    </div>
-                    <button class="submit-button" id="complete-password-reset" type="button">Guardar nueva contraseña</button>
-                </div>
-                <p class="password-reset-message" id="password-reset-message" role="status" aria-live="polite"></p>
-            </div>
-            <form id="register-form" class="auth-form" hidden>
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label for="register-first-name">Nombre</label>
-                        <input id="register-first-name" name="nombre" autocomplete="given-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}\p{M}' \x2D]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
-                    </div>
-                    <div class="form-field">
-                        <label for="register-last-name">Apellido</label>
-                        <input id="register-last-name" name="apellido" autocomplete="family-name" required minlength="2" maxlength="60" pattern="[\p{L}][\p{L}\p{M}' \x2D]{1,59}" title="Usá letras, espacios, apóstrofes o guiones">
-                    </div>
-                    <div class="form-field full">
-                        <label for="register-email">Email</label>
-                        <input id="register-email" name="email" type="email" autocomplete="email" required minlength="6" maxlength="160" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}" title="Ingresá un email con formato nombre@dominio.com">
-                    </div>
-                    <div class="form-field full email-verification">
-                        <button class="admin-action" id="send-email-code" type="button">Enviar código al email</button>
-                        <span class="email-code-countdown" id="email-code-countdown" role="status" aria-live="polite"></span>
-                        <div class="email-code-row email-verification-step" id="email-verification-step" hidden>
-                            <div class="form-field">
-                                <label for="email-verification-code">Código de 6 dígitos</label>
-                                <input id="email-verification-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}">
-                            </div>
-                            <button class="admin-action" id="verify-email-code" type="button">Verificar</button>
-                        </div>
-                        <span class="email-verification-message" id="email-verification-message" role="status" aria-live="polite"></span>
-                    </div>
-                    <div class="form-field full">
-                        <label for="register-phone">Teléfono</label>
-                        <input id="register-phone" name="telefono" type="tel" inputmode="numeric" autocomplete="tel" required minlength="8" maxlength="15" pattern="[0-9]{8,15}" title="Ingresá entre 8 y 15 dígitos">
-                    </div>
-                    <div class="form-field full">
-                        <label for="register-password">Contraseña</label>
-                        <input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="8" pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}" title="Mínimo 8 caracteres, una mayúscula y un carácter especial">
-                        <span class="password-hint">Mínimo 8 caracteres, una mayúscula y un carácter especial. Sin límite máximo.</span>
-                    </div>
-                </div>
-                <div class="consent-section">
-                    <details>
-                        <summary>Leer bases y aviso de privacidad</summary>
-                        <p>Usaremos tus datos para gestionar tu cuenta, participación y check-ins de Ruta Mágica 2026. Si aceptás recibir promociones, podremos usar tu email y teléfono para enviarte novedades de los locales. Los datos se almacenan en el servicio de la aplicación. La autorización promocional es opcional y podés solicitar su baja a la organización.</p>
-                    </details>
-                    <label class="consent-check">
-                        <input type="checkbox" name="acepta_terminos" value="true" required>
-                        <span>Acepto las bases de participación y el aviso de privacidad.</span>
-                    </label>
-                    <label class="consent-check">
-                        <input type="checkbox" name="consentimiento_promociones" value="true">
-                        <span>Quiero recibir promociones y novedades de los locales por email o teléfono. Es opcional.</span>
-                    </label>
-                </div>
-                <p class="auth-error" id="register-error" role="alert"></p>
-                <button class="submit-button" type="submit">Crear cuenta</button>
-            </form>
         </section>
     </div>
     <div class="overlay" id="welcome-overlay" hidden>
@@ -917,12 +799,6 @@
                 }
                 return payload;
             },
-            async authenticate(action, credentials) {
-                return this.request(`/api/auth/${action}`, {
-                    method: "POST",
-                    body: JSON.stringify(credentials)
-                });
-            },
             async loadGoogleAuthConfig() {
                 return this.request("/api/auth/google/config");
             },
@@ -934,30 +810,6 @@
                         acepta_terminos: acceptsTerms,
                         consentimiento_promociones: promotionsConsent
                     })
-                });
-            },
-            async sendEmailVerificationCode(email) {
-                return this.request("/api/auth/email/send-code", {
-                    method: "POST",
-                    body: JSON.stringify({ email })
-                });
-            },
-            async verifyEmailCode(email, code) {
-                return this.request("/api/auth/email/verify-code", {
-                    method: "POST",
-                    body: JSON.stringify({ email, code })
-                });
-            },
-            async sendPasswordResetCode(email) {
-                return this.request("/api/auth/password-reset/send-code", {
-                    method: "POST",
-                    body: JSON.stringify({ email })
-                });
-            },
-            async resetPassword(email, code, password) {
-                return this.request("/api/auth/password-reset", {
-                    method: "POST",
-                    body: JSON.stringify({ email, code, password })
                 });
             },
             async loadLocales() {
@@ -983,12 +835,6 @@
                 return this.request("/api/admin/cambiar-rol", {
                     method: "POST",
                     body: JSON.stringify({ email, rol: role })
-                }, session);
-            },
-            async sendAdminPasswordReset(email, session) {
-                return this.request("/api/admin/usuarios/recuperar-clave", {
-                    method: "POST",
-                    body: JSON.stringify({ email })
                 }, session);
             },
             async deleteAdminUser(email, session) {
@@ -1139,12 +985,6 @@
         let resizingSidebar = false;
         let sidebarSnapTimer;
         let sidebarSnapInProgress = false;
-        let verifiedRegistrationEmail = "";
-        let emailVerificationToken = "";
-        let emailVerificationCooldownTimer = null;
-        let emailVerificationCooldownEndsAt = 0;
-        let passwordResetCooldownTimer = null;
-        let passwordResetCooldownEndsAt = 0;
         let backendVisits = [];
         let backendVisitsLoaded = false;
         let appInitialization;
@@ -1294,76 +1134,6 @@
             showToast("Modo invitado: progreso sólo en este dispositivo; no participás del sorteo.");
         }
 
-        function startEmailVerificationCooldown(seconds, codeSent) {
-            if (emailVerificationCooldownTimer) clearInterval(emailVerificationCooldownTimer);
-            const duration = Math.max(0, Math.ceil(Number(seconds) || 0));
-            emailVerificationCooldownEndsAt = Date.now() + duration * 1000;
-            const button = document.getElementById("send-email-code");
-            const countdown = document.getElementById("email-code-countdown");
-            const updateCountdown = () => {
-                const remaining = Math.max(0, Math.ceil((emailVerificationCooldownEndsAt - Date.now()) / 1000));
-                if (remaining > 0) {
-                    button.disabled = true;
-                    button.textContent = `Reenviar en ${remaining}s`;
-                    countdown.textContent = `Podés pedir otro código en ${remaining} segundos.`;
-                    return;
-                }
-                clearInterval(emailVerificationCooldownTimer);
-                emailVerificationCooldownTimer = null;
-                emailVerificationCooldownEndsAt = 0;
-                button.disabled = false;
-                button.textContent = "Enviar código al email";
-                countdown.textContent = "";
-            };
-            updateCountdown();
-            if (duration > 0) emailVerificationCooldownTimer = setInterval(updateCountdown, 1000);
-        }
-
-        async function sendRegistrationEmailCode() {
-            const emailInput = document.getElementById("register-email");
-            const button = document.getElementById("send-email-code");
-            const status = document.getElementById("email-verification-message");
-            emailInput.value = emailInput.value.trim().toLowerCase();
-            if (!emailInput.reportValidity()) return;
-            button.disabled = true;
-            status.textContent = "Enviando código...";
-            try {
-                const result = await DataRepository.sendEmailVerificationCode(emailInput.value);
-                verifiedRegistrationEmail = "";
-                emailVerificationToken = "";
-                document.getElementById("email-verification-step").hidden = false;
-                document.getElementById("email-verification-code").required = true;
-                document.getElementById("email-verification-code").readOnly = false;
-                status.textContent = result.message || "Código enviado. Revisá tu correo.";
-                startEmailVerificationCooldown(result.cooldown_seconds || 60, true);
-            } catch (error) {
-                status.textContent = error.message || "No se pudo enviar el código.";
-                if (error.status === 429) startEmailVerificationCooldown(error.retryAfter || 60, false);
-            } finally {
-                if (emailVerificationCooldownEndsAt <= Date.now()) {
-                    button.disabled = false;
-                    button.textContent = "Enviar código al email";
-                }
-            }
-        }
-
-        function openPasswordRecovery() {
-            const email = document.getElementById("login-email").value.trim().toLowerCase();
-            document.getElementById("registration-description").textContent = "Ingresá el email de tu cuenta para recibir un código de recuperación.";
-            document.getElementById("auth-tabs").hidden = true;
-            document.querySelector(".guest-access").hidden = true;
-            document.getElementById("login-form").hidden = true;
-            document.getElementById("register-form").hidden = true;
-            document.getElementById("password-recovery-panel").hidden = false;
-            document.getElementById("password-reset-email").value = email;
-            document.getElementById("password-reset-fields").hidden = true;
-            document.getElementById("password-reset-code").required = false;
-            document.getElementById("password-reset-new").required = false;
-            document.getElementById("password-reset-confirm").required = false;
-            document.getElementById("password-reset-message").textContent = "";
-            document.getElementById("password-reset-email").focus();
-        }
-
         function loadGoogleIdentityServices() {
             if (window.google?.accounts?.id) return Promise.resolve();
             return new Promise((resolve, reject) => {
@@ -1397,8 +1167,7 @@
                     logo_alignment: "left",
                     width: Math.max(240, Math.min(360, document.querySelector(".registration-dialog").clientWidth - 52))
                 });
-                const loginVisible = !document.getElementById("login-form").hidden;
-                document.getElementById("google-login-container").hidden = !loginVisible;
+                document.getElementById("google-login-container").hidden = false;
             } catch (error) {
                 console.warn("Google Sign-In no está disponible.", error);
             }
@@ -1447,135 +1216,6 @@
             }
             termsCheckbox.setCustomValidity("");
             submitGoogleCredential(true);
-        }
-
-        function startPasswordResetCooldown(seconds, codeSent) {
-            if (passwordResetCooldownTimer) clearInterval(passwordResetCooldownTimer);
-            const duration = Math.max(0, Math.ceil(Number(seconds) || 0));
-            passwordResetCooldownEndsAt = Date.now() + duration * 1000;
-            const button = document.getElementById("send-password-reset-code");
-            const status = document.getElementById("password-reset-message");
-            const updateCountdown = () => {
-                const remaining = Math.max(0, Math.ceil((passwordResetCooldownEndsAt - Date.now()) / 1000));
-                if (remaining > 0) {
-                    button.disabled = true;
-                    button.textContent = `Reenviar en ${remaining}s`;
-                    status.textContent = codeSent
-                        ? `Si la cuenta existe, enviamos un código. Podés pedir otro en ${remaining} segundos.`
-                        : `Esperá ${remaining} segundos para volver a pedir el código.`;
-                    return;
-                }
-                clearInterval(passwordResetCooldownTimer);
-                passwordResetCooldownTimer = null;
-                passwordResetCooldownEndsAt = 0;
-                button.disabled = false;
-                button.textContent = "Reenviar código de recuperación";
-                status.textContent = codeSent ? "Si la cuenta existe, enviamos un código." : "Ya podés solicitar otro código.";
-            };
-            updateCountdown();
-            if (duration > 0) passwordResetCooldownTimer = setInterval(updateCountdown, 1000);
-        }
-
-        async function sendPasswordResetCode() {
-            const emailInput = document.getElementById("password-reset-email");
-            const button = document.getElementById("send-password-reset-code");
-            const status = document.getElementById("password-reset-message");
-            emailInput.value = emailInput.value.trim().toLowerCase();
-            if (!emailInput.reportValidity()) return;
-            button.disabled = true;
-            status.textContent = "Enviando código...";
-            try {
-                const result = await DataRepository.sendPasswordResetCode(emailInput.value);
-                document.getElementById("password-reset-fields").hidden = false;
-                document.getElementById("password-reset-code").required = true;
-                document.getElementById("password-reset-new").required = true;
-                document.getElementById("password-reset-confirm").required = true;
-                startPasswordResetCooldown(result.cooldown_seconds || 60, true);
-            } catch (error) {
-                if (error.status === 429) startPasswordResetCooldown(error.retryAfter || 60, false);
-                else status.textContent = error.message || "No se pudo enviar el código.";
-            } finally {
-                if (passwordResetCooldownEndsAt <= Date.now()) {
-                    button.disabled = false;
-                    button.textContent = "Enviar código de recuperación";
-                }
-            }
-        }
-
-        async function completePasswordReset() {
-            const emailInput = document.getElementById("password-reset-email");
-            const codeInput = document.getElementById("password-reset-code");
-            const passwordInput = document.getElementById("password-reset-new");
-            const confirmInput = document.getElementById("password-reset-confirm");
-            const button = document.getElementById("complete-password-reset");
-            const status = document.getElementById("password-reset-message");
-            confirmInput.setCustomValidity(passwordInput.value === confirmInput.value ? "" : "Las contraseñas no coinciden.");
-            if (!emailInput.reportValidity() || !codeInput.reportValidity() || !passwordInput.reportValidity() || !confirmInput.reportValidity()) return;
-            button.disabled = true;
-            status.textContent = "Actualizando contraseña...";
-            try {
-                const result = await DataRepository.resetPassword(emailInput.value.trim().toLowerCase(), codeInput.value, passwordInput.value);
-                document.getElementById("login-email").value = emailInput.value.trim().toLowerCase();
-                document.getElementById("login-password").value = "";
-                document.getElementById("password-reset-fields").hidden = true;
-                codeInput.required = false;
-                passwordInput.required = false;
-                confirmInput.required = false;
-                status.textContent = result.message || "Contraseña actualizada. Ya podés iniciar sesión.";
-            } catch (error) {
-                status.textContent = error.message || "No se pudo restablecer la contraseña.";
-            } finally {
-                button.disabled = false;
-            }
-        }
-
-        async function verifyRegistrationEmail() {
-            const email = document.getElementById("register-email").value.trim().toLowerCase();
-            const codeInput = document.getElementById("email-verification-code");
-            const status = document.getElementById("email-verification-message");
-            codeInput.value = codeInput.value.replace(/\D/g, "").slice(0, 6);
-            if (!codeInput.reportValidity()) return;
-            const button = document.getElementById("verify-email-code");
-            button.disabled = true;
-            status.textContent = "Verificando código...";
-            try {
-                const result = await DataRepository.verifyEmailCode(email, codeInput.value);
-                verifiedRegistrationEmail = email;
-                emailVerificationToken = result.email_verification_token;
-                codeInput.readOnly = true;
-                if (emailVerificationCooldownTimer) clearInterval(emailVerificationCooldownTimer);
-                emailVerificationCooldownTimer = null;
-                emailVerificationCooldownEndsAt = 0;
-                document.getElementById("email-code-countdown").textContent = "";
-                const sendCodeButton = document.getElementById("send-email-code");
-                sendCodeButton.disabled = true;
-                sendCodeButton.textContent = "Email verificado";
-                status.textContent = "Cuenta verificada. Ya podés crear tu cuenta.";
-            } catch (error) {
-                verifiedRegistrationEmail = "";
-                emailVerificationToken = "";
-                status.textContent = error.message || "No se pudo verificar el código.";
-            } finally {
-                button.disabled = false;
-            }
-        }
-
-        function clearRegistrationEmailVerification() {
-            verifiedRegistrationEmail = "";
-            emailVerificationToken = "";
-            if (emailVerificationCooldownTimer) clearInterval(emailVerificationCooldownTimer);
-            emailVerificationCooldownTimer = null;
-            emailVerificationCooldownEndsAt = 0;
-            document.getElementById("email-code-countdown").textContent = "";
-            const sendCodeButton = document.getElementById("send-email-code");
-            sendCodeButton.disabled = false;
-            sendCodeButton.textContent = "Enviar código al email";
-            const codeInput = document.getElementById("email-verification-code");
-            codeInput.value = "";
-            codeInput.readOnly = false;
-            codeInput.required = false;
-            document.getElementById("email-verification-step").hidden = true;
-            document.getElementById("email-verification-message").textContent = "";
         }
 
         function formatAdminDate(value) {
@@ -1643,17 +1283,12 @@
                 if (user.rol !== "admin") {
                     const userActions = document.createElement("div");
                     userActions.className = "admin-user-actions";
-                    const recoveryButton = document.createElement("button");
-                    recoveryButton.type = "button";
-                    recoveryButton.className = "admin-action";
-                    recoveryButton.textContent = "Recuperar clave";
-                    recoveryButton.addEventListener("click", () => sendAdminPasswordReset(user.email, recoveryButton));
                     const deleteButton = document.createElement("button");
                     deleteButton.type = "button";
                     deleteButton.className = "admin-action danger";
                     deleteButton.textContent = "Eliminar";
                     deleteButton.addEventListener("click", () => deleteAdminUser(user.email, deleteButton));
-                    userActions.append(recoveryButton, deleteButton);
+                    userActions.append(deleteButton);
                     roleCell.append(userActions);
                 }
                 row.append(roleCell);
@@ -1842,22 +1477,6 @@
             } catch (error) {
                 select.value = previousRole;
                 document.getElementById("admin-message").textContent = error.message || "No se pudo cambiar el rol.";
-            } finally {
-                button.disabled = false;
-            }
-        }
-
-        async function sendAdminPasswordReset(email, button) {
-            if (currentUser?.rol !== "admin") return;
-            button.disabled = true;
-            const message = document.getElementById("admin-message");
-            message.textContent = "Enviando recuperación...";
-            try {
-                const result = await DataRepository.sendAdminPasswordReset(email, activeSession);
-                message.textContent = result.message || "Se envió el código de recuperación al email del usuario.";
-            } catch (error) {
-                message.textContent = error.message || "No se pudo enviar la recuperación.";
-                if (error.status === 401) logout();
             } finally {
                 button.disabled = false;
             }
@@ -2342,8 +1961,7 @@
             if (!activeSession || !currentUser) {
                 checkbox.checked = false;
                 syncMapLocalVisitState(local);
-                showAuthTab("login");
-                document.getElementById("registration-overlay").hidden = false;
+                showAccessScreen();
                 showToast("Iniciá sesión para guardar tu progreso.");
                 return;
             }
@@ -2460,8 +2078,7 @@
             document.getElementById("logout-button").hidden = true;
             updateAdminVisibility();
             document.getElementById("welcome-overlay").hidden = true;
-            showAuthTab("login");
-            document.getElementById("registration-overlay").hidden = false;
+            showAccessScreen();
             restoreVisits();
             renderLocalCards();
         }
@@ -2482,33 +2099,13 @@
             };
         }
 
-        function showAuthTab(tab) {
-            const isLogin = tab === "login";
-            document.getElementById("password-recovery-panel").hidden = true;
-            document.getElementById("google-login-container").hidden = !isLogin || !googleOAuthClientId;
+        function showAccessScreen() {
+            document.getElementById("google-login-container").hidden = !googleOAuthClientId;
             document.getElementById("google-terms-prompt").hidden = true;
             document.getElementById("google-login-message").textContent = "";
-            document.getElementById("auth-tabs").hidden = false;
-            document.querySelector(".guest-access").hidden = false;
-            document.getElementById("registration-description").textContent = "Iniciá sesión o creá una cuenta para guardar tu progreso en el recorrido.";
-            document.getElementById("login-form").hidden = !isLogin;
-            document.getElementById("register-form").hidden = isLogin;
-            document.getElementById("login-tab").classList.toggle("active", isLogin);
-            document.getElementById("register-tab").classList.toggle("active", !isLogin);
-            document.getElementById("login-tab").setAttribute("aria-selected", String(isLogin));
-            document.getElementById("register-tab").setAttribute("aria-selected", String(!isLogin));
-            document.getElementById("login-error").textContent = "";
-            document.getElementById("register-error").textContent = "";
+            document.getElementById("registration-description").textContent = "Entrá con Google para guardar tu recorrido, o seguí como invitado.";
+            document.getElementById("registration-overlay").hidden = false;
         }
-
-            function validatePhoneField() {
-                const phoneInput = document.getElementById("register-phone");
-                const digits = phoneInput.value.replace(/\D/g, "").slice(0, 15);
-                if (phoneInput.value !== digits) phoneInput.value = digits;
-                phoneInput.setCustomValidity(digits.length >= 8 && digits.length <= 15
-                ? ""
-                : "El teléfono debe contener entre 8 y 15 dígitos.");
-            }
 
         async function activateSession(payload) {
             if (!payload.token || !payload.user?.email) throw new Error("El servidor devolvió una sesión incompleta");
@@ -2536,40 +2133,6 @@
             restoreVisits();
             renderLocalCards();
             document.getElementById("welcome-overlay").hidden = false;
-        }
-
-        async function submitAuthForm(event, action) {
-            event.preventDefault();
-            const form = event.currentTarget;
-            const register = action === "register";
-            const errorElement = document.getElementById(`${action}-error`);
-            const submitButton = form.querySelector("button[type=submit]");
-            const formData = new FormData(form);
-            const credentials = Object.fromEntries(formData.entries());
-            if (register) {
-                credentials.email = String(credentials.email).trim().toLowerCase();
-                if (!emailVerificationToken || verifiedRegistrationEmail !== credentials.email) {
-                    errorElement.textContent = "Verificá tu email antes de crear la cuenta.";
-                    return;
-                }
-                credentials.email_verification_token = emailVerificationToken;
-                credentials.acepta_terminos = formData.has("acepta_terminos");
-                credentials.consentimiento_promociones = formData.has("consentimiento_promociones");
-            } else {
-                credentials.email = String(credentials.email).trim().toLowerCase();
-            }
-            errorElement.textContent = "";
-            submitButton.disabled = true;
-            submitButton.textContent = register ? "Creando cuenta..." : "Ingresando...";
-            try {
-                const payload = await DataRepository.authenticate(action, credentials);
-                await activateSession(payload);
-            } catch (error) {
-                errorElement.textContent = error.message || "No se pudo completar la operación.";
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = register ? "Crear cuenta" : "Iniciar Sesión";
-            }
         }
 
         async function initializeAppData() {
@@ -2602,8 +2165,7 @@
                         updateAdminVisibility();
                         document.getElementById("logout-button").hidden = true;
                         document.getElementById("user-chip").textContent = "Participante sin registrar";
-                        document.getElementById("registration-overlay").hidden = false;
-                        showAuthTab("login");
+                        showAccessScreen();
                     } else {
                         console.warn("No se pudo recuperar el progreso remoto.", error);
                         showToast("No pudimos sincronizar tus visitas. Se muestra el progreso guardado en este dispositivo.");
@@ -2723,13 +2285,6 @@
             button.addEventListener("click", () => setVisitFilter(button.dataset.visitFilter));
         });
 
-        document.querySelectorAll("[data-auth-tab]").forEach(button => {
-            button.addEventListener("click", () => showAuthTab(button.dataset.authTab));
-        });
-        document.getElementById("forgot-password-button").addEventListener("click", openPasswordRecovery);
-        document.getElementById("password-recovery-back").addEventListener("click", () => showAuthTab("login"));
-        document.getElementById("send-password-reset-code").addEventListener("click", sendPasswordResetCode);
-        document.getElementById("complete-password-reset").addEventListener("click", completePasswordReset);
         document.getElementById("google-complete-signup").addEventListener("click", completeGoogleSignup);
         document.getElementById("locate-me").addEventListener("click", centerOnUser);
         const avatarSelector = document.getElementById("user-avatar");
@@ -2747,12 +2302,6 @@
             if (userLocationMarker) userLocationMarker.setIcon(getUserLocationIcon());
         });
         document.getElementById("guest-mode-button").addEventListener("click", enterGuestMode);
-        document.getElementById("send-email-code").addEventListener("click", sendRegistrationEmailCode);
-        document.getElementById("verify-email-code").addEventListener("click", verifyRegistrationEmail);
-        document.getElementById("register-email").addEventListener("input", clearRegistrationEmailVerification);
-        document.getElementById("register-phone").addEventListener("input", validatePhoneField);
-        document.getElementById("register-phone").addEventListener("change", validatePhoneField);
-        validatePhoneField();
 
         document.getElementById("route-sort").value = routeMode;
         document.getElementById("route-sort").addEventListener("change", event => {
@@ -2802,16 +2351,12 @@
         document.getElementById("admin-refresh").addEventListener("click", loadAdminPanel);
         document.getElementById("admin-search").addEventListener("input", renderAdminPanel);
 
-        document.getElementById("login-form").addEventListener("submit", event => submitAuthForm(event, "login"));
-        document.getElementById("register-form").addEventListener("submit", event => submitAuthForm(event, "register"));
-
         if (currentUser) {
             document.getElementById("user-chip").textContent = `${currentUser.nombre} ${currentUser.apellido}`;
             document.getElementById("logout-button").hidden = false;
             document.getElementById("welcome-overlay").hidden = false;
         } else {
-            document.getElementById("registration-overlay").hidden = false;
-            showAuthTab("login");
+            showAccessScreen();
         }
         updateAdminVisibility();
         renderLocalCards();
