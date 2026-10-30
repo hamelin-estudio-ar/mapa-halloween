@@ -181,11 +181,20 @@
         .app-footer a:hover { color: #ffc18f; text-decoration: underline; }
         header h1 { font-size: 1.15rem; letter-spacing: 0; text-shadow: none; text-transform: none; }
         .header-kicker { color: #f6a66f; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px; }
-        .user-chip { color: #eee5f3; font-size: .84rem; white-space: nowrap; }
-        .user-actions { display: flex; align-items: center; gap: 10px; }
-        .user-menu-toggle { display: none; width: 36px; height: 36px; border: 1px solid #76518c; border-radius: 5px; background: #191521; color: #eee5f3; font-size: 1.2rem; cursor: pointer; }
-        .logout-button { padding: 7px 10px; border: 1px solid #76518c; border-radius: 5px; background: #191521; color: #eee5f3; font: inherit; font-size: .78rem; cursor: pointer; }
-        .logout-button:hover { border-color: var(--primary); color: #ffad70; }
+        .profile-menu { position: relative; flex: 0 0 auto; margin-left: auto; }
+        .user-menu-toggle { display: grid; place-items: center; width: 42px; height: 42px; overflow: hidden; border: 2px solid rgba(255,255,255,.62); border-radius: 50%; background: #3b8c85; color: #fff; font: inherit; font-size: .9rem; font-weight: 800; cursor: pointer; }
+        .user-menu-toggle img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-dropdown { position: absolute; z-index: 1200; top: calc(100% + 10px); right: 0; width: min(320px, calc(100vw - 24px)); padding: 8px; border: 1px solid #49424f; border-radius: 8px; background: #201d24; box-shadow: 0 16px 38px rgba(0,0,0,.45); color: #f5f0fa; }
+        .profile-dropdown[hidden] { display: none; }
+        .profile-menu-header { display: grid; gap: 4px; padding: 11px 12px 13px; border-bottom: 1px solid var(--line); }
+        .profile-menu-header strong { font-size: .92rem; overflow-wrap: anywhere; }
+        .profile-menu-header span { color: var(--muted); font-size: .78rem; overflow-wrap: anywhere; }
+        .profile-dropdown a, .profile-dropdown button { display: flex; align-items: center; width: 100%; min-height: 40px; padding: 9px 12px; border: 0; border-radius: 5px; background: transparent; color: #eee5f3; font: inherit; font-size: .82rem; text-align: left; text-decoration: none; cursor: pointer; }
+        .profile-dropdown a:hover, .profile-dropdown button:hover { background: #342d39; }
+        .profile-menu-section { display: grid; gap: 2px; margin: 6px 0; padding: 7px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .profile-menu-section[hidden] { display: none; }
+        .profile-menu-section-label { padding: 3px 12px 5px; color: #b7adbf; font-size: .69rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+        .logout-button { color: #ffad70 !important; }
         .header-bottom { margin-top: 12px; }
         .filter-container { justify-content: flex-start; flex-wrap: wrap; gap: 7px; margin-top: 0; }
         .filter-btn { border-color: #72518a; border-radius: 6px; padding: 7px 11px; font-size: .8rem; background: #191521; }
@@ -213,13 +222,16 @@
         .location-card.visited { opacity: .7; background: #19151f; }
         .location-card.visited .card-info h3, .location-card.visited .card-info p { text-decoration: line-through; color: #aaa0b2; }
         .location-card input[type="checkbox"] { width: 18px; height: 18px; margin: 5px 2px 0 0; accent-color: #ff7a1a; flex-shrink: 0; cursor: pointer; }
+        .location-card-image { width: 54px; height: 54px; flex: 0 0 54px; border-radius: 5px; object-fit: cover; background: #302b34; }
         .location-card input[type="checkbox"]:disabled { cursor: progress; }
         .badge-num { width: 27px; height: 27px; background: #ff7a1a; }
         .card-info h3 { font-size: .93rem; }
         .card-info p { color: #c9c1ce; line-height: 1.4; }
+        .location-card-image { display: block; width: min(100%, 180px); max-height: 110px; margin: 3px 0 5px; border-radius: 5px; object-fit: cover; }
         .tag-turno { border-radius: 4px; margin-top: 8px; }
         .tag-manana { background: #3b3219; color: #ffd166; }
         .tag-tarde { background: #392344; color: #d7a8ff; }
+        .tag-ambos { background: #24413a; color: #9de0c1; }
         .visit-state { display: block; min-height: 1em; margin-top: 5px; color: #ffad70; font-size: .75rem; font-weight: 600; }
         .map-status { position: absolute; z-index: 2; left: 12px; bottom: 12px; padding: 7px 10px; border-radius: 5px; background: rgba(20, 16, 25, .9); color: #e9dff0; font-size: .78rem; pointer-events: none; }
         .map-legend { position: absolute; z-index: 2; left: 12px; bottom: 46px; display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: 1px solid rgba(190,155,220,.3); border-radius: 5px; background: rgba(20,16,25,.92); color: #f5f0fa; font-size: .68rem; pointer-events: none; }
@@ -244,12 +256,21 @@
         .map-local-info { max-width: 260px; padding: 3px 4px; color: #211c24; font-family: inherit; }
         .map-local-info h3 { margin: 0 0 6px; color: #211c24; font-size: .95rem; line-height: 1.25; }
         .map-local-info p { margin: 0 0 5px; color: #514958; font-size: .78rem; line-height: 1.35; }
+        .map-local-image { display: block; width: min(100%, 220px); max-height: 120px; margin: 8px 0; border-radius: 5px; object-fit: cover; }
         .map-local-visit { display: flex; align-items: center; gap: 6px; margin: 7px 0; color: #342d38; font-size: .78rem; font-weight: 700; cursor: pointer; }
         .map-local-visit input { width: 16px; height: 16px; margin: 0; accent-color: #26212a; cursor: pointer; }
         .map-local-visit input:disabled { cursor: wait; }
-        .map-local-social { display: inline-flex; margin-top: 3px; padding: 6px 9px; border-radius: 4px; color: #fff; font-size: .78rem; font-weight: 700; text-decoration: none; }
-        .map-local-social.instagram { background: #a83174; }
-        .map-local-social.facebook { background: #1769aa; }
+        .local-contact-links { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+        .local-contact-icon { display: inline-grid; place-items: center; width: 30px; height: 30px; flex: 0 0 30px; border: 1px solid #62566c; border-radius: 5px; background: #2a2431; color: #f5f0fa; text-decoration: none; }
+        .local-contact-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .local-contact-icon.facebook svg { fill: currentColor; stroke: none; }
+        .local-contact-icon.instagram { color: #f18bb1; }
+        .local-contact-icon.facebook { color: #72a9ff; }
+        .local-contact-icon.web { color: #8ed1b6; }
+        .local-contact-icon.phone { color: #ffad70; }
+        .local-contact-icon.disabled { opacity: .3; filter: grayscale(1); cursor: not-allowed; }
+        .local-contact-icon:not(.disabled):hover { border-color: var(--primary); background: #3a303f; }
+        .map-local-info .local-contact-icon { border-color: #d3cad9; background: #f6f3f8; }
         .google-login { display: grid; gap: 10px; margin: 12px 0; }
         .google-login[hidden], .google-terms-prompt[hidden] { display: none; }
         .google-login-divider { display: flex; align-items: center; gap: 10px; color: #a99caf; font-size: .75rem; }
@@ -262,6 +283,9 @@
         .guest-access p { margin: 0; color: #c5bacd; font-size: .78rem; line-height: 1.4; }
         .guest-button { width: 100%; padding: 9px 12px; border: 1px solid #ff7a1a; border-radius: 5px; background: transparent; color: #ffad70; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
         .guest-button:hover { background: rgba(255,122,26,.12); }
+        .admin-demo-button { width: 100%; padding: 9px 12px; border: 1px dashed #8c8492; border-radius: 5px; background: transparent; color: #ddd2e5; font: inherit; font-size: .78rem; cursor: pointer; }
+        .admin-demo-button:hover { border-color: #ffad70; color: #ffad70; }
+        .admin-demo-button[hidden] { display: none; }
         .auth-error { min-height: 1.2em; margin: 0 !important; color: #ff9a84 !important; font-size: .82rem !important; }
         .visit-filters { display: flex; align-items: center; gap: 6px; margin: 0; padding: 4px 0 8px; }
         .visit-filter { padding: 6px 9px; border: 1px solid #51445d; border-radius: 5px; background: #191521; color: #ddd2e5; font: inherit; font-size: .75rem; cursor: pointer; }
@@ -269,6 +293,31 @@
         .admin-open-button { padding: 8px 11px; border: 1px solid #ff7a1a; border-radius: 5px; background: #ff7a1a; color: #1a1010; font: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; }
         .admin-open-button:hover { background: #ff9347; }
         .admin-dialog { width: min(96vw, 1120px); max-height: 92vh; overflow: auto; padding: 22px; border: 1px solid #684b7a; border-radius: 9px; background: #17141e; box-shadow: 0 24px 80px rgba(0,0,0,.6); }
+        .locations-dialog { width: min(96vw, 1120px); max-height: 92vh; overflow: auto; padding: 22px; border: 1px solid #684b7a; border-radius: 9px; background: #17141e; box-shadow: 0 24px 80px rgba(0,0,0,.6); }
+        .locations-admin-layout { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(0, 1.2fr); gap: 24px; align-items: start; }
+        .location-editor { display: grid; gap: 12px; }
+        .location-editor h3, .locations-list h3 { margin: 0 0 4px; font-size: 1rem; }
+        .location-editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .location-editor-field { display: grid; min-width: 0; gap: 5px; }
+        .location-editor-field.full { grid-column: 1 / -1; }
+        .location-editor-field label { color: #d3cad9; font-size: .76rem; font-weight: 600; }
+        .location-editor-field input, .location-editor-field select, .location-editor-field textarea { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid #51445d; border-radius: 5px; background: #211b2c; color: #f5f0fa; font: inherit; font-size: .82rem; }
+        .location-coordinate-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .location-coordinate-label { color: #d3cad9; font-size: .76rem; font-weight: 600; }
+        .location-coordinate-status { min-height: 1.2em; color: var(--muted); font-size: .76rem; }
+        .location-editor-field textarea { min-height: 72px; resize: vertical; }
+        .location-coordinate-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .location-active-field { display: flex; align-items: center; gap: 8px; color: #d3cad9; font-size: .8rem; }
+        .location-editor-actions, .admin-location-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .locations-admin-message { min-height: 1.2em; color: #ffad70; font-size: .8rem; }
+        .locations-list { display: grid; gap: 8px; max-height: 68vh; overflow: auto; }
+        .admin-location-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+        .admin-location-info { display: grid; min-width: 0; gap: 3px; }
+        .admin-location-info strong { overflow-wrap: anywhere; font-size: .86rem; }
+        .admin-location-info span { color: var(--muted); font-size: .74rem; overflow-wrap: anywhere; }
+        .admin-location-status { color: #8ed1b6 !important; }
+        .admin-location-status.inactive { color: #ffad70 !important; }
+        .admin-location-actions .admin-action { min-height: 34px; }
         .raffle-dialog { width: min(94vw, 480px); max-height: 88vh; overflow: auto; padding: 22px; border: 1px solid #684b7a; border-radius: 8px; background: #17141e; color: #f5f0fa; box-shadow: 0 24px 80px rgba(0,0,0,.6); }
         .raffle-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
         .raffle-header h2 { margin: 0 0 5px; font-size: 1.15rem; }
@@ -374,16 +423,14 @@
             .main-container.sidebar-collapsed .sidebar-heading { justify-content: flex-end; }
             .main-container.sidebar-collapsed .sidebar-toggle { width: 28px; }
             .main-container.sidebar-collapsed .map-panel { flex: 1 1 auto; min-height: 200px; }
-            .user-menu-toggle { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 36px; }
-            .user-actions { display: none; position: absolute; z-index: 1100; top: 54px; right: 12px; min-width: 190px; flex-direction: column; align-items: stretch; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: #17141e; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
-            .user-actions.open { display: flex; }
-            .user-actions .user-chip { white-space: normal; }
-            .user-actions .logout-button, .user-actions .admin-open-button { width: 100%; }
+            .profile-menu { margin-left: auto; }
+            .user-menu-toggle { width: 38px; height: 38px; }
             .location-card { gap: 6px; padding: 8px; margin-bottom: 6px; }
             .location-card input[type="checkbox"] { width: 16px; height: 16px; margin-right: 0; }
             .badge-num { width: 24px; height: 24px; font-size: .78rem; }
             .card-info h3 { font-size: .84rem; line-height: 1.2; }
             .card-info p { font-size: .74rem; line-height: 1.25; }
+            .location-card-image { max-height: 76px; }
             .tag-turno { margin-top: 5px; padding: 2px 6px; font-size: .68rem; }
             .visit-state { margin-top: 3px; font-size: .68rem; }
             .route-controls { gap: 3px; }
@@ -405,6 +452,9 @@
             .route-sort { flex: 0 1 138px; min-width: 112px; margin-left: auto; }
             .route-sort select { width: 100%; max-width: 138px; min-width: 0; padding: 6px 5px; font-size: .68rem; }
             .admin-dialog { padding: 16px; }
+            .locations-dialog { padding: 16px; }
+            .locations-admin-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+            .locations-list { max-height: 36vh; }
             .raffle-dialog { padding: 18px; }
             .raffle-actions { flex-wrap: wrap; }
             .admin-toolbar { align-items: stretch; flex-direction: column; }
@@ -429,18 +479,26 @@
                 <div class="header-kicker">Recorrido de Halloween · Caballito</div>
                 <h1>🎃 Ruta Mágica 2026 🎃</h1>
             </div>
-            <div class="user-actions" id="user-actions">
-                <div class="user-chip" id="user-chip">Participante sin registrar</div>
-                <!-- Botón de Instagram directo -->
-                <a href="https://www.instagram.com/rutamagicacaballito/" target="_blank" rel="noopener noreferrer" title="Seguinos en Instagram" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #e1306c; transition: all 0.2s ease; margin-right: 8px; text-decoration: none;">
-                    <svg style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                </a>
-                <button class="admin-open-button" id="admin-open-button" type="button" hidden>Panel Admin</button>
-                <button class="logout-button" id="logout-button" type="button" hidden>Cerrar sesión</button>
+            <div class="profile-menu" id="profile-menu">
+                <button class="user-menu-toggle" id="user-menu-toggle" type="button" aria-label="Abrir menú de usuario" aria-controls="user-menu-dropdown" aria-expanded="false" title="Cuenta">
+                    <img id="user-menu-photo" alt="" hidden>
+                    <span id="user-menu-initials" aria-hidden="true">?</span>
+                </button>
+                <div class="profile-dropdown" id="user-menu-dropdown" hidden>
+                    <div class="profile-menu-header">
+                        <strong id="menu-user-name">Participante sin registrar</strong>
+                        <span id="menu-user-email">Modo invitado</span>
+                    </div>
+                    <a href="https://www.instagram.com/rutamagicacaballito/" target="_blank" rel="noopener noreferrer">Información del evento</a>
+                    <div class="profile-menu-section" id="admin-menu-section" hidden>
+                        <span class="profile-menu-section-label">Administración</span>
+                        <button id="menu-admin-users" type="button">Administrar Usuarios</button>
+                        <button id="menu-admin-locations" type="button">Administrar Locales</button>
+                        <button id="menu-admin-raffle" type="button">Ver Sorteos</button>
+                    </div>
+                    <button class="logout-button" id="logout-button" type="button" hidden>Cerrar Sesión</button>
+                </div>
             </div>
-            <button class="user-menu-toggle" id="user-menu-toggle" type="button" aria-label="Abrir menú de usuario" aria-controls="user-actions" aria-expanded="false" title="Menú">☰</button>
         </div>
         <div class="header-bottom">
             <nav class="filter-container" aria-label="Filtrar locales por turno">
@@ -448,7 +506,7 @@
                 <button class="filter-btn" type="button" data-filter="manana" aria-pressed="false">☀️ Mañana · 10:30-12:30</button>
                 <button class="filter-btn" type="button" data-filter="tarde" aria-pressed="false">🌙 Tarde · 15:00-18:00</button>
             </nav>
-            <div class="score" aria-live="polite">Puntos: <strong id="score-count">0</strong> / 27</div>
+            <div class="score" aria-live="polite">Puntos: <strong id="score-count">0</strong> / <span id="local-count">0</span></div>
         </div>
     </header>
 
@@ -519,6 +577,7 @@
             <div class="guest-access">
                 <p>Recorré sin registrarte. El progreso queda en este dispositivo y no participás de ningún sorteo.</p>
                 <button class="guest-button" id="guest-mode-button" type="button">Ingresar como invitado</button>
+                <button class="admin-demo-button" id="admin-demo-button" type="button" hidden>Entrar como admin (demo local)</button>
             </div>
             <div class="google-login" id="google-login-container" hidden>
                 <div class="google-login-divider"><span>o</span></div>
@@ -564,7 +623,6 @@
                     <label for="admin-search">Buscar usuario</label>
                     <input id="admin-search" type="search" placeholder="Nombre, apellido o email" autocomplete="off">
                 </div>
-                <button class="admin-open-button" id="admin-open-raffle" type="button">Sorteo</button>
                 <button class="admin-action" id="admin-refresh" type="button">Actualizar</button>
             </div>
             <p class="admin-message" id="admin-message" role="status" aria-live="polite"></p>
@@ -582,6 +640,81 @@
                     </thead>
                     <tbody id="admin-users-body"></tbody>
                 </table>
+            </div>
+        </section>
+    </div>
+    <div class="overlay" id="locations-admin-overlay" hidden>
+        <section class="locations-dialog" role="dialog" aria-modal="true" aria-labelledby="locations-admin-title">
+            <div class="admin-dialog-header">
+                <div>
+                    <h2 id="locations-admin-title">Administrar Locales</h2>
+                    <p>Alta, edición y disponibilidad de los puntos del recorrido.</p>
+                </div>
+                <button class="admin-close" id="locations-admin-close" type="button" aria-label="Cerrar administración de locales" title="Cerrar">×</button>
+            </div>
+            <div class="locations-admin-layout">
+                <form class="location-editor" id="location-form">
+                    <h3 id="location-form-title">Nuevo local</h3>
+                    <input id="location-id" type="hidden">
+                    <div class="location-editor-grid">
+                        <div class="location-editor-field full">
+                            <label for="location-name">Nombre</label>
+                            <input id="location-name" name="nombre" type="text" maxlength="120" required>
+                        </div>
+                        <div class="location-editor-field full">
+                            <label for="location-description">Descripción</label>
+                            <textarea id="location-description" name="descripcion" maxlength="500"></textarea>
+                        </div>
+                        <div class="location-editor-field full">
+                            <label for="location-address">Dirección</label>
+                            <input id="location-address" name="dir" type="text" maxlength="240" required>
+                        </div>
+                        <div class="location-editor-field">
+                            <label for="location-shift">Turno</label>
+                            <select id="location-shift" name="turno">
+                                <option value="manana">Mañana</option>
+                                <option value="tarde">Tarde</option>
+                                <option value="ambos">Mañana y tarde</option>
+                            </select>
+                        </div>
+                        <div class="location-editor-field">
+                            <label for="location-hours">Horarios</label>
+                            <input id="location-hours" name="horarios" type="text" maxlength="160" placeholder="Ej. 10:30 a 18:00">
+                        </div>
+                        <div class="location-editor-field full">
+                            <span class="location-coordinate-label">Ubicación en el mapa</span>
+                            <p class="location-coordinate-status" id="location-coordinate-status" role="status">Se asignará automáticamente a partir de la dirección.</p>
+                            <input id="location-latitude" name="lat" type="hidden">
+                            <input id="location-longitude" name="lng" type="hidden">
+                        </div>
+                        <div class="location-editor-field">
+                            <label for="location-instagram">Instagram (opcional)</label>
+                            <input id="location-instagram" name="instagram" type="url" maxlength="1000" placeholder="https://instagram.com/...">
+                        </div>
+                        <div class="location-editor-field">
+                            <label for="location-facebook">Facebook (opcional)</label>
+                            <input id="location-facebook" name="facebook" type="url" maxlength="1000" placeholder="https://facebook.com/...">
+                        </div>
+                        <div class="location-editor-field">
+                            <label for="location-web">Web (opcional)</label>
+                            <input id="location-web" name="web" type="url" maxlength="1000" placeholder="https://">
+                        </div>
+                        <div class="location-editor-field">
+                            <label for="location-phone">Teléfono (opcional)</label>
+                            <input id="location-phone" name="telefono" type="tel" maxlength="40">
+                        </div>
+                    </div>
+                    <label class="location-active-field"><input id="location-active" type="checkbox" checked> Visible en el mapa</label>
+                    <div class="location-editor-actions">
+                        <button class="admin-open-button" id="location-save" type="submit">Guardar local</button>
+                        <button class="admin-action" id="location-cancel" type="button" hidden>Cancelar edición</button>
+                    </div>
+                    <p class="locations-admin-message" id="locations-admin-message" role="status" aria-live="polite"></p>
+                </form>
+                <section aria-labelledby="locations-list-title">
+                    <h3 id="locations-list-title">Locales</h3>
+                    <div class="locations-list" id="admin-locations-list" aria-live="polite"></div>
+                </section>
             </div>
         </section>
     </div>
@@ -619,6 +752,15 @@
         const DISTANCE_LIMIT_METERS = 2;
         const STORAGE_KEYS = { session: "ruta-magica-session", visits: "halloween-caballito-visits", routeOrder: "ruta-magica-2026-order", guestVisits: "ruta-magica-guest-visits", userAvatar: "ruta-magica-user-avatar", sidebarWidth: "ruta-magica-sidebar-width", sidebarCollapsed: "ruta-magica-sidebar-collapsed", mobileMapHeight: "ruta-magica-mobile-map-height" };
         const BACKEND_URL = "https://ruta-magica-backend-854585878082.us-central1.run.app";
+        const LOCAL_DEMO_HOST = window.location.hostname;
+        const IS_PRIVATE_NETWORK_HOST = /^10(?:\.\d{1,3}){3}$/.test(LOCAL_DEMO_HOST)
+            || /^192\.168(?:\.\d{1,3}){2}$/.test(LOCAL_DEMO_HOST)
+            || /^172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2}$/.test(LOCAL_DEMO_HOST);
+        const LOCAL_ADMIN_DEMO_ENABLED = (window.location.protocol === "file:"
+            || ["localhost", "127.0.0.1"].includes(LOCAL_DEMO_HOST)
+            || IS_PRIVATE_NETWORK_HOST)
+            && new URLSearchParams(window.location.search).get("admin-demo") === "1";
+        const LOCAL_ADMIN_DEMO_TOKEN = "local-admin-demo-only";
         const USER_AVATARS = {
             ghost: "👻",
             zombie: "🧟",
@@ -684,35 +826,7 @@
             };
         }
 
-        let locales = [
-            { id: 1, nombre: "Il Gioco Tienda de Ropa", dir: "Av Rivadavia 4995, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 2, nombre: "BetyGino", dir: "Rosario 190, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 3, nombre: "Tienta Helados", dir: "Rosario 262, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 4, nombre: "Toffee Tienda", dir: "Viel 220, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 5, nombre: "Café del Parque", dir: "Viel 267, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 6, nombre: "Veterinaria Los tres mascoteros", dir: "Guayaquil 284, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 7, nombre: "Bull! Café", dir: "Viel 368, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 8, nombre: "Peluqueria Viel", dir: "Viel 382, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false },
-            { id: 9, nombre: "Giusseppe Picadas", dir: "Viel 384, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 10, nombre: "Librería Sofi", dir: "Viel 489, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 11, nombre: "SANITARIOS LA NUEVA ERA", dir: "Viel 493, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 12, nombre: "La Vicca Pizzeria", dir: "Juan Bautista Alberdi 365, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 13, nombre: "Peluquería Picardías", dir: "Formosa 407, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false },
-            { id: 14, nombre: "Otero Café", dir: "Guayaquil 389, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 15, nombre: "Del Turista Caballito", dir: "Beauchef 294, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 16, nombre: "FARO AZUL", dir: "Rosario 486, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 17, nombre: "Pañalera Do Re Mi", dir: "Rosario 531, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 18, nombre: "Aurora Café", dir: "Rosario 588, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 19, nombre: "Tienda Fun Star", dir: "Rosario 596, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 20, nombre: "Vizzentino", dir: "Av Jose María Moreno 168, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 21, nombre: "Peluquería Tijeritas", dir: "José María Moreno 308, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 22, nombre: "Dulce Esquina", dir: "Juan Bautista Alberdi 599, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 23, nombre: "Lavedog", dir: "Juan Bautista Alberdi 774, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 24, nombre: "Didactikids Caballito", dir: "Del Barco Centenera 256, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 25, nombre: "Libreria Apolo XI", dir: "Del Barco Centenera 228, Buenos Aires", turno: "manana", lat: null, lng: null, visitado: false },
-            { id: 26, nombre: "Local Arte Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false },
-            { id: 27, nombre: "Grooving Tattoo Studio", dir: "Del Barco Centenera 150, Buenos Aires", turno: "tarde", lat: null, lng: null, visitado: false }
-        ];
+        let locales = [];
         const SOCIAL_PROFILES = {
             ilgiocotiendaderopa: { platform: "Instagram", url: "https://www.instagram.com/ilgiocochicos/" },
             betygino: { platform: "Instagram", url: "https://www.instagram.com/betygino/" },
@@ -749,11 +863,85 @@
             const key = String(name || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
             return SOCIAL_PROFILES[key] || null;
         }
+        function safeContactUrl(value) {
+            if (typeof value !== "string" || !value.trim()) return "";
+            try {
+                const url = new URL(value.trim());
+                return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+            } catch (error) {
+                return "";
+            }
+        }
+
+        function getLocalContactData(local) {
+            const legacySocial = local.socialProfile || getSocialProfile(local.nombre);
+            const legacyInstagram = legacySocial?.platform === "Instagram" ? legacySocial.url : "";
+            const legacyFacebook = legacySocial?.platform === "Facebook" ? legacySocial.url : "";
+            const phone = String(local.telefono || "").trim();
+            return {
+                instagram: safeContactUrl(local.instagram) || safeContactUrl(legacyInstagram),
+                facebook: safeContactUrl(local.facebook) || safeContactUrl(legacyFacebook),
+                web: safeContactUrl(local.web),
+                phone: phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : ""
+            };
+        }
+
+        function createLocalContactLinks(local) {
+            const contacts = getLocalContactData(local);
+            const icons = {
+                instagram: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".7" fill="currentColor" stroke="none"/></svg>',
+                facebook: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.5 1.6-1.5h1.6V3.9c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3V10H7.2v3H10v8z"/></svg>',
+                web: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
+                phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 11.2 19a19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg>'
+            };
+            const labels = { instagram: "Instagram", facebook: "Facebook", web: "Sitio web", phone: "Teléfono" };
+            const container = document.createElement("div");
+            container.className = "local-contact-links";
+            container.setAttribute("aria-label", `Contacto de ${local.nombre}`);
+            Object.entries(labels).forEach(([key, label]) => {
+                const href = contacts[key];
+                const control = document.createElement(href ? "a" : "span");
+                control.className = `local-contact-icon ${key}${href ? "" : " disabled"}`;
+                control.title = href ? label : `${label} no disponible`;
+                control.setAttribute("aria-label", control.title);
+                if (href) {
+                    control.href = href;
+                    if (key !== "phone") {
+                        control.target = "_blank";
+                        control.rel = "noopener noreferrer";
+                    }
+                } else {
+                    control.setAttribute("aria-disabled", "true");
+                }
+                control.innerHTML = icons[key];
+                container.append(control);
+            });
+            return container;
+        }
         locales = locales.map(local => {
             const nombre = normalizeLocalName(local.nombre);
             return { ...local, nombre, socialProfile: getSocialProfile(nombre) };
         });
         let originalRouteOrder = locales.map(local => local.id);
+        let localAdminDemoUsers = [
+            { nombre: "Admin", apellido: "Demo", email: "admin.demo@local.test", telefono: "", rol: "admin", timestampRegistro: "2026-10-01", fecha_registro: "2026-10-01" },
+            { nombre: "Usuario", apellido: "Final", email: "usuario.demo@local.test", telefono: "", rol: "user", timestampRegistro: "2026-10-02", fecha_registro: "2026-10-02" }
+        ];
+        let localAdminDemoLocales = [
+            { id: 9001, nombre: "Café de prueba", dir: "Av. Rivadavia 5000, Caballito", turno: "manana", horarios: "10:30 a 18:00", lat: -34.6202, lng: -58.4358, descripcion: "Local de demostración para probar el ABM.", telefono: "", web: "", imagen: "", activo: true },
+            { id: 9002, nombre: "Librería de prueba", dir: "Rosario 200, Caballito", turno: "ambos", horarios: "10:00 a 19:00", lat: -34.6210, lng: -58.4365, descripcion: "Este registro sólo existe en la demo local.", telefono: "", web: "", imagen: "", activo: true }
+        ];
+        let localAdminDemoVisits = [
+            { email: "usuario.demo@local.test", local_id: 9001, timestamp: "2026-10-25T13:00:00.000Z", distancia: 1.2 }
+        ];
+
+        function isLocalAdminDemoSession(session) {
+            return LOCAL_ADMIN_DEMO_ENABLED && session?.token === LOCAL_ADMIN_DEMO_TOKEN;
+        }
+
+        function cloneDemoData(value) {
+            return JSON.parse(JSON.stringify(value));
+        }
 
         // CAPA 2: DATOS Y PERSISTENCIA
         const DataRepository = {
@@ -813,37 +1001,105 @@
                 });
             },
             async loadLocales() {
+                if (isLocalAdminDemoSession(activeSession)) {
+                    return cloneDemoData(localAdminDemoLocales.filter(local => local.activo !== false));
+                }
                 const payload = await this.request("/api/locales");
-                if (!Array.isArray(payload.locales) || payload.locales.length === 0) {
+                if (!Array.isArray(payload.locales)) {
                     throw new Error("El backend no devolvió locales válidos");
                 }
                 return payload.locales;
             },
+            async loadAdminLocales(session) {
+                if (isLocalAdminDemoSession(session)) return cloneDemoData(localAdminDemoLocales);
+                const payload = await this.request("/api/admin/locales", {}, session);
+                return Array.isArray(payload.locales) ? payload.locales : [];
+            },
+            async saveAdminLocale(locale, session) {
+                if (isLocalAdminDemoSession(session)) {
+                    if (Number.isInteger(locale.id)) {
+                        const index = localAdminDemoLocales.findIndex(local => local.id === locale.id);
+                        if (index < 0) throw new Error("No existe ese local de demo");
+                        localAdminDemoLocales[index] = { ...localAdminDemoLocales[index], ...cloneDemoData(locale) };
+                        return cloneDemoData(localAdminDemoLocales[index]);
+                    }
+                    const created = { ...cloneDemoData(locale), id: Math.max(9000, ...localAdminDemoLocales.map(local => local.id)) + 1, activo: true };
+                    localAdminDemoLocales.push(created);
+                    return cloneDemoData(created);
+                }
+                const isEditing = Number.isInteger(locale.id);
+                const payload = await this.request(isEditing ? `/api/admin/locales/${locale.id}` : "/api/admin/locales", {
+                    method: isEditing ? "PUT" : "POST",
+                    body: JSON.stringify(locale)
+                }, session);
+                return payload.local;
+            },
+            async deactivateAdminLocale(localId, session) {
+                if (isLocalAdminDemoSession(session)) {
+                    const local = localAdminDemoLocales.find(item => item.id === localId);
+                    if (!local) throw new Error("No existe ese local de demo");
+                    local.activo = false;
+                    return { success: true, id: localId, activo: false };
+                }
+                return this.request(`/api/admin/locales/${localId}`, { method: "DELETE" }, session);
+            },
             async loadVisits(session) {
+                if (isLocalAdminDemoSession(session)) {
+                    return cloneDemoData(localAdminDemoVisits.filter(visit => visit.email === session.user.email));
+                }
                 const email = encodeURIComponent(session.user.email);
                 const payload = await this.request(`/api/visitas?email=${email}`, {}, session);
                 return Array.isArray(payload.visitas) ? payload.visitas : [];
             },
             async loadAdminUsers(session) {
+                if (isLocalAdminDemoSession(session)) return cloneDemoData(localAdminDemoUsers);
                 const payload = await this.request("/api/admin/usuarios", {}, session);
                 return Array.isArray(payload.usuarios) ? payload.usuarios : [];
             },
             async loadAdminSummary(session) {
+                if (isLocalAdminDemoSession(session)) {
+                    const users = cloneDemoData(localAdminDemoUsers).map(user => {
+                        const visits = localAdminDemoVisits.filter(visit => visit.email === user.email).map(visit => ({
+                            ...visit,
+                            nombre: localAdminDemoLocales.find(local => local.id === visit.local_id)?.nombre || "Local de demo"
+                        }));
+                        return { ...user, fecha_registro: user.timestampRegistro, total_checkins: visits.length, visitas: visits };
+                    });
+                    return { success: true, total_usuarios: users.length, total_checkins: localAdminDemoVisits.length, usuarios: users, locales_mas_visitados: [] };
+                }
                 return this.request("/api/admin/visitas-resumen", {}, session);
             },
             async changeUserRole(email, role, session) {
+                if (isLocalAdminDemoSession(session)) {
+                    const user = localAdminDemoUsers.find(item => item.email === email);
+                    if (!user) throw new Error("No existe ese usuario de demo");
+                    user.rol = role;
+                    return { success: true, usuario: { ...user, fecha_registro: user.timestampRegistro } };
+                }
                 return this.request("/api/admin/cambiar-rol", {
                     method: "POST",
                     body: JSON.stringify({ email, rol: role })
                 }, session);
             },
             async deleteAdminUser(email, session) {
+                if (isLocalAdminDemoSession(session)) {
+                    if (email === session.user.email) throw new Error("No podés eliminar tu propia cuenta de demo");
+                    localAdminDemoUsers = localAdminDemoUsers.filter(user => user.email !== email);
+                    localAdminDemoVisits = localAdminDemoVisits.filter(visit => visit.email !== email);
+                    return { success: true, email };
+                }
                 return this.request("/api/admin/eliminar-usuario", {
                     method: "POST",
                     body: JSON.stringify({ email })
                 }, session);
             },
             async recordVisit(local, distanceMeters, session) {
+                if (isLocalAdminDemoSession(session)) {
+                    const existing = localAdminDemoVisits.find(visit => visit.email === session.user.email && visit.local_id === local.id);
+                    const visit = existing || { email: session.user.email, local_id: local.id, timestamp: new Date().toISOString(), distancia: distanceMeters };
+                    if (!existing) localAdminDemoVisits.push(visit);
+                    return { success: true, visitado: visit, created: !existing };
+                }
                 const payload = await this.request("/api/visita", {
                     method: "POST",
                     body: JSON.stringify({ local_id: local.id, distancia: distanceMeters })
@@ -858,6 +1114,11 @@
                 return payload;
             },
             async removeVisit(local, session) {
+                if (isLocalAdminDemoSession(session)) {
+                    const previousLength = localAdminDemoVisits.length;
+                    localAdminDemoVisits = localAdminDemoVisits.filter(visit => !(visit.email === session.user.email && visit.local_id === local.id));
+                    return { success: true, removed: localAdminDemoVisits.length !== previousLength };
+                }
                 const payload = await this.request(`/api/visitas/${local.id}`, { method: "DELETE" }, session);
                 this.storeVisitEvent({
                     usuarioEmail: session.user.email,
@@ -995,6 +1256,8 @@
         const expandedAdminUsers = new Set();
         const markersById = new Map();
         const coordinatePromises = new Map();
+        let adminAddressGeocodeRequest = 0;
+        let resolvedAdminAddress = "";
         let toastTimer;
 
         function showToast(message) {
@@ -1094,20 +1357,44 @@
         }
 
         function getTurnLabel(local) {
+            if (local.turno === "ambos") return "☀️ Mañana y tarde";
             return local.turno === "manana" ? "☀️ Turno Mañana" : "🌙 Turno Tarde";
         }
 
         function updateAdminVisibility() {
-            document.getElementById("admin-open-button").hidden = currentUser?.rol !== "admin";
-            if (currentUser?.rol !== "admin") document.getElementById("admin-overlay").hidden = true;
+            const isAdmin = Boolean(activeSession && currentUser?.rol === "admin");
+            document.getElementById("admin-menu-section").hidden = !isAdmin;
+            if (!isAdmin) {
+                document.getElementById("admin-overlay").hidden = true;
+                document.getElementById("locations-admin-overlay").hidden = true;
+                setUserMenuOpen(false);
+            }
+            updateProfileMenu();
+        }
+
+        function updateProfileMenu() {
+            const name = currentUser
+                ? `${currentUser.nombre || ""} ${currentUser.apellido || ""}`.trim() || "Participante"
+                : guestMode ? "Invitado" : "Participante sin registrar";
+            const email = currentUser?.email || (guestMode ? "Modo invitado" : "Iniciá sesión con Google");
+            const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toLocaleUpperCase("es-AR") || "?";
+            const photo = document.getElementById("user-menu-photo");
+            document.getElementById("menu-user-name").textContent = name;
+            document.getElementById("menu-user-email").textContent = email;
+            document.getElementById("user-menu-initials").textContent = initials;
+            document.getElementById("user-menu-toggle").setAttribute("aria-label", `Cuenta de ${name}`);
+            photo.hidden = !currentUser?.foto;
+            document.getElementById("user-menu-initials").hidden = Boolean(currentUser?.foto);
+            if (currentUser?.foto) photo.src = currentUser.foto;
+            const logoutButton = document.getElementById("logout-button");
+            logoutButton.hidden = !(activeSession || guestMode);
+            logoutButton.textContent = guestMode ? "Salir de invitado" : "Cerrar Sesión";
         }
 
         function setUserMenuOpen(open) {
-            const menu = document.getElementById("user-actions");
             const toggle = document.getElementById("user-menu-toggle");
-            menu.classList.toggle("open", open);
+            document.getElementById("user-menu-dropdown").hidden = !open;
             toggle.setAttribute("aria-expanded", String(open));
-            toggle.setAttribute("aria-label", open ? "Cerrar menú de usuario" : "Abrir menú de usuario");
         }
 
         function enterGuestMode() {
@@ -1125,13 +1412,35 @@
             document.getElementById("registration-overlay").hidden = true;
             document.getElementById("welcome-overlay").hidden = true;
             document.getElementById("admin-overlay").hidden = true;
-            document.getElementById("user-chip").textContent = "Invitado · sin sorteo";
-            document.getElementById("logout-button").textContent = "Salir de invitado";
-            document.getElementById("logout-button").hidden = false;
             updateAdminVisibility();
             restoreVisits();
             renderLocalCards();
             showToast("Modo invitado: progreso sólo en este dispositivo; no participás del sorteo.");
+        }
+
+        async function enterAdminDemoMode() {
+            if (!LOCAL_ADMIN_DEMO_ENABLED) return;
+            await appInitialization;
+            const demoUser = {
+                nombre: "Admin",
+                apellido: "Demo",
+                email: "admin.demo@local.test",
+                telefono: "",
+                rol: "admin",
+                foto: "",
+                auth_version: 1,
+                timestampRegistro: new Date().toISOString()
+            };
+            activeSession = { token: LOCAL_ADMIN_DEMO_TOKEN, user: demoUser };
+            currentUser = demoUser;
+            guestMode = false;
+            backendVisits = await DataRepository.loadVisits(activeSession);
+            backendVisitsLoaded = true;
+            await reloadActiveLocales();
+            document.getElementById("registration-overlay").hidden = true;
+            document.getElementById("welcome-overlay").hidden = true;
+            updateAdminVisibility();
+            showToast("Modo admin demo local: los cambios no se guardan en Firestore.");
         }
 
         function loadGoogleIdentityServices() {
@@ -1266,7 +1575,7 @@
                 roleControl.className = "admin-role-control";
                 const roleSelect = document.createElement("select");
                 roleSelect.setAttribute("aria-label", `Rol de ${user.email}`);
-                [["user", "Usuario"], ["admin", "Admin"]].forEach(([value, label]) => {
+                [["user", "Usuario final"], ["admin", "Administrador"]].forEach(([value, label]) => {
                     const option = document.createElement("option");
                     option.value = value;
                     option.textContent = label;
@@ -1417,6 +1726,7 @@
 
         function openRaffleModal() {
             if (currentUser?.rol !== "admin") return;
+            setUserMenuOpen(false);
             updateRaffleModal();
             document.getElementById("raffle-overlay").hidden = false;
             document.getElementById("raffle-draw").focus();
@@ -1424,8 +1734,7 @@
 
         function closeRaffleModal() {
             document.getElementById("raffle-overlay").hidden = true;
-            const openButton = document.getElementById("admin-open-raffle");
-            if (!openButton.hidden) openButton.focus();
+            document.getElementById("user-menu-toggle").focus();
         }
 
         async function loadAdminPanel() {
@@ -1504,12 +1813,266 @@
 
         function openAdminPanel() {
             if (currentUser?.rol !== "admin") return;
+            setUserMenuOpen(false);
             document.getElementById("admin-overlay").hidden = false;
             loadAdminPanel();
         }
 
+        function resetLocaleForm() {
+            document.getElementById("location-form").reset();
+            document.getElementById("location-id").value = "";
+            resolvedAdminAddress = "";
+            document.getElementById("location-latitude").value = "";
+            document.getElementById("location-longitude").value = "";
+            document.getElementById("location-form-title").textContent = "Nuevo local";
+            document.getElementById("location-save").textContent = "Guardar local";
+            document.getElementById("location-cancel").hidden = true;
+            document.getElementById("location-coordinate-status").textContent = "Se asignará automáticamente a partir de la dirección.";
+            document.getElementById("locations-admin-message").textContent = "";
+        }
+
+        function editAdminLocale(local) {
+            document.getElementById("location-id").value = String(local.id);
+            document.getElementById("location-name").value = local.nombre || "";
+            document.getElementById("location-description").value = local.descripcion || "";
+            document.getElementById("location-address").value = local.dir || "";
+            document.getElementById("location-shift").value = local.turno || "manana";
+            document.getElementById("location-hours").value = local.horarios || "";
+            const hasCoordinates = local.lat !== null && local.lat !== undefined && local.lng !== null && local.lng !== undefined
+                && Number.isFinite(Number(local.lat)) && Number.isFinite(Number(local.lng));
+            document.getElementById("location-latitude").value = hasCoordinates ? String(local.lat) : "";
+            document.getElementById("location-longitude").value = hasCoordinates ? String(local.lng) : "";
+            resolvedAdminAddress = hasCoordinates ? (local.dir || "") : "";
+            document.getElementById("location-coordinate-status").textContent = hasCoordinates
+                ? "Dirección ya ubicada. Se recalculará si la modificás."
+                : "Se asignará automáticamente a partir de la dirección.";
+            document.getElementById("location-instagram").value = local.instagram || "";
+            document.getElementById("location-facebook").value = local.facebook || "";
+            document.getElementById("location-web").value = local.web || "";
+            document.getElementById("location-phone").value = local.telefono || "";
+            document.getElementById("location-active").checked = local.activo !== false;
+            document.getElementById("location-form-title").textContent = `Editar ${local.nombre}`;
+            document.getElementById("location-save").textContent = "Guardar cambios";
+            document.getElementById("location-cancel").hidden = false;
+            document.getElementById("locations-admin-message").textContent = "";
+            document.getElementById("location-name").focus();
+        }
+
+        async function resolveAdminAddressCoordinates(address) {
+            const normalizedAddress = String(address || "").trim();
+            const latitudeInput = document.getElementById("location-latitude");
+            const longitudeInput = document.getElementById("location-longitude");
+            const status = document.getElementById("location-coordinate-status");
+            if (!normalizedAddress) throw new Error("Ingresá una calle y altura para ubicar el local.");
+            if (resolvedAdminAddress === normalizedAddress && latitudeInput.value && longitudeInput.value) {
+                return { lat: Number(latitudeInput.value), lng: Number(longitudeInput.value) };
+            }
+            if (isLocalAdminDemoSession(activeSession)) {
+                const coordinates = { lat: -34.6200, lng: -58.4350 };
+                latitudeInput.value = String(coordinates.lat);
+                longitudeInput.value = String(coordinates.lng);
+                resolvedAdminAddress = normalizedAddress;
+                status.textContent = "Ubicación de prueba asignada automáticamente.";
+                return coordinates;
+            }
+            if (!window.google?.maps?.Geocoder) throw new Error("Google Maps no está disponible para ubicar esta dirección.");
+
+            const requestId = ++adminAddressGeocodeRequest;
+            status.textContent = "Buscando la dirección en el mapa...";
+            try {
+                const geocoderInstance = new google.maps.Geocoder();
+                const result = await new Promise((resolve, reject) => {
+                    geocoderInstance.geocode({
+                        address: `${normalizedAddress}, Caballito, Buenos Aires, Argentina`,
+                        componentRestrictions: { locality: "Buenos Aires", country: "AR" },
+                        region: "AR"
+                    }, (results, geocodeStatus) => {
+                        if (geocodeStatus !== "OK" || !results?.[0]) {
+                            reject(new Error("No encontramos esa dirección. Revisá calle y altura."));
+                            return;
+                        }
+                        resolve(results[0].geometry.location);
+                    });
+                });
+                if (requestId !== adminAddressGeocodeRequest || document.getElementById("location-address").value.trim() !== normalizedAddress) {
+                    throw new Error("La dirección cambió mientras la ubicábamos. Volvé a buscarla.");
+                }
+                const coordinates = { lat: result.lat(), lng: result.lng() };
+                latitudeInput.value = String(coordinates.lat);
+                longitudeInput.value = String(coordinates.lng);
+                resolvedAdminAddress = normalizedAddress;
+                status.textContent = `Ubicación asignada automáticamente (${coordinates.lat.toFixed(5)}, ${coordinates.lng.toFixed(5)}).`;
+                return coordinates;
+            } catch (error) {
+                if (requestId === adminAddressGeocodeRequest) {
+                    resolvedAdminAddress = "";
+                    latitudeInput.value = "";
+                    longitudeInput.value = "";
+                    status.textContent = error.message || "No pudimos ubicar esa dirección.";
+                }
+                throw error;
+            }
+        }
+
+        function renderAdminLocations(locations) {
+            const list = document.getElementById("admin-locations-list");
+            list.replaceChildren();
+            if (locations.length === 0) {
+                const empty = document.createElement("p");
+                empty.className = "admin-message";
+                empty.textContent = "Todavía no hay locales cargados.";
+                list.append(empty);
+                return;
+            }
+            locations.forEach(local => {
+                const row = document.createElement("article");
+                row.className = "admin-location-row";
+                const info = document.createElement("div");
+                info.className = "admin-location-info";
+                const name = document.createElement("strong");
+                name.textContent = local.nombre;
+                const address = document.createElement("span");
+                address.textContent = local.dir;
+                const status = document.createElement("span");
+                status.className = `admin-location-status${local.activo === false ? " inactive" : ""}`;
+                status.textContent = local.activo === false ? "Inhabilitado" : `${getTurnLabel(local)}${local.horarios ? ` · ${local.horarios}` : ""}`;
+                info.append(name, address, status);
+                const actions = document.createElement("div");
+                actions.className = "admin-location-actions";
+                const edit = document.createElement("button");
+                edit.type = "button";
+                edit.className = "admin-action";
+                edit.textContent = "Editar";
+                edit.addEventListener("click", () => editAdminLocale(local));
+                actions.append(edit);
+                const active = document.createElement("button");
+                active.type = "button";
+                active.className = local.activo === false ? "admin-action" : "admin-action danger";
+                active.textContent = local.activo === false ? "Reactivar" : "Inhabilitar";
+                active.addEventListener("click", () => setAdminLocaleActive(local, active));
+                actions.append(active);
+                row.append(info, actions);
+                list.append(row);
+            });
+        }
+
+        async function loadAdminLocations() {
+            if (!activeSession || currentUser?.rol !== "admin") return;
+            const message = document.getElementById("locations-admin-message");
+            message.textContent = "Cargando locales...";
+            try {
+                const locations = await DataRepository.loadAdminLocales(activeSession);
+                renderAdminLocations(locations);
+                message.textContent = "";
+            } catch (error) {
+                message.textContent = error.message || "No se pudieron cargar los locales.";
+                if (error.status === 401) logout();
+            }
+        }
+
+        async function openLocationsAdmin() {
+            if (!activeSession || currentUser?.rol !== "admin") return;
+            setUserMenuOpen(false);
+            resetLocaleForm();
+            document.getElementById("locations-admin-overlay").hidden = false;
+            await loadAdminLocations();
+        }
+
+        async function reloadActiveLocales() {
+            const previousVisited = new Map(locales.map(local => [local.id, local.visitado]));
+            const remoteLocales = await DataRepository.loadLocales();
+            locales = remoteLocales.map(normalizeLocale).map(local => ({
+                ...local,
+                visitado: previousVisited.get(local.id) || false
+            }));
+            originalRouteOrder = locales.map(local => local.id);
+            const validIds = new Set(originalRouteOrder);
+            const savedOrder = DataRepository.loadRouteOrder().filter(id => validIds.has(id));
+            manualRouteOrder = [...savedOrder, ...originalRouteOrder.filter(id => !savedOrder.includes(id))];
+            coordinatePromises.clear();
+            markersById.forEach(marker => marker.setMap(null));
+            markersById.clear();
+            if (infoWindow) infoWindow.close();
+            activeMapLocalInfo = null;
+            restoreVisits();
+            renderLocalCards();
+            if (!map) return;
+            if (locales.length === 0) {
+                showMapStatus("No hay locales activos");
+                return;
+            }
+            showMapStatus("Actualizando locales...");
+            locales.forEach((local, index) => {
+                setTimeout(() => {
+                    ensureLocalCoordinates(local).catch(error => console.warn(error.message));
+                    if (index === locales.length - 1) {
+                        setTimeout(() => showMapStatus(`${locales.length} locales · Caballito`), 1800);
+                    }
+                }, index * 100);
+            });
+        }
+
+        async function saveAdminLocale(event) {
+            event.preventDefault();
+            if (!activeSession || currentUser?.rol !== "admin") return;
+            const id = document.getElementById("location-id").value;
+            const local = {
+                id: id ? Number(id) : undefined,
+                nombre: document.getElementById("location-name").value,
+                descripcion: document.getElementById("location-description").value,
+                dir: document.getElementById("location-address").value,
+                turno: document.getElementById("location-shift").value,
+                horarios: document.getElementById("location-hours").value,
+                lat: "",
+                lng: "",
+                instagram: document.getElementById("location-instagram").value,
+                facebook: document.getElementById("location-facebook").value,
+                web: document.getElementById("location-web").value,
+                telefono: document.getElementById("location-phone").value,
+                activo: document.getElementById("location-active").checked
+            };
+            const saveButton = document.getElementById("location-save");
+            const message = document.getElementById("locations-admin-message");
+            saveButton.disabled = true;
+            message.textContent = "Calculando ubicación...";
+            try {
+                const coordinates = await resolveAdminAddressCoordinates(local.dir);
+                local.lat = coordinates.lat;
+                local.lng = coordinates.lng;
+                message.textContent = "Guardando local...";
+                await DataRepository.saveAdminLocale(local, activeSession);
+                await Promise.all([loadAdminLocations(), reloadActiveLocales()]);
+                resetLocaleForm();
+                message.textContent = "Local guardado.";
+            } catch (error) {
+                message.textContent = error.message || "No se pudo guardar el local.";
+                if (error.status === 401) logout();
+            } finally {
+                saveButton.disabled = false;
+            }
+        }
+
+        async function setAdminLocaleActive(local, button) {
+            if (!activeSession || currentUser?.rol !== "admin") return;
+            if (local.activo !== false && !window.confirm(`¿Inhabilitar ${local.nombre}? Se conservarán sus visitas históricas.`)) return;
+            button.disabled = true;
+            const message = document.getElementById("locations-admin-message");
+            try {
+                if (local.activo === false) await DataRepository.saveAdminLocale({ ...local, activo: true }, activeSession);
+                else await DataRepository.deactivateAdminLocale(local.id, activeSession);
+                await Promise.all([loadAdminLocations(), reloadActiveLocales()]);
+                resetLocaleForm();
+                message.textContent = local.activo === false ? "Local reactivado." : "Local inhabilitado; se conservaron sus visitas.";
+            } catch (error) {
+                message.textContent = error.message || "No se pudo actualizar el estado del local.";
+                if (error.status === 401) logout();
+            } finally {
+                button.disabled = false;
+            }
+        }
+
         function isLocalVisible(local) {
-            const matchesShift = activeFilter === "todos" || local.turno === activeFilter;
+            const matchesShift = activeFilter === "todos" || local.turno === activeFilter || local.turno === "ambos";
             const matchesVisit = visitFilter === "todos"
                 || (visitFilter === "visitados" && local.visitado)
                 || (visitFilter === "pendientes" && !local.visitado);
@@ -1669,6 +2232,7 @@
         }
 
         function createMarker(local) {
+            if (!locales.some(activeLocal => activeLocal.id === local.id)) return null;
             if (markersById.has(local.id)) return markersById.get(local.id);
             const marker = new google.maps.Marker({
                 position: { lat: local.lat, lng: local.lng },
@@ -1694,8 +2258,13 @@
             title.textContent = `#${getRouteNumber(local.id)} · ${local.nombre}`;
             const address = document.createElement("p");
             address.textContent = local.dir;
+            if (local.descripcion) {
+                const description = document.createElement("p");
+                description.textContent = local.descripcion;
+                content.append(description);
+            }
             const status = document.createElement("p");
-            status.textContent = `${getTurnLabel(local)} · ${local.visitado ? "Visitado" : "Pendiente"}`;
+            status.textContent = `${getTurnLabel(local)}${local.horarios ? ` · ${local.horarios}` : ""} · ${local.visitado ? "Visitado" : "Pendiente"}`;
             const visitLabel = document.createElement("label");
             visitLabel.className = "map-local-visit";
             const visitCheckbox = document.createElement("input");
@@ -1707,17 +2276,7 @@
             visitLabel.append(visitCheckbox, visitText);
             activeMapLocalInfo = { localId: local.id, checkbox: visitCheckbox, status };
             visitCheckbox.addEventListener("change", () => toggleLocalVisitFromMap(local, visitCheckbox.checked));
-            content.append(title, address, status, visitLabel);
-            const socialProfile = local.socialProfile || getSocialProfile(local.nombre);
-            if (socialProfile) {
-                const socialLink = document.createElement("a");
-                socialLink.className = `map-local-social ${socialProfile.platform.toLowerCase()}`;
-                socialLink.href = socialProfile.url;
-                socialLink.target = "_blank";
-                socialLink.rel = "noopener noreferrer";
-                socialLink.textContent = `Ver en ${socialProfile.platform} ↗`;
-                content.append(socialLink);
-            }
+            content.append(title, address, status, visitLabel, createLocalContactLinks(local));
             infoWindow.setContent(content);
             infoWindow.open({ map, anchor: marker });
         }
@@ -1752,6 +2311,7 @@
             }
             ensureLocalCoordinates(local).then(() => {
                 const marker = markersById.get(local.id);
+                if (!marker) return;
                 marker.setMap(map);
                 map.setZoom(18);
                 map.panTo(marker.getPosition());
@@ -1783,6 +2343,7 @@
         function updateScore() {
             const points = locales.reduce((total, local) => total + (local.visitado ? 1 : 0), 0);
             document.getElementById("score-count").textContent = String(points);
+            document.getElementById("local-count").textContent = String(locales.length);
         }
 
         function getOrderedLocals() {
@@ -1799,6 +2360,11 @@
         function updateMarkerLabels() {
             markersById.forEach((marker, id) => {
                 const local = locales.find(item => item.id === id);
+                if (!local) {
+                    marker.setMap(null);
+                    markersById.delete(id);
+                    return;
+                }
                 marker.setLabel({ text: String(getRouteNumber(id)), color: "white", fontWeight: "bold", fontSize: "12px" });
                 marker.setTitle(`#${getRouteNumber(id)} · ${local.nombre}`);
                 marker.setIcon(getMarkerIcon(local));
@@ -1836,12 +2402,17 @@
             name.textContent = local.nombre;
             const address = document.createElement("p");
             address.textContent = `📍 ${local.dir}`;
+            const description = document.createElement("p");
+            description.textContent = local.descripcion || "";
+            description.hidden = !local.descripcion;
             const turn = document.createElement("span");
             turn.className = `tag-turno ${local.turno === "manana" ? "tag-manana" : "tag-tarde"}`;
-            turn.textContent = getTurnLabel(local);
+            turn.classList.toggle("tag-ambos", local.turno === "ambos");
+            turn.textContent = local.horarios ? `${getTurnLabel(local)} · ${local.horarios}` : getTurnLabel(local);
             const state = document.createElement("span");
             state.className = "visit-state";
-            details.append(name, address, turn, state);
+            details.append(name, address, description, turn, state);
+            details.append(createLocalContactLinks(local));
             const controls = document.createElement("div");
             controls.className = "route-controls";
             const routeIndex = getRouteNumber(local.id) - 1;
@@ -1870,7 +2441,7 @@
             controls.append(moveUp, moveDown);
             card.append(checkbox, number, details, controls);
             card.addEventListener("click", event => {
-                if (event.target !== checkbox && !event.target.closest(".route-controls")) openLocalOnMap(local);
+                if (event.target !== checkbox && !event.target.closest(".route-controls, .local-contact-links")) openLocalOnMap(local);
             });
             card.addEventListener("keydown", event => {
                 if ((event.key === "Enter" || event.key === " ") && event.target === card) {
@@ -1885,6 +2456,14 @@
         function renderLocalCards() {
             const container = document.getElementById("lista-locales");
             const visibleLocals = getOrderedLocals().filter(isLocalVisible);
+            if (visibleLocals.length === 0) {
+                const emptyState = document.createElement("p");
+                emptyState.className = "admin-message";
+                emptyState.textContent = locales.length ? "No hay locales para este filtro." : "Todavía no hay locales disponibles.";
+                container.replaceChildren(emptyState);
+                updateScore();
+                return;
+            }
             container.replaceChildren(...visibleLocals.map(createLocalCard));
             updateScore();
         }
@@ -2019,6 +2598,11 @@
             renderLocalCards();
             markersById.forEach((marker, id) => {
                 const local = locales.find(item => item.id === id);
+                if (!local) {
+                    marker.setMap(null);
+                    markersById.delete(id);
+                    return;
+                }
                 marker.setMap(isLocalVisible(local) ? map : null);
             });
         }
@@ -2033,6 +2617,11 @@
             renderLocalCards();
             markersById.forEach((marker, id) => {
                 const local = locales.find(item => item.id === id);
+                if (!local) {
+                    marker.setMap(null);
+                    markersById.delete(id);
+                    return;
+                }
                 marker.setMap(isLocalVisible(local) ? map : null);
             });
         }
@@ -2059,7 +2648,7 @@
 
         function logout() {
             try {
-                DataRepository.removeSession();
+                if (!isLocalAdminDemoSession(activeSession)) DataRepository.removeSession();
             } catch (error) {
                 showToast("No pudimos cerrar la sesión en este dispositivo.");
                 console.error(error);
@@ -2073,9 +2662,7 @@
             adminUsers = [];
             adminSummary = null;
             setUserMenuOpen(false);
-            document.getElementById("user-chip").textContent = "Participante sin registrar";
             document.getElementById("admin-overlay").hidden = true;
-            document.getElementById("logout-button").hidden = true;
             updateAdminVisibility();
             document.getElementById("welcome-overlay").hidden = true;
             showAccessScreen();
@@ -2089,17 +2676,23 @@
                 id: Number(local.id),
                 nombre: normalizeLocalName(local.nombre),
                 dir: String(local.dir || local.direccion || ""),
-                turno: local.turno === "tarde" ? "tarde" : "manana",
+                turno: ["manana", "tarde", "ambos"].includes(local.turno) ? local.turno : "manana",
                 lat: local.lat !== null && Number.isFinite(Number(local.lat)) ? Number(local.lat) : null,
                 lng: local.lng !== null && Number.isFinite(Number(local.lng)) ? Number(local.lng) : null,
                 web: local.web || "",
                 telefono: local.telefono || "",
+                descripcion: local.descripcion || "",
+                horarios: local.horarios || "",
+                instagram: local.instagram || "",
+                facebook: local.facebook || "",
+                activo: local.activo !== false,
                 socialProfile: getSocialProfile(normalizeLocalName(local.nombre)),
                 visitado: false
             };
         }
 
         function showAccessScreen() {
+            document.getElementById("admin-demo-button").hidden = !LOCAL_ADMIN_DEMO_ENABLED;
             document.getElementById("google-login-container").hidden = !googleOAuthClientId;
             document.getElementById("google-terms-prompt").hidden = true;
             document.getElementById("google-login-message").textContent = "";
@@ -2127,9 +2720,7 @@
                 throw new Error(`No pudimos recuperar tus visitas: ${error.message}`);
             }
             document.getElementById("registration-overlay").hidden = true;
-            document.getElementById("user-chip").textContent = `${currentUser.nombre} ${currentUser.apellido}`;
-            document.getElementById("logout-button").textContent = "Cerrar sesión";
-            document.getElementById("logout-button").hidden = false;
+            updateAdminVisibility();
             restoreVisits();
             renderLocalCards();
             document.getElementById("welcome-overlay").hidden = false;
@@ -2138,7 +2729,7 @@
         async function initializeAppData() {
             try {
                 const remoteLocales = (await DataRepository.loadLocales()).map(normalizeLocale);
-                if (!remoteLocales.length || remoteLocales.some(local => !Number.isInteger(local.id))) {
+                if (remoteLocales.some(local => !Number.isInteger(local.id))) {
                     throw new Error("El catálogo recibido no es válido");
                 }
                 locales = remoteLocales;
@@ -2149,8 +2740,8 @@
                 routeMode = DataRepository.hasSavedRouteOrder() ? "manual" : "original";
                 document.getElementById("route-sort").value = routeMode;
             } catch (error) {
-                console.warn("No se pudo cargar el catálogo remoto; se usa la lista local.", error);
-                showToast("No pudimos actualizar los locales desde el servidor. Usamos el catálogo disponible.");
+                console.warn("No se pudo cargar el catálogo remoto.", error);
+                showToast("No pudimos cargar los locales desde el servidor.");
             }
 
             if (activeSession) {
@@ -2163,8 +2754,7 @@
                         activeSession = null;
                         currentUser = null;
                         updateAdminVisibility();
-                        document.getElementById("logout-button").hidden = true;
-                        document.getElementById("user-chip").textContent = "Participante sin registrar";
+                        updateAdminVisibility();
                         showAccessScreen();
                     } else {
                         console.warn("No se pudo recuperar el progreso remoto.", error);
@@ -2196,11 +2786,15 @@
             startLocationTracking();
             showMapStatus("Ubicando los locales...");
             renderLocalCards();
+            if (locales.length === 0) {
+                showMapStatus("No hay locales activos");
+                return;
+            }
             locales.forEach((local, index) => {
                 setTimeout(() => {
                     ensureLocalCoordinates(local).catch(error => console.warn(error.message));
                     if (index === locales.length - 1) {
-                        setTimeout(() => showMapStatus("27 locales · Caballito"), 1800);
+                        setTimeout(() => showMapStatus(`${locales.length} locales · Caballito`), 1800);
                     }
                 }, index * 200);
             });
@@ -2302,6 +2896,7 @@
             if (userLocationMarker) userLocationMarker.setIcon(getUserLocationIcon());
         });
         document.getElementById("guest-mode-button").addEventListener("click", enterGuestMode);
+        document.getElementById("admin-demo-button").addEventListener("click", enterAdminDemoMode);
 
         document.getElementById("route-sort").value = routeMode;
         document.getElementById("route-sort").addEventListener("change", event => {
@@ -2318,28 +2913,43 @@
             document.getElementById("welcome-overlay").hidden = true;
         });
         const userMenuToggle = document.getElementById("user-menu-toggle");
-        const userActionsMenu = document.getElementById("user-actions");
+        const profileMenu = document.getElementById("profile-menu");
+        const userMenuDropdown = document.getElementById("user-menu-dropdown");
         userMenuToggle.addEventListener("click", event => {
             event.stopPropagation();
-            setUserMenuOpen(!userActionsMenu.classList.contains("open"));
+            setUserMenuOpen(userMenuDropdown.hidden);
         });
-        userActionsMenu.addEventListener("click", event => {
+        userMenuDropdown.addEventListener("click", event => {
             if (event.target.closest("a, button")) setUserMenuOpen(false);
         });
         document.addEventListener("click", event => {
-            if (!userActionsMenu.contains(event.target) && !userMenuToggle.contains(event.target)) setUserMenuOpen(false);
+            if (!profileMenu.contains(event.target)) setUserMenuOpen(false);
         });
         document.addEventListener("keydown", event => {
             if (event.key === "Escape") {
                 setUserMenuOpen(false);
                 if (!document.getElementById("raffle-overlay").hidden) closeRaffleModal();
+                document.getElementById("locations-admin-overlay").hidden = true;
+                document.getElementById("admin-overlay").hidden = true;
             }
         });
         document.getElementById("logout-button").addEventListener("click", logout);
-        document.getElementById("admin-open-button").addEventListener("click", openAdminPanel);
-        document.getElementById("admin-open-raffle").addEventListener("click", openRaffleModal);
+        document.getElementById("menu-admin-users").addEventListener("click", openAdminPanel);
+        document.getElementById("menu-admin-locations").addEventListener("click", openLocationsAdmin);
+        document.getElementById("menu-admin-raffle").addEventListener("click", openRaffleModal);
         document.getElementById("admin-close").addEventListener("click", () => {
             document.getElementById("admin-overlay").hidden = true;
+        });
+        document.getElementById("locations-admin-close").addEventListener("click", () => {
+            document.getElementById("locations-admin-overlay").hidden = true;
+        });
+        document.getElementById("location-form").addEventListener("submit", saveAdminLocale);
+        document.getElementById("location-cancel").addEventListener("click", resetLocaleForm);
+        document.getElementById("location-address").addEventListener("change", event => {
+            resolvedAdminAddress = "";
+            document.getElementById("location-latitude").value = "";
+            document.getElementById("location-longitude").value = "";
+            resolveAdminAddressCoordinates(event.currentTarget.value).catch(() => {});
         });
         const raffleOverlay = document.getElementById("raffle-overlay");
         document.getElementById("raffle-close").addEventListener("click", closeRaffleModal);
@@ -2352,16 +2962,16 @@
         document.getElementById("admin-search").addEventListener("input", renderAdminPanel);
 
         if (currentUser) {
-            document.getElementById("user-chip").textContent = `${currentUser.nombre} ${currentUser.apellido}`;
-            document.getElementById("logout-button").hidden = false;
+            updateProfileMenu();
             document.getElementById("welcome-overlay").hidden = false;
         } else {
+            updateProfileMenu();
             showAccessScreen();
         }
         updateAdminVisibility();
         renderLocalCards();
         appInitialization = initializeAppData();
-        initializeGoogleSignIn();
+        if (!LOCAL_ADMIN_DEMO_ENABLED) initializeGoogleSignIn();
     </script>
 
     <!-- RECORDÁ PEGAR TU API KEY DE GOOGLE MAPS ACÁ -->

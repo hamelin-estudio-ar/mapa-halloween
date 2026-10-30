@@ -6,6 +6,7 @@ import re
 import unicodedata
 from datetime import datetime, timezone
 from functools import lru_cache, wraps
+from urllib.parse import urlparse
 
 from google.auth.exceptions import GoogleAuthError
 from google.auth.transport.requests import Request as GoogleAuthRequest
@@ -44,37 +45,6 @@ EMAIL_PATTERN = re.compile(
     r"(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$",
     re.IGNORECASE,
 )
-DEFAULT_LOCALES = [
-    {"id": 1, "nombre": "Il Gioco Tienda de Ropa", "dir": "Av Rivadavia 4995, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 2, "nombre": "BetyGino", "dir": "Rosario 190, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 3, "nombre": "Tienta Helados", "dir": "Rosario 262, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 4, "nombre": "Toffee Tienda", "dir": "Viel 220, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 5, "nombre": "Café del Parque", "dir": "Viel 267, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 6, "nombre": "Veterinaria Los tres mascoteros", "dir": "Guayaquil 284, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 7, "nombre": "Bull! Café", "dir": "Viel 368, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 8, "nombre": "Peluqueria", "dir": "Viel 382, Buenos Aires", "turno": "tarde", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 9, "nombre": "Giusseppe", "dir": "Viel 384, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 10, "nombre": "Librería Sofi", "dir": "Viel 489, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 11, "nombre": "SANITARIOS LA NUEVA ERA", "dir": "Viel 493, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 12, "nombre": "La Vicca Pizzeria", "dir": "Juan Bautista Alberdi 365, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 13, "nombre": "Peluquería Picardías", "dir": "Formosa 407, Buenos Aires", "turno": "tarde", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 14, "nombre": "Otero Café", "dir": "Guayaquil 389, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 15, "nombre": "Del Turista Caballito", "dir": "Beauchef 294, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 16, "nombre": "FARO AZUL", "dir": "Rosario 486, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 17, "nombre": "Pañalera Do Re Mi", "dir": "Rosario 531, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 18, "nombre": "Aurora Café", "dir": "Rosario 588, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 19, "nombre": "Tienda Fun Star", "dir": "Rosario 596, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 20, "nombre": "Vizzentino", "dir": "Av Jose María Moreno 168, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 21, "nombre": "Peluquería Tijeritas", "dir": "José María Moreno 308, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 22, "nombre": "Dulce Esquina", "dir": "Juan Bautista Alberdi 599, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 23, "nombre": "Lavedog", "dir": "Juan Bautista Alberdi 774, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 24, "nombre": "Didactikids Caballito", "dir": "Del Barco Centenera 256, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 25, "nombre": "Libreria Apolo XI", "dir": "Del Barco Centenera 228, Buenos Aires", "turno": "manana", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 26, "nombre": "Local Arte Studio", "dir": "Del Barco Centenera 150, Buenos Aires", "turno": "tarde", "lat": None, "lng": None, "web": "", "telefono": ""},
-    {"id": 27, "nombre": "Grooving Tattoo Studio", "dir": "Del Barco Centenera 150, Buenos Aires", "turno": "tarde", "lat": None, "lng": None, "web": "", "telefono": ""},
-]
-
-
 @lru_cache(maxsize=1)
 def _firestore_client():
     from google.cloud import firestore
@@ -169,12 +139,92 @@ def valid_person_name(value):
     )
 
 
+def normalize_locale_payload(data):
+    if not isinstance(data, dict):
+        return None, "Ingresá los datos del local"
+    nombre = data.get("nombre", "").strip() if isinstance(data.get("nombre"), str) else ""
+    address = data.get("dir", data.get("direccion", ""))
+    address = address.strip() if isinstance(address, str) else ""
+    turno = data.get("turno", "manana")
+    if not 2 <= len(nombre) <= 120:
+        return None, "El nombre debe tener entre 2 y 120 caracteres"
+    if not address or len(address) > 240:
+        return None, "Ingresá una dirección de hasta 240 caracteres"
+    if not isinstance(turno, str) or turno not in {"manana", "tarde", "ambos"}:
+        return None, "Seleccioná un horario válido"
+
+    coordinates = []
+    for key, minimum, maximum in (("lat", -90, 90), ("lng", -180, 180)):
+        value = data.get(key)
+        if value in (None, ""):
+            coordinates.append(None)
+            continue
+        try:
+            coordinate = float(value)
+        except (TypeError, ValueError):
+            return None, "Las coordenadas deben ser números válidos"
+        if not math.isfinite(coordinate) or not minimum <= coordinate <= maximum:
+            return None, "Las coordenadas están fuera de rango"
+        coordinates.append(coordinate)
+    if (coordinates[0] is None) != (coordinates[1] is None):
+        return None, "Ingresá latitud y longitud juntas, o dejá ambas vacías"
+    if coordinates[0] is None:
+        return None, "No se pudo asignar la ubicación. Revisá la dirección e intentá de nuevo"
+
+    def safe_url(key):
+        value = data.get(key, "")
+        if not isinstance(value, str):
+            return None
+        value = value.strip()
+        if not value:
+            return ""
+        if len(value) > 1000:
+            return None
+        try:
+            parsed = urlparse(value)
+        except ValueError:
+            return None
+        return value if parsed.scheme in {"http", "https"} and parsed.netloc else None
+
+    instagram = safe_url("instagram")
+    facebook = safe_url("facebook")
+    web = safe_url("web")
+    if instagram is None or facebook is None or web is None:
+        return None, "Los enlaces deben comenzar con http:// o https://"
+
+    description = data.get("descripcion", "")
+    hours = data.get("horarios", "")
+    phone = data.get("telefono", "")
+    if not all(isinstance(value, str) for value in (description, hours, phone)):
+        return None, "Descripción, horarios y teléfono deben ser texto"
+    if len(description) > 500 or len(hours) > 160 or len(phone) > 40:
+        return None, "Revisá la longitud de descripción, horarios o teléfono"
+    active = data.get("activo", True)
+    if not isinstance(active, bool):
+        return None, "El estado del local no es válido"
+    return {
+        "nombre": nombre,
+        "dir": address,
+        "turno": turno,
+        "lat": coordinates[0],
+        "lng": coordinates[1],
+        "descripcion": description.strip(),
+        "horarios": hours.strip(),
+        "instagram": instagram,
+        "facebook": facebook,
+        "web": web,
+        "telefono": phone.strip(),
+        "activo": active,
+    }, None
+
+
 def public_user(user):
     return {
         "nombre": user["nombre"],
         "apellido": user["apellido"],
         "email": user["email"],
         "telefono": user.get("telefono", ""),
+        "foto": user.get("foto", ""),
         "rol": "admin" if user.get("rol") == "admin" else "user",
         "timestampRegistro": user["timestampRegistro"],
     }
@@ -261,18 +311,97 @@ def health_check():
 
 @app.get("/api/locales")
 def listar_locales():
-    locales = read_json("locales.json", None)
-    if not isinstance(locales, list) or not locales:
-        from google.api_core.exceptions import AlreadyExists
+    locales = read_json("locales.json", [])
+    activos = [local for local in locales if local.get("activo", True) is not False]
+    return jsonify({"success": True, "locales": activos}), 200
 
-        collection = _collection("locales.json")
-        for local in DEFAULT_LOCALES:
-            try:
-                collection.document(str(local["id"])).create(local)
-            except AlreadyExists:
-                pass
-        locales = read_json("locales.json", DEFAULT_LOCALES)
+
+@app.get("/api/admin/locales")
+@require_session
+@require_admin
+def listar_locales_admin():
+    locales = read_json("locales.json", [])
+    locales.sort(key=lambda local: (str(local.get("nombre", "")).casefold(), int(local.get("id", 0))))
     return jsonify({"success": True, "locales": locales}), 200
+
+
+@app.post("/api/admin/locales")
+@require_session
+@require_admin
+def crear_local_admin():
+    payload, error = normalize_locale_payload(request.get_json(silent=True) or {})
+    if error:
+        return jsonify({"error": error}), 400
+    collection = _collection("locales.json")
+    counter_ref = _firestore_client().collection("sistema").document("locales")
+
+    def create_local(transaction):
+        counter_snapshot = transaction.get(counter_ref)
+        if counter_snapshot.exists:
+            next_id = max(1, int((counter_snapshot.to_dict() or {}).get("next_id", 1)))
+        else:
+            existing = collection.stream(transaction=transaction)
+            next_id = max((int((snapshot.to_dict() or {}).get("id", 0)) for snapshot in existing), default=0) + 1
+        while transaction.get(collection.document(str(next_id))).exists:
+            next_id += 1
+        local = {**payload, "id": next_id, "activo": True, "created_at": utc_now(), "updated_at": utc_now()}
+        transaction.create(collection.document(str(next_id)), local)
+        transaction.set(counter_ref, {"next_id": next_id + 1})
+        return local
+
+    local = run_transaction(create_local)
+    return jsonify({"success": True, "local": local}), 201
+
+
+@app.put("/api/admin/locales/<int:local_id>")
+@require_session
+@require_admin
+def actualizar_local_admin(local_id):
+    payload, error = normalize_locale_payload(request.get_json(silent=True) or {})
+    if error:
+        return jsonify({"error": error}), 400
+    local_ref = _collection("locales.json").document(str(local_id))
+
+    def update_local(transaction):
+        snapshot = transaction.get(local_ref)
+        if not snapshot.exists:
+            return None
+        current = snapshot.to_dict() or {}
+        local = {
+            **payload,
+            "id": local_id,
+            "activo": payload["activo"],
+            "created_at": current.get("created_at", current.get("createdAt", "")),
+            "updated_at": utc_now(),
+        }
+        transaction.set(local_ref, local)
+        return local
+
+    local = run_transaction(update_local)
+    if not local:
+        return jsonify({"error": "No existe un local con ese ID"}), 404
+    return jsonify({"success": True, "local": local}), 200
+
+
+@app.delete("/api/admin/locales/<int:local_id>")
+@require_session
+@require_admin
+def desactivar_local_admin(local_id):
+    local_ref = _collection("locales.json").document(str(local_id))
+
+    def deactivate_local(transaction):
+        snapshot = transaction.get(local_ref)
+        if not snapshot.exists:
+            return False
+        local = snapshot.to_dict() or {}
+        local.update({"activo": False, "updated_at": utc_now()})
+        transaction.set(local_ref, local)
+        return True
+
+    deactivated = run_transaction(deactivate_local)
+    if not deactivated:
+        return jsonify({"error": "No existe un local con ese ID"}), 404
+    return jsonify({"success": True, "id": local_id, "activo": False}), 200
 
 
 @app.get("/api/auth/google/config")
@@ -318,10 +447,13 @@ def iniciar_sesion_google():
     if not valid_person_name(last_name):
         last_name = "Google"
     now = utc_now()
+    picture = claims.get("picture")
+    picture = picture if isinstance(picture, str) and urlparse(picture).scheme == "https" and urlparse(picture).netloc else ""
     new_user = {
         "nombre": first_name,
         "apellido": last_name,
         "email": email,
+        "foto": picture,
         "telefono": "",
         "rol": "user",
         "auth_version": 1,
@@ -345,6 +477,7 @@ def iniciar_sesion_google():
                 return {"conflict": True}
             user.update({
                 "google_sub": google_sub,
+                "foto": picture or user.get("foto", ""),
                 "email_verificado": True,
                 "fecha_verificacion_email": user.get("fecha_verificacion_email") or now,
             })
@@ -473,7 +606,7 @@ def eliminar_usuario_admin():
 def resumen_visitas_admin():
     users = read_json("usuarios.json", {})
     visits = read_json("visitas.json", [])
-    locales = read_json("locales.json", DEFAULT_LOCALES)
+    locales = read_json("locales.json", [])
     local_names = {local.get("id"): local.get("nombre", "Local") for local in locales}
     visits_by_email = {}
     visits_by_local = {}
@@ -539,8 +672,8 @@ def registrar_visita():
         return jsonify({"error": "local_id y distancia son obligatorios"}), 400
     if local_id <= 0 or not math.isfinite(distancia) or distancia < 0 or distancia >= CHECKIN_DISTANCE_LIMIT_METERS:
         return jsonify({"error": "La visita debe estar a menos de 2 metros del local"}), 400
-    locales = read_json("locales.json", DEFAULT_LOCALES)
-    if not any(local.get("id") == local_id for local in locales):
+    local = get_document("locales.json", str(local_id))
+    if not local or local.get("activo", True) is False:
         return jsonify({"error": "El local no existe"}), 404
     user = get_document("usuarios.json", user_document_id(g.user_email))
     if not user:
