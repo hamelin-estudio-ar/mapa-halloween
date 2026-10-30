@@ -616,7 +616,7 @@
 
     <script>
         // CAPA 1: ENTIDADES
-        const DISTANCE_LIMIT_METERS = 70;
+        const DISTANCE_LIMIT_METERS = 2;
         const STORAGE_KEYS = { session: "ruta-magica-session", visits: "halloween-caballito-visits", routeOrder: "ruta-magica-2026-order", guestVisits: "ruta-magica-guest-visits", userAvatar: "ruta-magica-user-avatar", sidebarWidth: "ruta-magica-sidebar-width", sidebarCollapsed: "ruta-magica-sidebar-collapsed", mobileMapHeight: "ruta-magica-mobile-map-height" };
         const BACKEND_URL = "https://ruta-magica-backend-854585878082.us-central1.run.app";
         const USER_AVATARS = {
@@ -952,7 +952,7 @@
                 const coordinates = await ensureLocalCoordinates(local);
                 const distance = haversineMeters(currentPosition, coordinates);
                 if (distance >= DISTANCE_LIMIT_METERS) {
-                    throw new Error(`Estás a ${Math.round(distance)} m de ${local.nombre}. Acercate a menos de 70 m para marcar la visita.`);
+                    throw new Error(`Estás a ${Math.round(distance)} m de ${local.nombre}. Acercate a menos de 2 m para marcar la visita.`);
                 }
                 return distance;
             }
