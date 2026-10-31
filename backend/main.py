@@ -30,7 +30,7 @@ FIRESTORE_COLLECTIONS = {
     "visitas.json": "visitas",
     "locales.json": "locales",
 }
-CHECKIN_DISTANCE_LIMIT_METERS = 2
+CHECKIN_DISTANCE_LIMIT_METERS = 70
 SESSION_SECRET = os.getenv("SECRET_KEY", "").strip()
 GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "").strip()
 SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
@@ -703,7 +703,7 @@ def registrar_visita():
     except (TypeError, ValueError):
         return jsonify({"error": "local_id y distancia son obligatorios"}), 400
     if local_id <= 0 or not math.isfinite(distancia) or distancia < 0 or distancia >= CHECKIN_DISTANCE_LIMIT_METERS:
-        return jsonify({"error": "La visita debe estar a menos de 2 metros del local"}), 400
+        return jsonify({"error": "La visita debe estar a menos de 70 metros del local"}), 400
     user = get_document("usuarios.json", user_document_id(g.user_email))
     if not user:
         return jsonify({"error": "Usuario no encontrado"}), 401
